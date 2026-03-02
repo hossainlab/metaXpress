@@ -1,0 +1,49 @@
+Package: metaXpress
+Title: End-to-End Bulk RNA-seq Meta-Analysis
+Version: 0.99.0
+Authors@R: person("DeepBio Academy", role = c("aut", "cre"),
+    email = "contact@deepbioacademy.com")
+Description: metaXpress provides a unified, reproducible pipeline for
+    integrating multiple bulk RNA-seq studies. It covers data ingestion
+    from GEO/SRA, cross-study normalization and batch correction, per-study
+    differential expression analysis, meta-analysis statistics (p-value
+    combination and effect size models), missing gene handling, pathway
+    meta-analysis, and reproducible HTML/PDF reporting.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: false
+Depends:
+    R (>= 4.3.0)
+Imports:
+    methods,
+    S4Vectors,
+    BiocParallel,
+    GEOquery,
+    DESeq2,
+    edgeR,
+    limma,
+    sva,
+    tximport,
+    clusterProfiler,
+    msigdbr,
+    ggplot2,
+    ggrepel,
+    ComplexHeatmap,
+    AnnotationDbi,
+    org.Hs.eg.db
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    BiocStyle,
+    openxlsx,
+    harmony,
+    covr
+VignetteBuilder: knitr
+biocViews: RNASeq, DifferentialExpression, GeneExpression,
+    Transcriptomics, BatchEffect, Normalization, Pathways,
+    MultipleComparison, ReportWriting
+BugReports: https://github.com/deepbioacademy/metaXpress/issues
+URL: https://github.com/deepbioacademy/metaXpress
+Config/testthat/edition: 3
+RoxygenNote: 7.3.2

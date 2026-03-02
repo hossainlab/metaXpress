@@ -1,0 +1,18 @@
+# Normalize line endings to LF on commit (cross-platform consistency)
+* text=auto eol=lf
+
+# R source files — always LF
+*.R      text eol=lf
+*.Rmd    text eol=lf
+*.Rd     text eol=lf
+*.yaml   text eol=lf
+*.yml    text eol=lf
+*.md     text eol=lf
+*.txt    text eol=lf
+
+# Binary files — no conversion
+*.rda    binary
+*.rds    binary
+*.pdf    binary
+*.png    binary
+*.jpg    binary

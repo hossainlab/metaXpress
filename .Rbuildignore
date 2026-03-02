@@ -1,0 +1,17 @@
+# Files/directories to exclude from the R package tarball (R CMD build)
+# Uses Perl-compatible regular expressions anchored to the package root.
+
+^\.git$
+^\.github$
+^\.claude$
+^\.gitignore$
+^\.Rbuildignore$
+^metaXpress\.Rproj$
+^\.Rproj\.user$
+^CLAUDE\.md$
+^dev$
+^papers$
+^coverage$
+^docs$
+^cache$
+^geo_cache$

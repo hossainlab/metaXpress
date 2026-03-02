@@ -1,0 +1,111 @@
+---
+title: "metaXpress Quickstart"
+author: "DeepBio Academy"
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+vignette: >
+  %\VignetteIndexEntry{metaXpress Quickstart}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  message  = FALSE,
+  warning  = FALSE
+)
+```
+
+# Overview
+
+`metaXpress` provides an end-to-end pipeline for integrating multiple bulk
+RNA-seq studies into a single meta-analysis result. This vignette walks
+through a minimal example using the built-in simulated dataset.
+
+```{r load-package}
+library(metaXpress)
+```
+
+# Load Example Data
+
+The package ships with a small simulated dataset: three studies with 500 genes
+each and partial gene overlap.
+
+```{r load-data}
+data(metaXpress_example)
+studies <- metaXpress_example
+lapply(studies, show)
+```
+
+# Step 1 — QC Filtering
+
+Studies are already QC-scored in the example data. In a real workflow, QC
+scores are computed by `mx_fetch_geo()` automatically, or manually via
+`mx_qc_study()`.
+
+```{r filter-studies}
+studies <- mx_filter_studies(studies, qc_threshold = 7)
+message("Studies passing QC: ", length(studies))
+```
+
+# Step 2 — Align Genes
+
+Find the common gene universe across all studies.
+
+```{r align-genes}
+studies <- mx_align_genes(studies)
+```
+
+# Step 3 — Per-Study Differential Expression
+
+Run DESeq2 on each study independently.
+
+```{r de-analysis}
+studies <- mx_de_all(studies, method = "DESeq2", formula = ~ condition)
+mx_de_summary(studies)
+```
+
+# Step 4 — Meta-Analysis
+
+Combine per-study DE results using the random effects model.
+
+```{r meta-analysis}
+de_results <- lapply(studies, function(s) s@de_result)
+meta_result <- mx_meta(de_results, method = "random_effects")
+meta_result
+```
+
+# Step 5 — Visualise
+
+```{r volcano, fig.width=7, fig.height=5}
+mx_volcano(meta_result, label_top = 10)
+```
+
+```{r forest, fig.width=6, fig.height=4}
+# Forest plot for the top gene
+top_gene <- meta_result@meta_table$gene_id[
+  which.min(meta_result@meta_table$meta_padj)]
+mx_forest(top_gene, de_results, meta_result)
+```
+
+```{r heterogeneity, fig.width=6, fig.height=4}
+mx_heterogeneity_plot(meta_result)
+```
+
+# Step 6 — Export Results
+
+```{r export, eval=FALSE}
+mx_export(meta_result, format = "csv", output_dir = tempdir())
+```
+
+# Session Info
+
+```{r session-info}
+mx_session_info()$session_info
+```
