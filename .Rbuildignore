@@ -10,7 +10,7 @@
 ^\.Rproj\.user$
 ^CLAUDE\.md$
 ^dev$
-^papers$
+^papers
 ^coverage$
 ^docs$
 ^cache$

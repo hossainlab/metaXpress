@@ -30,7 +30,11 @@ Imports:
     ggrepel,
     ComplexHeatmap,
     AnnotationDbi,
-    org.Hs.eg.db
+    org.Hs.eg.db,
+    Biobase,
+    SummarizedExperiment,
+    circlize,
+    grid
 Suggests:
     testthat (>= 3.0.0),
     knitr,
@@ -59,4 +63,5 @@ Collate:
     '08_report.R'
     'AllGenerics.R'
     'data.R'
+    'metaXpress-package.R'
     'utils.R'

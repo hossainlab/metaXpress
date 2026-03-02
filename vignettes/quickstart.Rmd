@@ -1,6 +1,6 @@
 ---
 title: "metaXpress Quickstart"
-author: "DeepBio Academy"
+author: "Md. Jubayer Hossain"
 date: "`r Sys.Date()`"
 output:
   BiocStyle::html_document:
