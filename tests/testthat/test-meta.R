@@ -46,9 +46,8 @@ test_that("mx_meta errors on missing required columns", {
 })
 
 test_that("mx_meta min_studies filters genes correctly", {
-  # 3 studies, but gene GENE1 only in study 1
+  # 3 studies; remove GENE1 only from study 3 → it appears in 2/3 studies
   de <- make_test_de_results(n_genes = 50, n_studies = 3)
-  de[[2]] <- de[[2]][de[[2]]$gene_id != "GENE1", ]
   de[[3]] <- de[[3]][de[[3]]$gene_id != "GENE1", ]
 
   result_strict <- mx_meta(de, method = "fisher", min_studies = 3)

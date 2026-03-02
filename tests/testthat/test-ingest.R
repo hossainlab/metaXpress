@@ -51,6 +51,7 @@ test_that("mx_qc_study scores criterion 8 correctly (exactly 2 condition levels)
 test_that("mx_filter_studies removes low-QC studies", {
   s1 <- mx_qc_study(make_test_study(accession = "A"))
   s2 <- mx_qc_study(make_test_study(accession = "B"))
+  s1@qc_score <- 8  # Force a passing score (fixture only scores 6 due to gene count)
   s2@qc_score <- 3  # Force a low score
 
   filtered <- mx_filter_studies(list(A = s1, B = s2), qc_threshold = 7)

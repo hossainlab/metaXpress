@@ -20,4 +20,12 @@
 #' @importFrom SummarizedExperiment assay
 #' @importFrom circlize colorRamp2
 #' @importFrom grid gpar
+#' @importFrom stats median na.omit
+#' @importFrom utils head
 "_PACKAGE"
+
+# Suppress R CMD check NOTEs for ggplot2 non-standard evaluation column names
+utils::globalVariables(c(
+  "log2FC", "study", "ci_lo", "ci_hi", "x", "y",
+  "i_squared", "meta_log2FC", "neg_log10_padj", "sig", "gene_id"
+))

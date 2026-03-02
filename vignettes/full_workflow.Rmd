@@ -1,6 +1,6 @@
 ---
 title: "metaXpress Full Workflow: GEO to Report"
-author: "DeepBio Academy"
+author: "Md. Jubayer Hossain"
 date: "`r Sys.Date()`"
 output:
   BiocStyle::html_document:
@@ -19,7 +19,8 @@ knitr::opts_chunk$set(
   comment  = "#>",
   message  = FALSE,
   warning  = FALSE,
-  eval     = FALSE   # Network calls disabled in vignette build
+  eval     = FALSE,  # All chunks are illustrative; network calls not run in CI
+  purl     = FALSE   # Exclude from R CMD check vignette code extraction
 )
 ```
 
@@ -198,6 +199,6 @@ mx_export(meta_result, format = "csv",   output_dir = "results/")
 
 # Session Information
 
-```{r session-info, eval=TRUE}
+```{r session-info}
 mx_session_info()$session_info
 ```

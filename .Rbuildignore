@@ -7,6 +7,7 @@
 ^\.gitignore$
 ^\.Rbuildignore$
 ^metaXpress\.Rproj$
+^LICENSE\.md$
 ^\.Rproj\.user$
 ^CLAUDE\.md$
 ^dev$

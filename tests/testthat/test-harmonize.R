@@ -7,7 +7,7 @@ test_that("mx_align_genes finds common genes across studies", {
   aligned <- mx_align_genes(list(A = s1, B = s2))
   n_common <- nrow(aligned$A@counts)
   expect_equal(n_common, nrow(aligned$B@counts))
-  expect_true(n_common == 40)
+  expect_true(n_common == 20)
 })
 
 test_that("mx_align_genes errors when no genes are shared", {

@@ -16,14 +16,12 @@ Depends:
     R (>= 4.3.0)
 Imports:
     methods,
-    S4Vectors,
     BiocParallel,
     GEOquery,
     DESeq2,
     edgeR,
     limma,
     sva,
-    tximport,
     clusterProfiler,
     msigdbr,
     ggplot2,
@@ -42,7 +40,9 @@ Suggests:
     BiocStyle,
     openxlsx,
     harmony,
-    covr
+    covr,
+    S4Vectors,
+    tximport
 VignetteBuilder: knitr
 biocViews: RNASeq, DifferentialExpression, GeneExpression,
     Transcriptomics, BatchEffect, Normalization, Pathways,
