@@ -357,4 +357,4 @@ BiocCheck::BiocCheck(".")
 
 ## License
 
-MIT © [DeepBio Academy](https://github.com/hossainlab)
+MIT © [DeepBio Limited](https://github.com/hossainlab)
