@@ -46,4 +46,17 @@ biocViews: RNASeq, DifferentialExpression, GeneExpression,
 BugReports: https://github.com/deepbioacademy/metaXpress/issues
 URL: https://github.com/deepbioacademy/metaXpress
 Config/testthat/edition: 3
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
+Collate: 
+    'AllClasses.R'
+    '01_ingest.R'
+    '02_harmonize.R'
+    '03_de.R'
+    '04_meta.R'
+    '05_missing.R'
+    '06_pathway.R'
+    '07_visualize.R'
+    '08_report.R'
+    'AllGenerics.R'
+    'data.R'
+    'utils.R'

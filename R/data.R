@@ -18,7 +18,11 @@
 #' @usage data(metaXpress_example)
 #'
 #' @examples
-#' data(metaXpress_example)
-#' metaXpress_example$study1
+#' \dontrun{
+#'   data(metaXpress_example)
+#'   metaXpress_example$study1
+#' }
 #'
-"metaXpress_example"
+#' @name metaXpress_example
+#' @docType data
+NULL
