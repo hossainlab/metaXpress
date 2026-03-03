@@ -47,8 +47,8 @@ VignetteBuilder: knitr
 biocViews: RNASeq, DifferentialExpression, GeneExpression,
     Transcriptomics, BatchEffect, Normalization, Pathways,
     MultipleComparison, ReportWriting
-BugReports: https://github.com/deepbioacademy/metaXpress/issues
-URL: https://github.com/deepbioacademy/metaXpress
+BugReports: https://github.com/hossainlab/metaXpress/issues
+URL: https://github.com/hossainlab/metaXpress
 Config/testthat/edition: 3
 RoxygenNote: 7.3.3
 Collate: 
