@@ -30,8 +30,10 @@ A \code{ggplot2} object.
 }
 \description{
 Creates a volcano plot from a \code{metaXpressResult} object, displaying
-meta-analysis effect sizes against -log10(meta_padj). The top differentially
-expressed genes are labelled.
+meta-analysis effect sizes (log2 fold-change) against statistical
+significance (-log10 meta_padj). The top differentially expressed genes
+are labelled. Volcano plots are a standard visualization for differential
+expression results (Li 2012).
 }
 \examples{
 \dontrun{
@@ -39,6 +41,11 @@ expressed genes are labelled.
   print(p)
 }
 
+}
+\references{
+Li, W. (2012) Volcano plots in analyzing differential expressions with
+mRNA microarrays. \emph{Journal of Bioinformatics and Computational
+Biology}, \strong{10}(6), 1231003. \doi{10.1142/S0219720012310038}
 }
 \seealso{
 \code{\link{mx_forest}}, \code{\link{mx_heatmap}}

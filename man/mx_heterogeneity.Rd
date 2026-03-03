@@ -26,6 +26,15 @@ p-value for the Q test for each gene across studies.
 }
 
 }
+\references{
+Cochran, W.G. (1954) The combination of estimates from different
+experiments. \emph{Biometrics}, \strong{10}(1), 101--129.
+\doi{10.2307/3001666}
+
+Higgins, J.P.T. & Thompson, S.G. (2002) Quantifying heterogeneity in a
+meta-analysis. \emph{Statistics in Medicine}, \strong{21}(11), 1539--1558.
+\doi{10.1002/sim.1186}
+}
 \seealso{
 \code{\link{mx_meta}}, \code{\link{mx_heterogeneity_plot}}
 }

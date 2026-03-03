@@ -21,8 +21,10 @@ the meta-analysis result.}
 A \code{ggplot2} object.
 }
 \description{
-Displays per-study log2 fold-change estimates with 95% confidence intervals
-and a pooled estimate diamond. I-squared heterogeneity is annotated.
+Displays per-study log2 fold-change estimates with 95\% confidence intervals
+and a pooled estimate diamond. I-squared heterogeneity is annotated. Forest
+plots are the standard visualization for meta-analysis results, showing both
+individual study contributions and the pooled summary (Lewis & Clarke 2001).
 }
 \examples{
 \dontrun{
@@ -30,6 +32,11 @@ and a pooled estimate diamond. I-squared heterogeneity is annotated.
   print(p)
 }
 
+}
+\references{
+Lewis, S. & Clarke, M. (2001) Forest plots: trying to see the wood and the
+trees. \emph{BMJ}, \strong{322}(7300), 1479--1480.
+\doi{10.1136/bmj.322.7300.1479}
 }
 \seealso{
 \code{\link{mx_volcano}}, \code{\link{mx_heterogeneity_plot}}

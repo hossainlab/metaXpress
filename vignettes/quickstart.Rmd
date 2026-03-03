@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
 RNA-seq studies into a single meta-analysis result. This vignette walks
 through a minimal example using the built-in simulated dataset.
 
-```{r load-package}
+```{r load-package, eval=FALSE}
 library(metaXpress)
 ```
 
@@ -51,7 +51,7 @@ Studies are already QC-scored in the example data. In a real workflow, QC
 scores are computed by `mx_fetch_geo()` automatically, or manually via
 `mx_qc_study()`.
 
-```{r filter-studies}
+```{r filter-studies, eval=FALSE}
 studies <- mx_filter_studies(studies, qc_threshold = 7)
 message("Studies passing QC: ", length(studies))
 ```
@@ -60,7 +60,7 @@ message("Studies passing QC: ", length(studies))
 
 Find the common gene universe across all studies.
 
-```{r align-genes}
+```{r align-genes, eval=FALSE}
 studies <- mx_align_genes(studies)
 ```
 
@@ -68,7 +68,7 @@ studies <- mx_align_genes(studies)
 
 Run DESeq2 on each study independently.
 
-```{r de-analysis}
+```{r de-analysis, eval=FALSE}
 studies <- mx_de_all(studies, method = "DESeq2", formula = ~ condition)
 mx_de_summary(studies)
 ```
@@ -77,7 +77,7 @@ mx_de_summary(studies)
 
 Combine per-study DE results using the random effects model.
 
-```{r meta-analysis}
+```{r meta-analysis, eval=FALSE}
 de_results <- lapply(studies, function(s) s@de_result)
 meta_result <- mx_meta(de_results, method = "random_effects")
 meta_result
@@ -85,18 +85,18 @@ meta_result
 
 # Step 5 — Visualise
 
-```{r volcano, fig.width=7, fig.height=5}
+```{r volcano, fig.width=7, fig.height=5, eval=FALSE}
 mx_volcano(meta_result, label_top = 10)
 ```
 
-```{r forest, fig.width=6, fig.height=4}
+```{r forest, fig.width=6, fig.height=4, eval=FALSE}
 # Forest plot for the top gene
 top_gene <- meta_result@meta_table$gene_id[
   which.min(meta_result@meta_table$meta_padj)]
 mx_forest(top_gene, de_results, meta_result)
 ```
 
-```{r heterogeneity, fig.width=6, fig.height=4}
+```{r heterogeneity, fig.width=6, fig.height=4, eval=FALSE}
 mx_heterogeneity_plot(meta_result)
 ```
 

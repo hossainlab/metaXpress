@@ -39,16 +39,39 @@ NULL
 #' threshold: \code{meta_padj <= 0.05} AND \code{|meta_log2FC| >= 1}.
 #'
 #' @references
-#' Rau, Marot & Jaffrézic (2013) BMC Bioinformatics.
-#' \doi{10.1186/1471-2105-15-91}
+#' Fisher, R.A. (1932) \emph{Statistical Methods for Research Workers}.
+#' 4th edn. Edinburgh: Oliver & Boyd.
 #'
-#' Prasad & Li (2021) BMC Bioinformatics.
-#' \doi{10.1186/s12859-022-04859-9}
+#' Stouffer, S.A. et al. (1949) \emph{The American Soldier: Adjustment During
+#' Army Life}. Princeton University Press.
 #'
-#' Keel & Lindholm-Perry (2022) Frontiers in Genetics.
+#' DerSimonian, R. & Laird, N. (1986) Meta-analysis in clinical trials.
+#' \emph{Controlled Clinical Trials}, \strong{7}(3), 177--188.
+#' \doi{10.1016/0197-2456(86)90046-2}
+#'
+#' Cochran, W.G. (1954) The combination of estimates from different
+#' experiments. \emph{Biometrics}, \strong{10}(1), 101--129.
+#' \doi{10.2307/3001666}
+#'
+#' Higgins, J.P.T. & Thompson, S.G. (2002) Quantifying heterogeneity in a
+#' meta-analysis. \emph{Statistics in Medicine}, \strong{21}(11), 1539--1558.
+#' \doi{10.1002/sim.1186}
+#'
+#' Rau, A., Marot, G. & Jaffrézic, F. (2014) Differential meta-analysis of
+#' RNA-seq data from multiple studies. \emph{BMC Bioinformatics},
+#' \strong{15}, 91. \doi{10.1186/1471-2105-15-91}
+#'
+#' Prasad, A. & Li, Q. (2022) Fused inverse-normal method for integrated
+#' differential expression analysis of RNA-seq data. \emph{BMC
+#' Bioinformatics}, \strong{23}, 371. \doi{10.1186/s12859-022-04859-9}
+#'
+#' Keel, B.N. & Lindholm-Perry, A.K. (2022) Recent developments and future
+#' directions in meta-analysis of differential gene expression.
+#' \emph{Frontiers in Genetics}, \strong{13}, 983043.
 #' \doi{10.3389/fgene.2022.983043}
 #'
-#' Hu et al. (2025) bioRxiv.
+#' Hu, J. et al. (2025) AWmeta: adaptive weighting meta-analysis for
+#' combining heterogeneous genomic studies. \emph{bioRxiv}.
 #' \doi{10.1101/2025.05.06.650408}
 #'
 #' @examples
@@ -144,7 +167,7 @@ mx_meta <- function(de_results,
 
   # --- Run chosen method ---
   meta_stats <- switch(method,
-    fisher         = .meta_fisher(pval_mat),
+    fisher         = .meta_fisher(pval_mat, lfc_mat),
     stouffer       = .meta_stouffer(pval_mat, lfc_mat, n_samples),
     inverse_normal = .meta_inverse_normal(pval_mat, lfc_mat, n_samples),
     fixed_effects  = .meta_fixed_effects(lfc_mat, se_mat),
@@ -200,6 +223,15 @@ mx_meta <- function(de_results,
 #' @return A \code{data.frame} with columns \code{gene_id}, \code{Q},
 #'   \code{df}, \code{I_sq}, \code{tau_sq}, \code{p_heterogeneity}.
 #'
+#' @references
+#' Cochran, W.G. (1954) The combination of estimates from different
+#' experiments. \emph{Biometrics}, \strong{10}(1), 101--129.
+#' \doi{10.2307/3001666}
+#'
+#' Higgins, J.P.T. & Thompson, S.G. (2002) Quantifying heterogeneity in a
+#' meta-analysis. \emph{Statistics in Medicine}, \strong{21}(11), 1539--1558.
+#' \doi{10.1002/sim.1186}
+#'
 #' @examples
 #' \dontrun{
 #'   het <- mx_heterogeneity(de_results)
@@ -252,7 +284,9 @@ mx_heterogeneity <- function(de_results) {
 #' Leave-one-out sensitivity analysis
 #'
 #' Reruns the meta-analysis iteratively, each time excluding one study, to
-#' assess whether any single study drives the overall result.
+#' assess whether any single study drives the overall result. This is the
+#' standard sensitivity analysis recommended by the Cochrane Handbook
+#' (Higgins et al. 2019, Section 10.14).
 #'
 #' @param de_results A named list of \code{data.frame} objects from
 #'   \code{\link{mx_de_all}}.
@@ -261,6 +295,11 @@ mx_heterogeneity <- function(de_results) {
 #'
 #' @return A list of \code{\linkS4class{metaXpressResult}} objects, one per
 #'   leave-one-out iteration. Names correspond to the excluded study.
+#'
+#' @references
+#' Higgins, J.P.T. et al. (eds.) (2019) \emph{Cochrane Handbook for
+#' Systematic Reviews of Interventions}. 2nd edn. Chichester: John Wiley
+#' & Sons. \doi{10.1002/9781119536604}
 #'
 #' @examples
 #' \dontrun{
@@ -354,10 +393,12 @@ mx_sensitivity <- function(de_results,
        p_heterogeneity = p_het)
 }
 
-.meta_fisher <- function(pval_mat) {
-  meta_pvalue  <- apply(pval_mat, 1, .fisher_combine)
-  meta_log2FC  <- rowMeans(pval_mat * 0, na.rm = TRUE)  # not available
-  meta_log2FC[] <- NA_real_
+.meta_fisher <- function(pval_mat, lfc_mat) {
+  meta_pvalue <- apply(pval_mat, 1, .fisher_combine)
+  # Fisher combines p-values only; use unweighted mean log2FC as the
+
+  # summary effect direction (not a formal estimate)
+  meta_log2FC <- rowMeans(lfc_mat, na.rm = TRUE)
   list(meta_pvalue = meta_pvalue, meta_log2FC = meta_log2FC)
 }
 
@@ -376,11 +417,9 @@ mx_sensitivity <- function(de_results,
 }
 
 .meta_inverse_normal <- function(pval_mat, lfc_mat, n_samples) {
-  meta_pvalue <- apply(
-    seq_len(nrow(pval_mat)), 1,
-    function(g) .inverse_normal_combine(pval_mat[g, ], lfc_mat[g, ],
-                                         n_samples)
-  )
+  meta_pvalue <- vapply(seq_len(nrow(pval_mat)), function(g) {
+    .inverse_normal_combine(pval_mat[g, ], lfc_mat[g, ], n_samples)
+  }, numeric(1))
   meta_log2FC <- rowMeans(lfc_mat, na.rm = TRUE)
   list(meta_pvalue = meta_pvalue, meta_log2FC = meta_log2FC)
 }
@@ -437,10 +476,11 @@ mx_sensitivity <- function(de_results,
     Z_effect <- theta_RE / SE_RE
 
     # P-value Z (Stouffer)
-    pv <- pval_mat[g, ]; pv <- pv[!is.na(pv)]
-    lf <- lfc_mat[g, ]; lf <- lf[!is.na(pv[seq_along(lf)])]
+    pv <- pval_mat[g, ]; lf <- lfc_mat[g, ]
+    pv_valid <- !is.na(pv) & !is.na(lf)
+    pv <- pv[pv_valid]; lf <- lf[pv_valid]
     if (length(pv) < 2) return(c(log2FC = NA_real_, pvalue = NA_real_))
-    z_pv <- qnorm(1 - pv / 2) * sign(lf[seq_along(pv)])
+    z_pv <- qnorm(1 - pv / 2) * sign(lf)
     Z_pvalue <- mean(z_pv)
 
     Z_adaptive <- lambda * Z_effect + (1 - lambda) * Z_pvalue

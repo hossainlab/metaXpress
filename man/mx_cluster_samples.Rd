@@ -25,6 +25,7 @@ metadata.
 
 }
 \references{
-Coke, Niranjan & Ewing (2025) bioRxiv.
+Coke, T., Niranjan, M. & Ewing, R.M. (2025) sampleclusteR: automated
+case/control group assignment from GEO metadata. \emph{bioRxiv}.
 \doi{10.1101/2025.04.10.648129}
 }

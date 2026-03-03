@@ -8,8 +8,10 @@ NULL
 #' Meta-analysis volcano plot
 #'
 #' Creates a volcano plot from a \code{metaXpressResult} object, displaying
-#' meta-analysis effect sizes against -log10(meta_padj). The top differentially
-#' expressed genes are labelled.
+#' meta-analysis effect sizes (log2 fold-change) against statistical
+#' significance (-log10 meta_padj). The top differentially expressed genes
+#' are labelled. Volcano plots are a standard visualization for differential
+#' expression results (Li 2012).
 #'
 #' @param meta_result A \code{\linkS4class{metaXpressResult}} object.
 #' @param padj_threshold Numeric. Adjusted p-value threshold for colouring
@@ -20,6 +22,11 @@ NULL
 #' @param title Character scalar. Plot title. Default: \code{NULL} (auto).
 #'
 #' @return A \code{ggplot2} object.
+#'
+#' @references
+#' Li, W. (2012) Volcano plots in analyzing differential expressions with
+#' mRNA microarrays. \emph{Journal of Bioinformatics and Computational
+#' Biology}, \strong{10}(6), 1231003. \doi{10.1142/S0219720012310038}
 #'
 #' @examples
 #' \dontrun{
@@ -85,8 +92,10 @@ mx_volcano <- function(meta_result, padj_threshold = 0.05,
 
 #' Forest plot for a single gene
 #'
-#' Displays per-study log2 fold-change estimates with 95% confidence intervals
-#' and a pooled estimate diamond. I-squared heterogeneity is annotated.
+#' Displays per-study log2 fold-change estimates with 95\% confidence intervals
+#' and a pooled estimate diamond. I-squared heterogeneity is annotated. Forest
+#' plots are the standard visualization for meta-analysis results, showing both
+#' individual study contributions and the pooled summary (Lewis & Clarke 2001).
 #'
 #' @param gene Character scalar. Gene identifier to plot.
 #' @param de_results A named list of per-study DE \code{data.frame}s (from
@@ -97,6 +106,11 @@ mx_volcano <- function(meta_result, padj_threshold = 0.05,
 #'   the meta-analysis result.
 #'
 #' @return A \code{ggplot2} object.
+#'
+#' @references
+#' Lewis, S. & Clarke, M. (2001) Forest plots: trying to see the wood and the
+#' trees. \emph{BMJ}, \strong{322}(7300), 1479--1480.
+#' \doi{10.1136/bmj.322.7300.1479}
 #'
 #' @examples
 #' \dontrun{
@@ -294,11 +308,19 @@ mx_study_overview <- function(studies) {
 #' I-squared distribution plot
 #'
 #' Displays the distribution of I-squared heterogeneity values across all
-#' genes in the meta-analysis, with reference lines at 25% and 75%.
+#' genes in the meta-analysis, with reference lines at 25\% (low
+#' heterogeneity) and 75\% (high heterogeneity). These thresholds follow the
+#' classification proposed by Higgins et al. (2003): I-squared values of
+#' 25\%, 50\%, and 75\% correspond to low, moderate, and high heterogeneity,
+#' respectively.
 #'
 #' @param meta_result A \code{\linkS4class{metaXpressResult}} object.
 #'
 #' @return A \code{ggplot2} object.
+#'
+#' @references
+#' Higgins, J.P.T. et al. (2003) Measuring inconsistency in meta-analyses.
+#' \emph{BMJ}, \strong{327}(7414), 557--560. \doi{10.1136/bmj.327.7414.557}
 #'
 #' @examples
 #' \dontrun{

@@ -196,16 +196,41 @@ For the complete GEO-to-report workflow see
 }
 
 \references{
-Heberle, A.M. et al. (2025) A framework for bulk RNA-seq meta-analysis.
-\emph{Alzheimer's & Dementia}.
+Heberle, H. et al. (2025) A comprehensive framework for quality control
+and meta-analysis of bulk RNA-seq data. \emph{Alzheimer's & Dementia},
+\strong{21}(1), e70025. \doi{10.1002/alz.70025}
+
+Fisher, R.A. (1932) \emph{Statistical Methods for Research Workers}.
+4th edn. Edinburgh: Oliver & Boyd.
 
 DerSimonian, R. & Laird, N. (1986) Meta-analysis in clinical trials.
-\emph{Controlled Clinical Trials}, \strong{7}(3), 177–188.
+\emph{Controlled Clinical Trials}, \strong{7}(3), 177--188.
 \doi{10.1016/0197-2456(86)90046-2}
+
+Cochran, W.G. (1954) The combination of estimates from different
+experiments. \emph{Biometrics}, \strong{10}(1), 101--129.
+\doi{10.2307/3001666}
+
+Higgins, J.P.T. & Thompson, S.G. (2002) Quantifying heterogeneity in a
+meta-analysis. \emph{Statistics in Medicine}, \strong{21}(11),
+1539--1558. \doi{10.1002/sim.1186}
+
+Love, M.I., Huber, W. & Anders, S. (2014) Moderated estimation of fold
+change and dispersion for RNA-seq data with DESeq2. \emph{Genome
+Biology}, \strong{15}(12), 550. \doi{10.1186/s13059-014-0550-8}
+
+Robinson, M.D., McCarthy, D.J. & Smyth, G.K. (2010) edgeR: a
+Bioconductor package for differential expression analysis of digital
+gene expression data. \emph{Bioinformatics}, \strong{26}(1), 139--140.
+\doi{10.1093/bioinformatics/btp616}
+
+Ritchie, M.E. et al. (2015) limma powers differential expression
+analyses for RNA-sequencing and microarray studies. \emph{Nucleic Acids
+Research}, \strong{43}(7), e47. \doi{10.1093/nar/gkv007}
 
 Johnson, W.E., Li, C. & Rabinovic, A. (2007) Adjusting batch effects in
 microarray expression data using empirical Bayes methods.
-\emph{Biostatistics}, \strong{8}(1), 118–127.
+\emph{Biostatistics}, \strong{8}(1), 118--127.
 \doi{10.1093/biostatistics/kxj037}
 }
 \seealso{

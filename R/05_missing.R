@@ -74,8 +74,9 @@ mx_missing_summary <- function(de_results) {
 #'   strategy.
 #'
 #' @references
-#' Villatoro-García et al. (2022) Mathematics.
-#' \doi{10.3390/math10183376}
+#' Villatoro-García, J.A. et al. (2022) Missing gene expression data
+#' imputation for gene-study meta-analysis. \emph{Mathematics},
+#' \strong{10}(18), 3376. \doi{10.3390/math10183376}
 #'
 #' @examples
 #' \dontrun{
@@ -188,7 +189,7 @@ mx_filter_coverage <- function(de_results, min_studies = 2) {
     pval_mat[na_rows, i] <- 1.0
   }
 
-  lapply(seq_len(k), function(i) {
+  result <- lapply(seq_len(k), function(i) {
     data.frame(
       gene_id  = all_genes,
       log2FC   = lfc_mat[, i],
@@ -198,4 +199,6 @@ mx_filter_coverage <- function(de_results, min_studies = 2) {
       stringsAsFactors = FALSE
     )
   })
+  names(result) <- names(de_results)
+  result
 }

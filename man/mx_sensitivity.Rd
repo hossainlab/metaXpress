@@ -23,7 +23,9 @@ A list of \code{\linkS4class{metaXpressResult}} objects, one per
 }
 \description{
 Reruns the meta-analysis iteratively, each time excluding one study, to
-assess whether any single study drives the overall result.
+assess whether any single study drives the overall result. This is the
+standard sensitivity analysis recommended by the Cochrane Handbook
+(Higgins et al. 2019, Section 10.14).
 }
 \examples{
 \dontrun{
@@ -33,6 +35,11 @@ assess whether any single study drives the overall result.
          integer(1))
 }
 
+}
+\references{
+Higgins, J.P.T. et al. (eds.) (2019) \emph{Cochrane Handbook for
+Systematic Reviews of Interventions}. 2nd edn. Chichester: John Wiley
+& Sons. \doi{10.1002/9781119536604}
 }
 \seealso{
 \code{\link{mx_meta}}

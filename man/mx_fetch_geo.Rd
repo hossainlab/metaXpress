@@ -35,8 +35,13 @@ Omnibus (GEO) for one or more accession IDs and returns a list of
 
 }
 \references{
-Heberle et al. (2025) Alzheimer's & Dementia.
-\doi{10.1002/alz.70025}
+Davis, S. & Meltzer, P.S. (2007) GEOquery: a bridge between the Gene
+Expression Omnibus (GEO) and BioConductor. \emph{Bioinformatics},
+\strong{23}(14), 1846--1847. \doi{10.1093/bioinformatics/btm254}
+
+Heberle, H. et al. (2025) A comprehensive framework for quality control
+and meta-analysis of bulk RNA-seq data. \emph{Alzheimer's & Dementia},
+\strong{21}(1), e70025. \doi{10.1002/alz.70025}
 }
 \seealso{
 \code{\link{mx_load_local}}, \code{\link{mx_qc_study}},

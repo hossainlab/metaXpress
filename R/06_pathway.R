@@ -29,7 +29,18 @@ NULL
 #'   \code{n_genes}, \code{pvalue}, \code{padj}, \code{gene_ratio}.
 #'
 #' @references
-#' Zeng et al. (2018) Genes. \doi{10.1101/444604}
+#' Wu, T. et al. (2021) clusterProfiler 4.0: a universal enrichment tool for
+#' interpreting omics data. \emph{The Innovation}, \strong{2}(3), 100141.
+#' \doi{10.1016/j.xinn.2021.100141}
+#'
+#' Liberzon, A. et al. (2015) The Molecular Signatures Database (MSigDB)
+#' hallmark gene set collection. \emph{Cell Systems}, \strong{1}(6),
+#' 417--425. \doi{10.1016/j.cels.2015.12.004}
+#'
+#' Subramanian, A. et al. (2005) Gene set enrichment analysis: a
+#' knowledge-based approach for interpreting genome-wide expression profiles.
+#' \emph{Proceedings of the National Academy of Sciences}, \strong{102}(43),
+#' 15545--15550. \doi{10.1073/pnas.0506580102}
 #'
 #' @examples
 #' \dontrun{
@@ -133,7 +144,10 @@ mx_pathway_consensus <- function(pathway_results, min_fraction = 0.5,
 #' @return A \code{data.frame} with redundant pathways removed.
 #'
 #' @references
-#' Zeng et al. (2018) Genes. \doi{10.1101/444604}
+#' Gu, Z. & Hübschmann, D. (2023) simplifyEnrichment: a Bioconductor package
+#' for clustering and visualizing functional enrichment results.
+#' \emph{Genomics, Proteomics & Bioinformatics}, \strong{21}(1), 190--202.
+#' \doi{10.1016/j.gpb.2022.04.008}
 #'
 #' @examples
 #' \dontrun{

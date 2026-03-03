@@ -37,8 +37,9 @@ imputation strategies before meta-analysis.
 
 }
 \references{
-Villatoro-García et al. (2022) Mathematics.
-\doi{10.3390/math10183376}
+Villatoro-García, J.A. et al. (2022) Missing gene expression data
+imputation for gene-study meta-analysis. \emph{Mathematics},
+\strong{10}(18), 3376. \doi{10.3390/math10183376}
 }
 \seealso{
 \code{\link{mx_missing_summary}}, \code{\link{mx_filter_coverage}}

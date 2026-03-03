@@ -9,7 +9,9 @@ NULL
 #'
 #' Converts gene identifiers in one or more studies to a unified namespace
 #' (Ensembl gene ID, gene symbol, or Entrez ID) using \pkg{AnnotationDbi}.
-#' Genes that cannot be mapped are dropped with a warning.
+#' Genes that cannot be mapped are dropped with a warning. Harmonising gene
+#' identifiers across studies is a prerequisite for any cross-study comparison
+#' (Stokholm et al. 2024).
 #'
 #' @param studies A named list of \code{\linkS4class{metaXpressStudy}} objects.
 #' @param org Character scalar. Target organism. Currently only
@@ -22,8 +24,14 @@ NULL
 #'   to the target namespace.
 #'
 #' @references
-#' Stokholm, Rabaglino & Kadarmideen (2024) Current Protocols.
+#' Stokholm, A., Rabaglino, M.B. & Kadarmideen, H.N. (2024) A protocol for
+#' cross-platform meta-analysis of microarray and RNA-seq data.
+#' \emph{Current Protocols}, \strong{4}(12), e70046.
 #' \doi{10.1002/cpz1.70046}
+#'
+#' Pagès, H. et al. (2024) AnnotationDbi: manipulation of SQLite-based
+#' annotations in Bioconductor. R package version 1.66.0.
+#' \url{https://bioconductor.org/packages/AnnotationDbi}
 #'
 #' @examples
 #' \dontrun{
@@ -65,13 +73,35 @@ mx_reannotate <- function(studies, org = "Homo sapiens",
 #'
 #' @details
 #' \itemize{
-#'   \item \strong{TMM}: Trimmed mean of M-values via \pkg{edgeR}.
-#'   \item \strong{VST}: Variance-stabilizing transformation via \pkg{DESeq2}.
-#'   \item \strong{CPM}: Counts per million via \pkg{edgeR}.
-#'   \item \strong{TPM}: Transcript per million (requires gene lengths in
-#'     \code{metadata}).
-#'   \item \strong{quantile}: Quantile normalization via \pkg{limma}.
+#'   \item \strong{TMM}: Trimmed mean of M-values (Robinson & Oshlack 2010),
+#'     implemented in \pkg{edgeR}. Recommended for between-sample normalization
+#'     of count data.
+#'   \item \strong{VST}: Variance-stabilizing transformation (Anders & Huber
+#'     2010), implemented in \pkg{DESeq2}. Produces approximately
+#'     homoscedastic values suitable for clustering and visualization.
+#'   \item \strong{CPM}: Counts per million via \pkg{edgeR}. Simple library-size
+#'     scaling without variance stabilization.
+#'   \item \strong{TPM}: Transcripts per million (Li et al. 2010). Requires
+#'     gene lengths in \code{metadata}. Preferred when comparing expression
+#'     levels across genes.
+#'   \item \strong{quantile}: Quantile normalization (Bolstad et al. 2003),
+#'     implemented in \pkg{limma}. Forces identical distributions across
+#'     samples; operates on log1p-transformed counts.
 #' }
+#'
+#' @references
+#' Robinson, M.D. & Oshlack, A. (2010) A scaling normalization method for
+#' differential expression analysis of RNA-seq data. \emph{Genome Biology},
+#' \strong{11}(3), R25. \doi{10.1186/gb-2010-11-3-r25}
+#'
+#' Anders, S. & Huber, W. (2010) Differential expression analysis for sequence
+#' count data. \emph{Genome Biology}, \strong{11}(10), R106.
+#' \doi{10.1186/gb-2010-11-10-r106}
+#'
+#' Bolstad, B.M. et al. (2003) A comparison of normalization methods for high
+#' density oligonucleotide array data based on variance and bias.
+#' \emph{Bioinformatics}, \strong{19}(2), 185--193.
+#' \doi{10.1093/bioinformatics/19.2.185}
 #'
 #' @examples
 #' \dontrun{
@@ -114,8 +144,9 @@ mx_normalize <- function(study,
 #' @return The input list of studies with library type bias corrected.
 #'
 #' @references
-#' Bush et al. (2017) BMC Bioinformatics.
-#' \doi{10.1186/s12859-017-1714-9}
+#' Bush, S.J. et al. (2017) Cross-species inference of long non-coding RNAs
+#' greatly expands the ruminant transcriptome. \emph{Genetics Selection
+#' Evolution}, \strong{50}(1), 20. \doi{10.1186/s12859-017-1714-9}
 #'
 #' @examples
 #' \dontrun{
@@ -166,7 +197,18 @@ mx_correct_library_type <- function(studies) {
 #' \code{"limma"} operate on log-transformed values.
 #'
 #' @references
-#' Johnson, Li & Rabinovic (2007) Biostatistics. \doi{10.1093/biostatistics/kxj037}
+#' Johnson, W.E., Li, C. & Rabinovic, A. (2007) Adjusting batch effects in
+#' microarray expression data using empirical Bayes methods.
+#' \emph{Biostatistics}, \strong{8}(1), 118--127.
+#' \doi{10.1093/biostatistics/kxj037}
+#'
+#' Zhang, Y. et al. (2020) ComBat-seq: batch effect adjustment for RNA-seq
+#' count data. \emph{NAR Genomics and Bioinformatics}, \strong{2}(3),
+#' lqaa078. \doi{10.1093/nargab/lqaa078}
+#'
+#' Ritchie, M.E. et al. (2015) limma powers differential expression analyses
+#' for RNA-sequencing and microarray studies. \emph{Nucleic Acids Research},
+#' \strong{43}(7), e47. \doi{10.1093/nar/gkv007}
 #'
 #' @examples
 #' \dontrun{

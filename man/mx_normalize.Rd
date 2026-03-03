@@ -23,12 +23,20 @@ Applies one of five normalization methods to the raw count matrix of a
 }
 \details{
 \itemize{
-  \item \strong{TMM}: Trimmed mean of M-values via \pkg{edgeR}.
-  \item \strong{VST}: Variance-stabilizing transformation via \pkg{DESeq2}.
-  \item \strong{CPM}: Counts per million via \pkg{edgeR}.
-  \item \strong{TPM}: Transcript per million (requires gene lengths in
-    \code{metadata}).
-  \item \strong{quantile}: Quantile normalization via \pkg{limma}.
+  \item \strong{TMM}: Trimmed mean of M-values (Robinson & Oshlack 2010),
+    implemented in \pkg{edgeR}. Recommended for between-sample normalization
+    of count data.
+  \item \strong{VST}: Variance-stabilizing transformation (Anders & Huber
+    2010), implemented in \pkg{DESeq2}. Produces approximately
+    homoscedastic values suitable for clustering and visualization.
+  \item \strong{CPM}: Counts per million via \pkg{edgeR}. Simple library-size
+    scaling without variance stabilization.
+  \item \strong{TPM}: Transcripts per million (Li et al. 2010). Requires
+    gene lengths in \code{metadata}. Preferred when comparing expression
+    levels across genes.
+  \item \strong{quantile}: Quantile normalization (Bolstad et al. 2003),
+    implemented in \pkg{limma}. Forces identical distributions across
+    samples; operates on log1p-transformed counts.
 }
 }
 \examples{
@@ -36,6 +44,20 @@ Applies one of five normalization methods to the raw count matrix of a
   study <- mx_normalize(study, method = "TMM")
 }
 
+}
+\references{
+Robinson, M.D. & Oshlack, A. (2010) A scaling normalization method for
+differential expression analysis of RNA-seq data. \emph{Genome Biology},
+\strong{11}(3), R25. \doi{10.1186/gb-2010-11-3-r25}
+
+Anders, S. & Huber, W. (2010) Differential expression analysis for sequence
+count data. \emph{Genome Biology}, \strong{11}(10), R106.
+\doi{10.1186/gb-2010-11-10-r106}
+
+Bolstad, B.M. et al. (2003) A comparison of normalization methods for high
+density oligonucleotide array data based on variance and bias.
+\emph{Bioinformatics}, \strong{19}(2), 185--193.
+\doi{10.1093/bioinformatics/19.2.185}
 }
 \seealso{
 \code{\link{mx_reannotate}}, \code{\link{mx_remove_batch}}

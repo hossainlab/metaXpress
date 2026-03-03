@@ -30,7 +30,22 @@ NULL
 #' \code{padj <= 0.05} AND \code{|log2FC| >= 1}.
 #'
 #' @references
-#' Ritchie et al. (2015) Nucleic Acids Research. \doi{10.1093/nar/gkv007}
+#' Love, M.I., Huber, W. & Anders, S. (2014) Moderated estimation of fold
+#' change and dispersion for RNA-seq data with DESeq2. \emph{Genome Biology},
+#' \strong{15}(12), 550. \doi{10.1186/s13059-014-0550-8}
+#'
+#' Robinson, M.D., McCarthy, D.J. & Smyth, G.K. (2010) edgeR: a Bioconductor
+#' package for differential expression analysis of digital gene expression
+#' data. \emph{Bioinformatics}, \strong{26}(1), 139--140.
+#' \doi{10.1093/bioinformatics/btp616}
+#'
+#' Ritchie, M.E. et al. (2015) limma powers differential expression analyses
+#' for RNA-sequencing and microarray studies. \emph{Nucleic Acids Research},
+#' \strong{43}(7), e47. \doi{10.1093/nar/gkv007}
+#'
+#' Law, C.W. et al. (2014) voom: precision weights unlock linear model
+#' analysis tools for RNA-seq read counts. \emph{Genome Biology},
+#' \strong{15}(2), R29. \doi{10.1186/gb-2014-15-2-r29}
 #'
 #' @examples
 #' \dontrun{
@@ -237,7 +252,7 @@ mx_de_summary <- function(studies, padj_threshold = 0.05, lfc_threshold = 1) {
     pvalue   = tt$P.Value,
     padj     = tt$adj.P.Val,
     baseMean = rowMeans(counts),
-    lfcSE    = tt$logFC / tt$t,
+    lfcSE    = ifelse(tt$t == 0, NA_real_, tt$logFC / tt$t),
     stringsAsFactors = FALSE,
     row.names = NULL
   )

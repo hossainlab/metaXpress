@@ -50,7 +50,18 @@ across studies.
 
 }
 \references{
-Zeng et al. (2018) Genes. \doi{10.1101/444604}
+Wu, T. et al. (2021) clusterProfiler 4.0: a universal enrichment tool for
+interpreting omics data. \emph{The Innovation}, \strong{2}(3), 100141.
+\doi{10.1016/j.xinn.2021.100141}
+
+Liberzon, A. et al. (2015) The Molecular Signatures Database (MSigDB)
+hallmark gene set collection. \emph{Cell Systems}, \strong{1}(6),
+417--425. \doi{10.1016/j.cels.2015.12.004}
+
+Subramanian, A. et al. (2005) Gene set enrichment analysis: a
+knowledge-based approach for interpreting genome-wide expression profiles.
+\emph{Proceedings of the National Academy of Sciences}, \strong{102}(43),
+15545--15550. \doi{10.1073/pnas.0506580102}
 }
 \seealso{
 \code{\link{mx_pathway_consensus}}, \code{\link{mx_pathway_dedup}},

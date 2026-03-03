@@ -27,7 +27,9 @@ The input list of studies with \code{counts} rownames translated
 \description{
 Converts gene identifiers in one or more studies to a unified namespace
 (Ensembl gene ID, gene symbol, or Entrez ID) using \pkg{AnnotationDbi}.
-Genes that cannot be mapped are dropped with a warning.
+Genes that cannot be mapped are dropped with a warning. Harmonising gene
+identifiers across studies is a prerequisite for any cross-study comparison
+(Stokholm et al. 2024).
 }
 \examples{
 \dontrun{
@@ -37,8 +39,14 @@ Genes that cannot be mapped are dropped with a warning.
 
 }
 \references{
-Stokholm, Rabaglino & Kadarmideen (2024) Current Protocols.
+Stokholm, A., Rabaglino, M.B. & Kadarmideen, H.N. (2024) A protocol for
+cross-platform meta-analysis of microarray and RNA-seq data.
+\emph{Current Protocols}, \strong{4}(12), e70046.
 \doi{10.1002/cpz1.70046}
+
+Pagès, H. et al. (2024) AnnotationDbi: manipulation of SQLite-based
+annotations in Bioconductor. R package version 1.66.0.
+\url{https://bioconductor.org/packages/AnnotationDbi}
 }
 \seealso{
 \code{\link{mx_normalize}}, \code{\link{mx_align_genes}}

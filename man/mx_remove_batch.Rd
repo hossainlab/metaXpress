@@ -36,7 +36,18 @@ counts and is preferred for count data. \code{"ComBat"} and
 
 }
 \references{
-Johnson, Li & Rabinovic (2007) Biostatistics. \doi{10.1093/biostatistics/kxj037}
+Johnson, W.E., Li, C. & Rabinovic, A. (2007) Adjusting batch effects in
+microarray expression data using empirical Bayes methods.
+\emph{Biostatistics}, \strong{8}(1), 118--127.
+\doi{10.1093/biostatistics/kxj037}
+
+Zhang, Y. et al. (2020) ComBat-seq: batch effect adjustment for RNA-seq
+count data. \emph{NAR Genomics and Bioinformatics}, \strong{2}(3),
+lqaa078. \doi{10.1093/nargab/lqaa078}
+
+Ritchie, M.E. et al. (2015) limma powers differential expression analyses
+for RNA-sequencing and microarray studies. \emph{Nucleic Acids Research},
+\strong{43}(7), e47. \doi{10.1093/nar/gkv007}
 }
 \seealso{
 \code{\link{mx_normalize}}

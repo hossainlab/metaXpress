@@ -62,16 +62,39 @@ threshold: \code{meta_padj <= 0.05} AND \code{|meta_log2FC| >= 1}.
 
 }
 \references{
-Rau, Marot & Jaffrézic (2013) BMC Bioinformatics.
-\doi{10.1186/1471-2105-15-91}
+Fisher, R.A. (1932) \emph{Statistical Methods for Research Workers}.
+4th edn. Edinburgh: Oliver & Boyd.
 
-Prasad & Li (2021) BMC Bioinformatics.
-\doi{10.1186/s12859-022-04859-9}
+Stouffer, S.A. et al. (1949) \emph{The American Soldier: Adjustment During
+Army Life}. Princeton University Press.
 
-Keel & Lindholm-Perry (2022) Frontiers in Genetics.
+DerSimonian, R. & Laird, N. (1986) Meta-analysis in clinical trials.
+\emph{Controlled Clinical Trials}, \strong{7}(3), 177--188.
+\doi{10.1016/0197-2456(86)90046-2}
+
+Cochran, W.G. (1954) The combination of estimates from different
+experiments. \emph{Biometrics}, \strong{10}(1), 101--129.
+\doi{10.2307/3001666}
+
+Higgins, J.P.T. & Thompson, S.G. (2002) Quantifying heterogeneity in a
+meta-analysis. \emph{Statistics in Medicine}, \strong{21}(11), 1539--1558.
+\doi{10.1002/sim.1186}
+
+Rau, A., Marot, G. & Jaffrézic, F. (2014) Differential meta-analysis of
+RNA-seq data from multiple studies. \emph{BMC Bioinformatics},
+\strong{15}, 91. \doi{10.1186/1471-2105-15-91}
+
+Prasad, A. & Li, Q. (2022) Fused inverse-normal method for integrated
+differential expression analysis of RNA-seq data. \emph{BMC
+Bioinformatics}, \strong{23}, 371. \doi{10.1186/s12859-022-04859-9}
+
+Keel, B.N. & Lindholm-Perry, A.K. (2022) Recent developments and future
+directions in meta-analysis of differential gene expression.
+\emph{Frontiers in Genetics}, \strong{13}, 983043.
 \doi{10.3389/fgene.2022.983043}
 
-Hu et al. (2025) bioRxiv.
+Hu, J. et al. (2025) AWmeta: adaptive weighting meta-analysis for
+combining heterogeneous genomic studies. \emph{bioRxiv}.
 \doi{10.1101/2025.05.06.650408}
 }
 \seealso{

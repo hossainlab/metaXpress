@@ -14,13 +14,21 @@ A \code{ggplot2} object.
 }
 \description{
 Displays the distribution of I-squared heterogeneity values across all
-genes in the meta-analysis, with reference lines at 25% and 75%.
+genes in the meta-analysis, with reference lines at 25\% (low
+heterogeneity) and 75\% (high heterogeneity). These thresholds follow the
+classification proposed by Higgins et al. (2003): I-squared values of
+25\%, 50\%, and 75\% correspond to low, moderate, and high heterogeneity,
+respectively.
 }
 \examples{
 \dontrun{
   mx_heterogeneity_plot(meta_result)
 }
 
+}
+\references{
+Higgins, J.P.T. et al. (2003) Measuring inconsistency in meta-analyses.
+\emph{BMJ}, \strong{327}(7414), 557--560. \doi{10.1136/bmj.327.7414.557}
 }
 \seealso{
 \code{\link{mx_heterogeneity}}, \code{\link{mx_forest}}
