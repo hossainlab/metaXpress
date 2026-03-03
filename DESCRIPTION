@@ -1,8 +1,8 @@
 Package: metaXpress
 Title: End-to-End Bulk RNA-seq Meta-Analysis
 Version: 0.99.0
-Authors@R: person("DeepBio Academy", role = c("aut", "cre"),
-    email = "contact@deepbioacademy.com")
+Authors@R: person("Md. Jubayer", "Hossain", role = c("aut", "cre"),
+    email = "contact.jubayerhossain@gmail.com")
 Description: metaXpress provides a unified, reproducible pipeline for
     integrating multiple bulk RNA-seq studies. It covers data ingestion
     from GEO/SRA, cross-study normalization and batch correction, per-study
