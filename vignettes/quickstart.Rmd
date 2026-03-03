@@ -39,7 +39,7 @@ library(metaXpress)
 The package ships with a small simulated dataset: three studies with 500 genes
 each and partial gene overlap.
 
-```{r load-data}
+```{r load-data, eval=FALSE}
 data(metaXpress_example)
 studies <- metaXpress_example
 lapply(studies, show)
@@ -108,6 +108,6 @@ mx_export(meta_result, format = "csv", output_dir = tempdir())
 
 # Session Info
 
-```{r session-info}
+```{r session-info, eval=FALSE}
 mx_session_info()$session_info
 ```

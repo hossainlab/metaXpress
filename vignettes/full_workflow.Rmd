@@ -199,6 +199,6 @@ mx_export(meta_result, format = "csv",   output_dir = "results/")
 
 # Session Information
 
-```{r session-info}
+```{r session-info, eval=FALSE}
 mx_session_info()$session_info
 ```
