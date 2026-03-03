@@ -40,8 +40,6 @@ NULL
 #' @seealso \code{\link{mx_pathway_consensus}}, \code{\link{mx_pathway_dedup}},
 #'   \code{\link{mx_pathway_heatmap}}
 #'
-#' @importFrom clusterProfiler enricher GSEA
-#' @importFrom msigdbr msigdbr
 #' @importFrom methods is
 #' @export
 mx_pathway_meta <- function(meta_result, db = c("Hallmarks", "KEGG",

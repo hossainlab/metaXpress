@@ -33,7 +33,6 @@ NULL
 #'
 #' @seealso \code{\link{mx_normalize}}, \code{\link{mx_align_genes}}
 #'
-#' @importFrom AnnotationDbi mapIds
 #' @export
 mx_reannotate <- function(studies, org = "Homo sapiens",
                            target_id = c("SYMBOL", "ENSEMBL", "ENTREZID")) {
@@ -81,9 +80,6 @@ mx_reannotate <- function(studies, org = "Homo sapiens",
 #'
 #' @seealso \code{\link{mx_reannotate}}, \code{\link{mx_remove_batch}}
 #'
-#' @importFrom edgeR DGEList calcNormFactors cpm
-#' @importFrom DESeq2 DESeqDataSetFromMatrix vst
-#' @importFrom limma normalizeBetweenArrays
 #' @export
 mx_normalize <- function(study,
                           method = c("TMM", "VST", "CPM", "TPM", "quantile")) {
@@ -179,8 +175,6 @@ mx_correct_library_type <- function(studies) {
 #'
 #' @seealso \code{\link{mx_normalize}}
 #'
-#' @importFrom sva ComBat_seq ComBat
-#' @importFrom limma removeBatchEffect
 #' @export
 mx_remove_batch <- function(studies,
                              method = c("ComBat-seq", "ComBat",

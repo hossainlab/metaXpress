@@ -40,9 +40,6 @@ NULL
 #'
 #' @seealso \code{\link{mx_de_all}}, \code{\link{mx_de_summary}}
 #'
-#' @importFrom DESeq2 DESeqDataSetFromMatrix DESeq results
-#' @importFrom edgeR DGEList estimateDisp glmQLFit glmQLFTest topTags
-#' @importFrom limma voom lmFit eBayes topTable
 #' @importFrom methods is
 #' @export
 mx_de <- function(study,

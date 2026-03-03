@@ -16,10 +16,6 @@
 #'   \item \code{\link{mx_report}} — reproducible reporting
 #' }
 #'
-#' @importFrom Biobase pData annotation
-#' @importFrom SummarizedExperiment assay
-#' @importFrom circlize colorRamp2
-#' @importFrom grid gpar
 #' @importFrom stats median na.omit
 #' @importFrom utils head
 "_PACKAGE"

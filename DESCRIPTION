@@ -17,22 +17,8 @@ Depends:
 Imports:
     methods,
     BiocParallel,
-    GEOquery,
-    DESeq2,
-    edgeR,
-    limma,
-    sva,
-    clusterProfiler,
-    msigdbr,
     ggplot2,
-    ggrepel,
-    ComplexHeatmap,
-    AnnotationDbi,
-    org.Hs.eg.db,
-    Biobase,
-    SummarizedExperiment,
-    circlize,
-    grid
+    ggrepel
 Suggests:
     testthat (>= 3.0.0),
     knitr,
@@ -42,7 +28,21 @@ Suggests:
     harmony,
     covr,
     S4Vectors,
-    tximport
+    tximport,
+    GEOquery,
+    DESeq2,
+    edgeR,
+    limma,
+    sva,
+    clusterProfiler,
+    msigdbr,
+    ComplexHeatmap,
+    AnnotationDbi,
+    org.Hs.eg.db,
+    Biobase,
+    SummarizedExperiment,
+    circlize,
+    grid
 VignetteBuilder: knitr
 biocViews: RNASeq, DifferentialExpression, GeneExpression,
     Transcriptomics, BatchEffect, Normalization, Pathways,

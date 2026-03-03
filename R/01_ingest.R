@@ -36,7 +36,6 @@ NULL
 #' @seealso \code{\link{mx_load_local}}, \code{\link{mx_qc_study}},
 #'   \code{\link{mx_filter_studies}}
 #'
-#' @importFrom GEOquery getGEO getGEOSuppFiles
 #' @importFrom methods new
 #' @export
 mx_fetch_geo <- function(accessions, count_type = "raw",

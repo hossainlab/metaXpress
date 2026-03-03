@@ -210,7 +210,6 @@ mx_forest <- function(gene, de_results, meta_result = NULL) {
 #'
 #' @seealso \code{\link{mx_volcano}}, \code{\link{mx_upset}}
 #'
-#' @importFrom ComplexHeatmap Heatmap
 #' @export
 mx_heatmap <- function(meta_result, studies, top_n = 50) {
   if (!is(meta_result, "metaXpressResult"))
