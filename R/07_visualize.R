@@ -175,9 +175,9 @@ mx_forest <- function(gene, de_results, meta_result = NULL) {
   p <- ggplot2::ggplot(plot_df,
                         ggplot2::aes(x = log2FC, y = study)) +
     ggplot2::geom_point(size = 3, colour = "#377EB8") +
-    ggplot2::geom_errorbarh(
+    ggplot2::geom_errorbar(
       ggplot2::aes(xmin = ci_lo, xmax = ci_hi),
-      height = 0.2, colour = "#377EB8"
+      width = 0.2, colour = "#377EB8", orientation = "y"
     ) +
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed",
                         colour = "grey40") +
