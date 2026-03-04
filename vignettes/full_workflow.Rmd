@@ -31,7 +31,7 @@ studies from GEO through pathway enrichment and report generation.
 All `mx_fetch_*()` calls require internet access and are shown with
 `eval=FALSE`; substitute `data(metaXpress_example)` for local testing.
 
-```{r load-package}
+```{r load-package, purl=FALSE}
 library(metaXpress)
 ```
 
@@ -39,7 +39,7 @@ library(metaXpress)
 
 ## 1a. Fetch from GEO
 
-```{r fetch-geo}
+```{r fetch-geo, purl=FALSE}
 # Fetch three Alzheimer's disease RNA-seq studies
 accessions <- c("GSE53697", "GSE95587", "GSE118553")
 studies    <- mx_fetch_geo(accessions, count_type = "raw",
@@ -48,7 +48,7 @@ studies    <- mx_fetch_geo(accessions, count_type = "raw",
 
 ## 1b. Inspect QC Results
 
-```{r qc-summary}
+```{r qc-summary, purl=FALSE}
 qc_scores <- vapply(studies, function(s) s@qc_score, numeric(1))
 print(qc_scores)
 
@@ -58,7 +58,7 @@ attr(studies[[1]], "qc_details")
 
 ## 1c. Filter Low-Quality Studies
 
-```{r filter-studies}
+```{r filter-studies, purl=FALSE}
 studies <- mx_filter_studies(studies, qc_threshold = 7)
 ```
 
@@ -66,7 +66,7 @@ studies <- mx_filter_studies(studies, qc_threshold = 7)
 
 ## 2a. Reannotate Gene IDs
 
-```{r reannotate}
+```{r reannotate, purl=FALSE}
 studies <- mx_reannotate(studies, org = "Homo sapiens",
                           target_id = "SYMBOL")
 ```
@@ -75,37 +75,37 @@ studies <- mx_reannotate(studies, org = "Homo sapiens",
 
 If studies mix polyA-selected and rRNA-depleted libraries:
 
-```{r library-correction}
+```{r library-correction, purl=FALSE}
 studies <- mx_correct_library_type(studies)
 ```
 
 ## 2c. Remove Batch Effects
 
-```{r batch-correction}
+```{r batch-correction, purl=FALSE}
 studies <- mx_remove_batch(studies, method = "ComBat-seq")
 ```
 
 ## 2d. Align to Common Genes
 
-```{r align-genes}
+```{r align-genes, purl=FALSE}
 studies <- mx_align_genes(studies)
 ```
 
 # 3. Per-Study Differential Expression
 
-```{r de-analysis}
+```{r de-analysis, purl=FALSE}
 studies <- mx_de_all(studies, method = "DESeq2",
                       formula = ~ condition,
                       BPPARAM = BiocParallel::MulticoreParam(4))
 ```
 
-```{r de-summary}
+```{r de-summary, purl=FALSE}
 mx_de_summary(studies, padj_threshold = 0.05, lfc_threshold = 1)
 ```
 
 # 4. Handle Missing Genes
 
-```{r missing-genes}
+```{r missing-genes, purl=FALSE}
 de_results <- lapply(studies, function(s) s@de_result)
 
 # Check coverage across studies
@@ -128,7 +128,7 @@ Use the decision guide:
 - 3+ studies, high heterogeneity → `"random_effects"` (default)
 - Mixed heterogeneity → `"awmeta"`
 
-```{r meta-analysis}
+```{r meta-analysis, purl=FALSE}
 meta_result <- mx_meta(de_results, method = "random_effects",
                         min_studies = 2)
 meta_result
@@ -136,7 +136,7 @@ meta_result
 
 ## 5b. Heterogeneity Assessment
 
-```{r heterogeneity}
+```{r heterogeneity, purl=FALSE}
 het <- mx_heterogeneity(de_results)
 summary(het$I_sq)
 
@@ -147,7 +147,7 @@ nrow(high_het)
 
 ## 5c. Sensitivity Analysis
 
-```{r sensitivity}
+```{r sensitivity, purl=FALSE}
 loo <- mx_sensitivity(de_results, method = "random_effects")
 # Compare significant gene counts across LOO runs
 vapply(loo, function(r) sum(r@meta_table$meta_padj <= 0.05, na.rm = TRUE),
@@ -156,7 +156,7 @@ vapply(loo, function(r) sum(r@meta_table$meta_padj <= 0.05, na.rm = TRUE),
 
 # 6. Pathway Meta-Analysis
 
-```{r pathway}
+```{r pathway, purl=FALSE}
 meta_result <- mx_pathway_meta(meta_result, db = "Hallmarks",
                                 method = "ORA")
 head(meta_result@pathway_result[
@@ -165,40 +165,40 @@ head(meta_result@pathway_result[
 
 # 7. Visualization
 
-```{r volcano, fig.width=8, fig.height=6}
+```{r volcano, fig.width=8, fig.height=6, purl=FALSE}
 mx_volcano(meta_result, padj_threshold = 0.05, lfc_threshold = 1,
             label_top = 15)
 ```
 
-```{r forest-top-gene, fig.width=7, fig.height=5}
+```{r forest-top-gene, fig.width=7, fig.height=5, purl=FALSE}
 top_gene <- meta_result@meta_table$gene_id[
   which.min(meta_result@meta_table$meta_padj)]
 mx_forest(top_gene, de_results, meta_result)
 ```
 
-```{r heatmap, fig.width=9, fig.height=8}
+```{r heatmap, fig.width=9, fig.height=8, purl=FALSE}
 mx_heatmap(meta_result, studies, top_n = 30)
 ```
 
-```{r i2-distribution, fig.width=6, fig.height=4}
+```{r i2-distribution, fig.width=6, fig.height=4, purl=FALSE}
 mx_heterogeneity_plot(meta_result)
 ```
 
 # 8. Report & Export
 
-```{r report}
+```{r report, purl=FALSE}
 mx_report(meta_result, studies, de_results,
            format     = "html",
            output_dir = "results/")
 ```
 
-```{r export}
+```{r export, purl=FALSE}
 mx_export(meta_result, format = "excel", output_dir = "results/")
 mx_export(meta_result, format = "csv",   output_dir = "results/")
 ```
 
 # Session Information
 
-```{r session-info, eval=FALSE}
+```{r session-info, eval=FALSE, purl=FALSE}
 mx_session_info()$session_info
 ```
