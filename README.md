@@ -112,6 +112,13 @@ library(metaXpress)
 studies <- mx_fetch_geo(c("GSE53697", "GSE95587", "GSE118553"))
 studies <- mx_filter_studies(studies, qc_threshold = 7)
 
+# ── Or load local count matrices ─────────────────────────────────────────
+studies <- mx_load_local(
+  count_paths    = c("study1_counts.csv", "study2_counts.csv"),
+  metadata_paths = c("study1_meta.csv",   "study2_meta.csv"),
+  organism       = "Homo sapiens"
+)
+
 # ── 2. Harmonize ──────────────────────────────────────────────────────────
 studies <- mx_reannotate(studies, org = "Homo sapiens", target_id = "SYMBOL")
 studies <- mx_correct_library_type(studies)
