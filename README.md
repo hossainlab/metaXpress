@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="man/figures/logo.png" align="center" height="180" />
+
 # metaXpress
 
 **An end-to-end R/Bioconductor package for bulk RNA-seq meta-analysis**
