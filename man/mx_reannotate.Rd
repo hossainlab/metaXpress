@@ -7,7 +7,8 @@
 mx_reannotate(
   studies,
   org = "Homo sapiens",
-  target_id = c("SYMBOL", "ENSEMBL", "ENTREZID")
+  target_id = c("SYMBOL", "ENSEMBL", "ENTREZID"),
+  BPPARAM = BiocParallel::bpparam()
 )
 }
 \arguments{
@@ -19,6 +20,10 @@ mx_reannotate(
 \item{target_id}{Character scalar. Target gene identifier type.
 One of \code{"SYMBOL"} (default), \code{"ENSEMBL"}, or
 \code{"ENTREZID"}.}
+
+\item{BPPARAM}{A \code{\link[BiocParallel]{BiocParallelParam}} object
+controlling parallelization. Default: \code{BiocParallel::bpparam()}.
+Set to \code{BiocParallel::SerialParam()} for sequential execution.}
 }
 \value{
 The input list of studies with \code{counts} rownames translated

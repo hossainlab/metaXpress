@@ -41,20 +41,25 @@ NULL
 #' @seealso \code{\link{mx_load_local}}, \code{\link{mx_qc_study}},
 #'   \code{\link{mx_filter_studies}}
 #'
+#' @param BPPARAM A \code{\link[BiocParallel]{BiocParallelParam}} object
+#'   controlling parallelization. Default: \code{BiocParallel::bpparam()}.
+#'   Set to \code{BiocParallel::SerialParam()} for sequential execution.
+#'
 #' @importFrom methods new
 #' @export
 mx_fetch_geo <- function(accessions, count_type = "raw",
-                          cache_dir = tempdir()) {
+                          cache_dir = tempdir(),
+                          BPPARAM = BiocParallel::bpparam()) {
   if (!is.character(accessions) || length(accessions) == 0)
     stop("'accessions' must be a non-empty character vector of GEO IDs")
   count_type <- match.arg(count_type, c("raw", "normalized"))
 
   message("Fetching ", length(accessions), " studies from GEO...")
 
-  studies <- lapply(accessions, function(acc) {
+  studies <- BiocParallel::bplapply(accessions, function(acc) {
     message("  Downloading: ", acc)
     .fetch_single_geo(acc, count_type = count_type, cache_dir = cache_dir)
-  })
+  }, BPPARAM = BPPARAM)
 
   names(studies) <- accessions
   studies <- lapply(studies, mx_qc_study)
@@ -259,7 +264,7 @@ mx_qc_study <- function(study) {
   }
 
   # 6. Gene detection rate
-  n_detected    <- apply(counts > 0, 1, sum)
+  n_detected    <- rowSums(counts > 0)
   genes_in_half <- sum(n_detected >= (ncol(counts) * 0.5))
   score[6]      <- as.integer(genes_in_half >= 15000)
   details[6]    <- sprintf(

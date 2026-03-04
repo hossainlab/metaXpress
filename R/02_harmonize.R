@@ -39,11 +39,16 @@ NULL
 #'                             target_id = "SYMBOL")
 #' }
 #'
+#' @param BPPARAM A \code{\link[BiocParallel]{BiocParallelParam}} object
+#'   controlling parallelization. Default: \code{BiocParallel::bpparam()}.
+#'   Set to \code{BiocParallel::SerialParam()} for sequential execution.
+#'
 #' @seealso \code{\link{mx_normalize}}, \code{\link{mx_align_genes}}
 #'
 #' @export
 mx_reannotate <- function(studies, org = "Homo sapiens",
-                           target_id = c("SYMBOL", "ENSEMBL", "ENTREZID")) {
+                           target_id = c("SYMBOL", "ENSEMBL", "ENTREZID"),
+                           BPPARAM = BiocParallel::bpparam()) {
   if (!is.list(studies))
     stop("'studies' must be a list of metaXpressStudy objects")
   target_id <- match.arg(target_id)
@@ -53,9 +58,9 @@ mx_reannotate <- function(studies, org = "Homo sapiens",
   message("Reannotating gene IDs to ", target_id, " for ",
           length(studies), " studies...")
 
-  lapply(studies, function(s) {
+  BiocParallel::bplapply(studies, function(s) {
     .reannotate_study(s, org_db = org_db, target_id = target_id)
-  })
+  }, BPPARAM = BPPARAM)
 }
 
 #' Normalize counts within a single study

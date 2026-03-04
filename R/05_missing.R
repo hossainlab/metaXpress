@@ -168,19 +168,11 @@ mx_filter_coverage <- function(de_results, min_studies = 2) {
 }
 
 .impute_mean <- function(de_results) {
-  all_genes <- Reduce(union, lapply(de_results, function(d) d$gene_id))
-  k         <- length(de_results)
-
-  lfc_mat  <- matrix(NA_real_, nrow = length(all_genes), ncol = k,
-                      dimnames = list(all_genes, NULL))
-  pval_mat <- lfc_mat
-
-  for (i in seq_len(k)) {
-    d <- de_results[[i]]
-    idx <- match(d$gene_id, all_genes)
-    lfc_mat[idx, i]  <- d$log2FC
-    pval_mat[idx, i] <- d$pvalue
-  }
+  mats      <- .build_gene_matrices(de_results)
+  all_genes <- mats$all_genes
+  lfc_mat   <- mats$lfc_mat
+  pval_mat  <- mats$pval_mat
+  k         <- ncol(lfc_mat)
 
   mean_lfc <- rowMeans(lfc_mat, na.rm = TRUE)
   for (i in seq_len(k)) {

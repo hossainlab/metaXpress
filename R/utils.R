@@ -84,3 +84,33 @@
   }
   mat
 }
+
+#' Build multiple aligned gene x studies matrices in a single pass
+#'
+#' Constructs lfc, pvalue, and se matrices from a list of DE data.frames.
+#' Avoids repeated gene-union + match operations.
+#' @param de_results A named list of DE data.frames.
+#' @return A list with elements \code{lfc_mat}, \code{pval_mat}, \code{se_mat},
+#'   and \code{all_genes}.
+#' @noRd
+.build_gene_matrices <- function(de_results) {
+  all_genes <- Reduce(union, lapply(de_results, function(d) d$gene_id))
+  k         <- length(de_results)
+
+  lfc_mat  <- matrix(NA_real_, nrow = length(all_genes), ncol = k,
+                      dimnames = list(all_genes, names(de_results)))
+  pval_mat <- lfc_mat
+  se_mat   <- lfc_mat
+
+  for (i in seq_len(k)) {
+    d   <- de_results[[i]]
+    idx <- match(d$gene_id, all_genes)
+    lfc_mat[idx, i]  <- d$log2FC
+    pval_mat[idx, i] <- d$pvalue
+    if ("lfcSE" %in% colnames(d))
+      se_mat[idx, i] <- d$lfcSE
+  }
+
+  list(lfc_mat = lfc_mat, pval_mat = pval_mat, se_mat = se_mat,
+       all_genes = all_genes)
+}

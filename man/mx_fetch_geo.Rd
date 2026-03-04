@@ -4,7 +4,12 @@
 \alias{mx_fetch_geo}
 \title{Fetch bulk RNA-seq studies from GEO}
 \usage{
-mx_fetch_geo(accessions, count_type = "raw", cache_dir = tempdir())
+mx_fetch_geo(
+  accessions,
+  count_type = "raw",
+  cache_dir = tempdir(),
+  BPPARAM = BiocParallel::bpparam()
+)
 }
 \arguments{
 \item{accessions}{Character vector of GEO accession IDs
@@ -15,6 +20,10 @@ mx_fetch_geo(accessions, count_type = "raw", cache_dir = tempdir())
 
 \item{cache_dir}{Character scalar. Directory for caching downloaded files.
 Defaults to \code{tempdir()}.}
+
+\item{BPPARAM}{A \code{\link[BiocParallel]{BiocParallelParam}} object
+controlling parallelization. Default: \code{BiocParallel::bpparam()}.
+Set to \code{BiocParallel::SerialParam()} for sequential execution.}
 }
 \value{
 A named list of \code{\linkS4class{metaXpressStudy}} objects, one
