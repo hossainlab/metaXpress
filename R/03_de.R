@@ -179,6 +179,9 @@ mx_de_summary <- function(studies, padj_threshold = 0.05, lfc_threshold = 1) {
   counts   <- round(study@counts)
   metadata <- study@metadata
 
+  # Set reference level to control/normal group for consistent fold-change
+  metadata$condition <- .make_condition_factor(metadata$condition)
+
   dds <- DESeq2::DESeqDataSetFromMatrix(
     countData = counts,
     colData   = metadata,
@@ -186,7 +189,8 @@ mx_de_summary <- function(studies, padj_threshold = 0.05, lfc_threshold = 1) {
   )
   dds <- DESeq2::DESeq(dds, quiet = TRUE, ...)
 
-  cond_levels <- levels(factor(metadata$condition))
+  # Contrast: disease vs control (2nd level vs 1st/reference level)
+  cond_levels <- levels(metadata$condition)
   contrast    <- c("condition", cond_levels[2], cond_levels[1])
 
   res <- DESeq2::results(dds, contrast = contrast,
@@ -208,10 +212,15 @@ mx_de_summary <- function(studies, padj_threshold = 0.05, lfc_threshold = 1) {
 .de_edger <- function(study, formula, ...) {
   counts   <- round(study@counts)
   metadata <- study@metadata
-  cond     <- factor(metadata$condition)
+  cond     <- .make_condition_factor(metadata$condition)
 
   design <- stats::model.matrix(~ cond)
   dge    <- edgeR::DGEList(counts = counts, group = cond)
+
+  # Filter low-expression genes (standard edgeR practice)
+  keep <- edgeR::filterByExpr(dge, design = design)
+  dge  <- dge[keep, , keep.lib.sizes = FALSE]
+
   dge    <- edgeR::calcNormFactors(dge)
   dge    <- edgeR::estimateDisp(dge, design = design)
 
@@ -220,13 +229,19 @@ mx_de_summary <- function(studies, padj_threshold = 0.05, lfc_threshold = 1) {
 
   tt <- edgeR::topTags(qlft, n = Inf, sort.by = "none")$table
 
+  # Derive SE from the GLM coefficient covariance
+  # fit$cov.coefficients is the unscaled covariance; fit$s2.post is per-gene
+  coef_idx <- ncol(design)
+  unscaled_var <- fit$cov.coefficients[coef_idx, coef_idx]
+  lfcSE <- sqrt(fit$s2.post * unscaled_var)
+
   data.frame(
     gene_id  = rownames(tt),
     log2FC   = tt$logFC,
     pvalue   = tt$PValue,
     padj     = tt$FDR,
-    baseMean = rowMeans(counts),
-    lfcSE    = NA_real_,
+    baseMean = rowMeans(counts[keep, , drop = FALSE]),
+    lfcSE    = lfcSE,
     stringsAsFactors = FALSE,
     row.names = NULL
   )
@@ -235,10 +250,15 @@ mx_de_summary <- function(studies, padj_threshold = 0.05, lfc_threshold = 1) {
 .de_limma_voom <- function(study, formula, ...) {
   counts   <- study@counts
   metadata <- study@metadata
-  cond     <- factor(metadata$condition)
+  cond     <- .make_condition_factor(metadata$condition)
 
   design <- stats::model.matrix(~ cond)
   dge    <- edgeR::DGEList(counts = round(counts))
+
+  # Filter low-expression genes (standard limma-voom practice)
+  keep <- edgeR::filterByExpr(dge, design = design)
+  dge  <- dge[keep, , keep.lib.sizes = FALSE]
+
   dge    <- edgeR::calcNormFactors(dge)
   v      <- limma::voom(dge, design = design)
   fit    <- limma::lmFit(v, design = design)
@@ -251,8 +271,8 @@ mx_de_summary <- function(studies, padj_threshold = 0.05, lfc_threshold = 1) {
     log2FC   = tt$logFC,
     pvalue   = tt$P.Value,
     padj     = tt$adj.P.Val,
-    baseMean = rowMeans(counts),
-    lfcSE    = ifelse(tt$t == 0, NA_real_, tt$logFC / tt$t),
+    baseMean = rowMeans(round(counts)[keep, , drop = FALSE]),
+    lfcSE    = ifelse(tt$t == 0, NA_real_, abs(tt$logFC / tt$t)),
     stringsAsFactors = FALSE,
     row.names = NULL
   )

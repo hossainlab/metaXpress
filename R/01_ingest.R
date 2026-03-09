@@ -135,6 +135,37 @@ mx_load_local <- function(count_paths, metadata_paths,
   studies <- mapply(function(cp, mp, acc) {
     counts   <- .read_matrix(cp)
     metadata <- .read_metadata(mp)
+
+    # Ensure sample_id column exists
+    if (!"sample_id" %in% colnames(metadata)) {
+      if (!is.null(rownames(metadata)) &&
+          !identical(rownames(metadata), as.character(seq_len(nrow(metadata)))))
+        metadata$sample_id <- rownames(metadata)
+      else
+        metadata$sample_id <- colnames(counts)[seq_len(nrow(metadata))]
+    }
+
+    # Align metadata rows to count columns by sample_id
+    if (all(metadata$sample_id %in% colnames(counts))) {
+      metadata <- metadata[match(colnames(counts), metadata$sample_id), ]
+      rownames(metadata) <- metadata$sample_id
+    } else if (nrow(metadata) == ncol(counts)) {
+      # Positional match if IDs don't align directly
+      metadata$sample_id <- colnames(counts)
+      rownames(metadata) <- colnames(counts)
+    } else {
+      stop("Cannot align metadata to count columns for study '", acc,
+           "'. Check that sample IDs match.")
+    }
+
+    # Warn if counts appear pre-normalized (non-integer)
+    if (!all(counts == floor(counts), na.rm = TRUE)) {
+      warning("Study '", acc, "': count matrix contains non-integer values. ",
+              "This likely indicates pre-normalized data (e.g., TPM, FPKM). ",
+              "DESeq2/edgeR require raw integer counts for valid statistical ",
+              "inference. Consider obtaining raw counts or excluding this study.")
+    }
+
     new("metaXpressStudy",
         counts    = counts,
         metadata  = metadata,
@@ -302,7 +333,10 @@ mx_qc_study <- function(study) {
   details[10] <- sprintf("Raw integer counts: %s",
                           ifelse(is_raw, "yes", "no (likely pre-normalized)"))
 
-  total_score    <- sum(score, na.rm = TRUE)
+  # Score normalized to 0-10 scale, counting only evaluable criteria
+  n_evaluable    <- sum(!is.na(score))
+  raw_score      <- sum(score, na.rm = TRUE)
+  total_score    <- round(raw_score / n_evaluable * 10)
   study@qc_score <- total_score
 
   attr(study, "qc_details") <- data.frame(
@@ -480,11 +514,34 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
 
 .read_metadata <- function(path) {
   ext <- tools::file_ext(path)
-  switch(ext,
+  meta <- switch(ext,
     rds = readRDS(path),
     csv = utils::read.csv(path, stringsAsFactors = FALSE),
     tsv = ,
     txt = utils::read.delim(path, stringsAsFactors = FALSE),
     stop("Unsupported metadata format: .", ext)
   )
+
+  # Normalize column names: accept common variants
+  cn <- colnames(meta)
+  cn_lower <- tolower(cn)
+
+  # Map "Sample" / "sample" / "SampleID" -> "sample_id"
+  sample_col <- which(cn_lower %in% c("sample", "sampleid", "sample.id",
+                                       "sample_name", "samplename", "geo_accession"))
+  if (length(sample_col) > 0 && !("sample_id" %in% cn_lower))
+    colnames(meta)[sample_col[1]] <- "sample_id"
+
+  # Map "Condition" / "Group" / "Status" -> "condition"
+  cond_col <- which(cn_lower %in% c("condition", "group", "status",
+                                     "disease", "phenotype", "class"))
+  if (length(cond_col) > 0 && !("condition" %in% cn))
+    colnames(meta)[cond_col[1]] <- "condition"
+
+  # Standardize condition labels to lowercase for consistency
+  if ("condition" %in% colnames(meta)) {
+    meta$condition <- tolower(trimws(meta$condition))
+  }
+
+  meta
 }

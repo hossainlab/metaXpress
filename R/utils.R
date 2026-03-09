@@ -85,6 +85,45 @@
   mat
 }
 
+#' Identify the reference (control) level from condition labels
+#'
+#' Heuristically identifies which condition level represents the control/
+#' normal/healthy group. This is critical for ensuring consistent fold-change
+#' direction across studies in a meta-analysis.
+#'
+#' @param condition_levels Character vector of unique condition levels.
+#' @return Character scalar: the reference level.
+#' @noRd
+.identify_reference_level <- function(condition_levels) {
+  # Common control/reference labels (lowercase)
+  ref_patterns <- c("normal", "control", "healthy", "wt", "wildtype",
+                     "wild-type", "wild_type", "untreated", "baseline",
+                     "non-diseased", "nondiseased", "sham", "vehicle",
+                     "benign", "adjacent")
+  levels_lower <- tolower(condition_levels)
+  for (pat in ref_patterns) {
+    match_idx <- grep(pat, levels_lower, fixed = TRUE)
+    if (length(match_idx) > 0)
+      return(condition_levels[match_idx[1]])
+  }
+  # Fallback: use alphabetically first level as reference (with warning)
+  warning("Could not auto-detect the reference/control condition from levels: ",
+          paste(condition_levels, collapse = ", "),
+          ". Using '", sort(condition_levels)[1],
+          "' as reference. Set factor levels explicitly if incorrect.")
+  sort(condition_levels)[1]
+}
+
+#' Create a condition factor with the reference level set to the control group
+#' @noRd
+.make_condition_factor <- function(condition_vec) {
+  lvls <- unique(condition_vec)
+  ref  <- .identify_reference_level(lvls)
+  # Put reference level first (R convention: first level = reference in model)
+  lvls_ordered <- c(ref, setdiff(lvls, ref))
+  factor(condition_vec, levels = lvls_ordered)
+}
+
 #' Build multiple aligned gene x studies matrices in a single pass
 #'
 #' Constructs lfc, pvalue, and se matrices from a list of DE data.frames.

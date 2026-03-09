@@ -232,10 +232,10 @@ mx_remove_batch <- function(studies,
 
   message("Removing batch effects using ", method, "...")
 
-  common <- mx_align_genes(studies)
-  combined_counts <- do.call(cbind, lapply(common, function(s) s@counts))
-  batch <- rep(seq_along(common),
-               times = vapply(common, function(s) ncol(s@counts), integer(1)))
+  aligned <- mx_align_genes(studies)
+  combined_counts <- do.call(cbind, lapply(aligned, function(s) s@counts))
+  batch <- rep(seq_along(aligned),
+               times = vapply(aligned, function(s) ncol(s@counts), integer(1)))
 
   corrected_combined <- switch(method,
     `ComBat-seq` = sva::ComBat_seq(combined_counts, batch = batch),
@@ -249,14 +249,14 @@ mx_remove_batch <- function(studies,
   )
 
   col_idx <- 0
-  for (i in seq_along(studies)) {
-    n <- ncol(studies[[i]]@counts)
-    studies[[i]]@counts <- corrected_combined[, (col_idx + 1):(col_idx + n),
+  for (i in seq_along(aligned)) {
+    n <- ncol(aligned[[i]]@counts)
+    aligned[[i]]@counts <- corrected_combined[, (col_idx + 1):(col_idx + n),
                                                drop = FALSE]
     col_idx <- col_idx + n
   }
 
-  studies
+  aligned
 }
 
 #' Restrict all studies to a common set of genes

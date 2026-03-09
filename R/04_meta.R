@@ -130,6 +130,10 @@ mx_meta <- function(de_results,
   se_mat   <- mats$se_mat
   k        <- ncol(lfc_mat)
 
+  # Clamp p-values away from 0 and 1 to avoid -Inf/Inf in log/qnorm
+  pval_mat[pval_mat == 0] <- .Machine$double.xmin
+  pval_mat[pval_mat == 1] <- 1 - .Machine$double.eps
+
   # Filter by coverage
   n_studies_per_gene <- rowSums(!is.na(pval_mat))
   keep <- n_studies_per_gene >= min_studies
@@ -145,8 +149,12 @@ mx_meta <- function(de_results,
   het <- .compute_heterogeneity_mat(lfc_mat, se_mat)
 
   # --- Compute per-sample n for weighting ---
-  if (is.null(n_samples))
-    n_samples <- rep(10L, k)
+  if (is.null(n_samples)) {
+    if (method %in% c("stouffer", "inverse_normal"))
+      message("  Note: n_samples not provided; using uniform weights. ",
+              "Pass n_samples for sample-size-weighted combination.")
+    n_samples <- rep(1L, k)
+  }
 
   # --- Run chosen method ---
   meta_stats <- switch(method,
