@@ -14,9 +14,10 @@ The input \code{study} with the \code{condition} column updated
   in \code{metadata}.
 }
 \description{
-Uses metadata fields to assign samples to case/control groups, mimicking
-the sampleclusteR approach for automated group assignment from GEO
-metadata.
+Uses text mining on metadata fields to assign samples to case/control groups,
+mimicking the \\pkg{sampleclusteR} approach for automated group assignment from
+GEO metadata. It computes string distances between sample descriptions and
+uses hierarchical clustering to partition them into two groups.
 }
 \examples{
 \dontrun{

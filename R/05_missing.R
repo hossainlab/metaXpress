@@ -65,15 +65,20 @@ mx_missing_summary <- function(de_results) {
 #'     \item{\code{"mean"}}{Impute missing log2FC with the mean across
 #'       available studies; impute p-values as 1.}
 #'     \item{\code{"knn"}}{K-nearest neighbours imputation based on
-#'       gene expression profiles.}
+#'       gene expression profiles (Hastie et al. 1999).}
 #'     \item{\code{"weighted"}}{Weighted imputation proportional to study
 #'       sample size.}
 #'   }
+#' @param weights Numeric vector. Study weights for \code{"weighted"} imputation.
+#'   Default: \code{NULL} (uses equal weights, equivalent to \code{"mean"}).
 #'
 #' @return The input list with missing values filled according to the chosen
 #'   strategy.
 #'
 #' @references
+#' Hastie, T. et al. (1999) Imputing missing data for gene expression arrays.
+#' Stanford University Statistics Department Technical report.
+#'
 #' Villatoro-García, J.A. et al. (2022) Missing gene expression data
 #' imputation for gene-study meta-analysis. \emph{Mathematics},
 #' \strong{10}(18), 3376. \doi{10.3390/math10183376}
@@ -87,7 +92,8 @@ mx_missing_summary <- function(de_results) {
 #'
 #' @export
 mx_impute <- function(de_results,
-                       method = c("exclude", "mean", "knn", "weighted")) {
+                       method = c("exclude", "mean", "knn", "weighted"),
+                       weights = NULL) {
   if (is.list(de_results) && all(vapply(de_results, is, logical(1),
                                          "metaXpressStudy")))
     de_results <- lapply(de_results, function(s) s@de_result)
@@ -100,8 +106,8 @@ mx_impute <- function(de_results,
   switch(method,
     exclude  = .impute_exclude(de_results),
     mean     = .impute_mean(de_results),
-    knn      = stop("KNN imputation is not yet implemented."),
-    weighted = stop("Weighted imputation is not yet implemented.")
+    knn      = .impute_knn(de_results),
+    weighted = .impute_weighted(de_results, weights)
   )
 }
 
@@ -178,6 +184,97 @@ mx_filter_coverage <- function(de_results, min_studies = 2) {
   for (i in seq_len(k)) {
     na_rows <- is.na(lfc_mat[, i])
     lfc_mat[na_rows, i]  <- mean_lfc[na_rows]
+    pval_mat[na_rows, i] <- 1.0
+  }
+
+  result <- lapply(seq_len(k), function(i) {
+    data.frame(
+      gene_id  = all_genes,
+      log2FC   = lfc_mat[, i],
+      pvalue   = pval_mat[, i],
+      padj     = p.adjust(pval_mat[, i], method = "BH"),
+      baseMean = NA_real_,
+      stringsAsFactors = FALSE
+    )
+  })
+  names(result) <- names(de_results)
+  result
+}
+
+.impute_knn <- function(de_results) {
+  .require_package("impute", "KNN imputation")
+  
+  mats      <- .build_gene_matrices(de_results)
+  all_genes <- mats$all_genes
+  lfc_mat   <- mats$lfc_mat
+  pval_mat  <- mats$pval_mat
+  k         <- ncol(lfc_mat)
+
+  # impute.knn requires genes as rows and samples (studies) as columns
+  # It throws error if any row has > 50% missing or any column has > 80% missing
+  # Default is k=10, but we might have fewer than 10 studies
+  knn_k <- min(10, k - 1)
+  if (knn_k < 1) stop("Not enough studies for KNN imputation")
+  
+  # Filter out genes with > 50% missing or we'll get an error
+  na_prop <- rowMeans(is.na(lfc_mat))
+  valid_rows <- na_prop <= 0.5
+  
+  if (sum(!valid_rows) > 0) {
+    message(sum(!valid_rows), " genes have > 50% missing values and will be excluded before KNN.")
+  }
+  
+  lfc_valid <- lfc_mat[valid_rows, , drop = FALSE]
+  pval_valid <- pval_mat[valid_rows, , drop = FALSE]
+  valid_genes <- all_genes[valid_rows]
+  
+  imputed <- impute::impute.knn(as.matrix(lfc_valid), k = knn_k)
+  lfc_imputed <- imputed$data
+  
+  for (i in seq_len(k)) {
+    na_rows <- is.na(pval_valid[, i])
+    pval_valid[na_rows, i] <- 1.0
+  }
+
+  result <- lapply(seq_len(k), function(i) {
+    data.frame(
+      gene_id  = valid_genes,
+      log2FC   = lfc_imputed[, i],
+      pvalue   = pval_valid[, i],
+      padj     = p.adjust(pval_valid[, i], method = "BH"),
+      baseMean = NA_real_,
+      stringsAsFactors = FALSE
+    )
+  })
+  names(result) <- names(de_results)
+  result
+}
+
+.impute_weighted <- function(de_results, weights) {
+  mats      <- .build_gene_matrices(de_results)
+  all_genes <- mats$all_genes
+  lfc_mat   <- mats$lfc_mat
+  pval_mat  <- mats$pval_mat
+  k         <- ncol(lfc_mat)
+
+  if (is.null(weights)) {
+    warning("'weights' not provided for weighted imputation; using uniform weights (mean).")
+    weights <- rep(1, k)
+  }
+  if (length(weights) != k) {
+    stop("Length of 'weights' must equal the number of studies")
+  }
+  
+  # Normalize weights
+  w_mat <- matrix(weights, nrow = nrow(lfc_mat), ncol = k, byrow = TRUE)
+  w_mat[is.na(lfc_mat)] <- NA_real_
+  
+  row_w_sums <- rowSums(w_mat, na.rm = TRUE)
+  weighted_lfc <- rowSums(lfc_mat * w_mat, na.rm = TRUE) / row_w_sums
+  
+  for (i in seq_len(k)) {
+    na_rows <- is.na(lfc_mat[, i])
+    lfc_mat[na_rows, i]  <- weighted_lfc[na_rows]
     pval_mat[na_rows, i] <- 1.0
   }
 

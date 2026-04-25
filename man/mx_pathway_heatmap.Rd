@@ -8,8 +8,7 @@ mx_pathway_heatmap(pathway_results, top_n = 30, value = c("padj", "NES"))
 }
 \arguments{
 \item{pathway_results}{A list of per-study pathway enrichment
-\code{data.frame} objects, or a single \code{data.frame} from
-\code{\link{mx_pathway_meta}}.}
+\code{data.frame} objects.}
 
 \item{top_n}{Integer. Number of top pathways to display. Default: \code{30}.}
 
@@ -17,7 +16,7 @@ mx_pathway_heatmap(pathway_results, top_n = 30, value = c("padj", "NES"))
 or \code{"NES"} (for GSEA results).}
 }
 \value{
-A \code{ggplot2} object.
+A \code{ComplexHeatmap::Heatmap} object.
 }
 \description{
 Creates a heatmap showing enrichment scores or -log10(padj) for top
@@ -25,7 +24,7 @@ pathways across all studies.
 }
 \examples{
 \dontrun{
-  mx_pathway_heatmap(result@pathway_result, top_n = 20)
+  mx_pathway_heatmap(per_study_pathways, top_n = 20)
 }
 
 }

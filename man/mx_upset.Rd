@@ -14,8 +14,7 @@ mx_upset(de_results, padj_threshold = 0.05, lfc_threshold = 1)
 \item{lfc_threshold}{Numeric. Log2 fold-change threshold. Default: \code{1}.}
 }
 \value{
-A \code{ggplot2} object (requires \pkg{ggupset} or
-  \code{ComplexHeatmap::UpSet}).
+A \code{ComplexHeatmap::UpSet} object.
 }
 \description{
 Shows the intersection structure of significant DEGs across studies using

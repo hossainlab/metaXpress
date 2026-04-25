@@ -108,21 +108,24 @@ remotes::install_github("hossainlab/metaXpress")
 ```r
 library(metaXpress)
 
-# ── 1. Fetch and QC studies from GEO ──────────────────────────────────────
-studies <- mx_fetch_geo(c("GSE53697", "GSE95587", "GSE118553"))
-studies <- mx_filter_studies(studies, qc_threshold = 7)
+# ── 1. Fetch and QC studies from GEO or SRA ───────────────────────────────
+geo_studies <- mx_fetch_geo(c("GSE53697", "GSE95587"))
+# Fetch pre-quantified count matrices directly from recount3
+sra_studies <- mx_fetch_sra(c("SRP253805")) 
 
-# ── Or load local count matrices ─────────────────────────────────────────
-studies <- mx_load_local(
-  count_paths    = c("study1_counts.csv", "study2_counts.csv"),
-  metadata_paths = c("study1_meta.csv",   "study2_meta.csv"),
-  organism       = "Homo sapiens"
-)
+studies <- c(geo_studies, sra_studies)
+
+# Auto-cluster missing case/control conditions using metadata text
+studies[[3]] <- mx_cluster_samples(studies[[3]]) 
+
+studies <- mx_filter_studies(studies, qc_threshold = 7)
 
 # ── 2. Harmonize ──────────────────────────────────────────────────────────
 studies <- mx_reannotate(studies, org = "Homo sapiens", target_id = "SYMBOL")
+# Correct for polyA vs rRNA-depleted library bias (Bush et al. 2017)
 studies <- mx_correct_library_type(studies)
-studies <- mx_remove_batch(studies, method = "ComBat-seq")
+# Batch effect removal via PCA and Harmony
+studies <- mx_remove_batch(studies, method = "harmony")
 studies <- mx_align_genes(studies)
 
 # ── 3. Per-study DE ───────────────────────────────────────────────────────
@@ -131,18 +134,22 @@ mx_de_summary(studies)
 
 # ── 4. Handle missing genes ───────────────────────────────────────────────
 de_results <- lapply(studies, function(s) s@de_result)
+# k-NN imputation for genes missing in some studies
+de_results <- mx_impute(de_results, method = "knn")
 de_results <- mx_filter_coverage(de_results, min_studies = 2)
 
 # ── 5. Meta-analysis ──────────────────────────────────────────────────────
 meta_result <- mx_meta(de_results, method = "random_effects")
-meta_result   # prints: method, n_studies, n_genes, n_sig
 
 # ── 6. Pathway enrichment ─────────────────────────────────────────────────
 meta_result <- mx_pathway_meta(meta_result, db = "Hallmarks")
+# Remove highly overlapping/redundant pathways via Jaccard similarity
+meta_result@pathway_result <- mx_pathway_dedup(meta_result@pathway_result)
 
 # ── 7. Visualize ──────────────────────────────────────────────────────────
+mx_study_overview(studies) # Dashboard of QC scores, sample sizes, depths
+mx_upset(de_results)       # UpSet plot of DEG overlap across studies
 mx_volcano(meta_result, label_top = 15)
-mx_forest("TP53", de_results, meta_result)
 mx_heterogeneity_plot(meta_result)
 
 # ── 8. Export ─────────────────────────────────────────────────────────────
@@ -218,10 +225,10 @@ Studies scoring below `qc_threshold = 7` are removed by `mx_filter_studies()`.
 | Function | Description |
 |---|---|
 | `mx_fetch_geo(accessions)` | Download count matrices + metadata from GEO |
-| `mx_fetch_sra(srp_ids)` | Fetch from SRA *(planned)* |
+| `mx_fetch_sra(srp_ids)` | Fetch from SRA via `recount3` |
 | `mx_load_local(count_paths, metadata_paths)` | Load user-supplied files |
 | `mx_qc_study(study)` | Apply 10-point QC checklist |
-| `mx_cluster_samples(study)` | Auto-cluster samples from metadata *(planned)* |
+| `mx_cluster_samples(study)` | Auto-cluster samples from metadata strings |
 | `mx_filter_studies(studies, qc_threshold)` | Remove studies below QC threshold |
 
 </details>
@@ -366,4 +373,4 @@ BiocCheck::BiocCheck(".")
 
 ## License
 
-MIT © [DeepBio Limited](https://github.com/hossainlab)
+MIT © [Md. Jubayer Hossain](https://github.com/hossainlab)

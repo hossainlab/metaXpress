@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"H:/Projects/Packages/metaXpress\" && gh repo view hossainlab/metaXpress --json name,description,url 2>&1)",
+      "Bash(cd \"H:/Projects/Packages/metaXpress\" && Rscript -e \"devtools::document\\(\\)\" 2>&1)",
+      "Bash(gh run:*)",
+      "Bash(Rscript:*)",
+      "Bash(done)",
+      "Bash(where gh:*)",
+      "Bash(cmd.exe:*)",
+      "mcp__claude_ai_PubMed__search_articles",
+      "WebSearch",
+      "Bash(wc:*)"
+    ]
+  }
+}

@@ -35,3 +35,6 @@ vignettes/figure/
 
 # RStudio project temp files
 .Rproj.user
+
+/.quarto/
+**/*.quarto_ipynb

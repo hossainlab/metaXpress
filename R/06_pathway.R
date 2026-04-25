@@ -156,7 +156,66 @@ mx_pathway_consensus <- function(pathway_results, min_fraction = 0.5,
 #'
 #' @export
 mx_pathway_dedup <- function(pathway_results, jaccard_threshold = 0.5) {
-  stop("mx_pathway_dedup() is not yet implemented.")
+  if (is.list(pathway_results) && !is.data.frame(pathway_results)) {
+    return(lapply(pathway_results, mx_pathway_dedup, jaccard_threshold = jaccard_threshold))
+  }
+  
+  if (!is.data.frame(pathway_results) || nrow(pathway_results) == 0) {
+    return(pathway_results)
+  }
+  
+  if (!"geneID" %in% colnames(pathway_results)) {
+    warning("No 'geneID' column found in pathway results. Cannot compute Jaccard similarity. Returning original.")
+    return(pathway_results)
+  }
+  
+  # Parse gene lists
+  gene_lists <- strsplit(pathway_results$geneID, "/")
+  n <- length(gene_lists)
+  
+  if (n <= 1) return(pathway_results)
+  
+  # Compute pairwise Jaccard index
+  jaccard_mat <- matrix(0, nrow = n, ncol = n)
+  for (i in 1:(n - 1)) {
+    for (j in (i + 1):n) {
+      g1 <- gene_lists[[i]]
+      g2 <- gene_lists[[j]]
+      intersect_len <- length(intersect(g1, g2))
+      union_len <- length(union(g1, g2))
+      j_idx <- intersect_len / union_len
+      jaccard_mat[i, j] <- j_idx
+      jaccard_mat[j, i] <- j_idx
+    }
+  }
+  
+  # Convert to distance matrix (1 - Jaccard)
+  dist_mat <- as.dist(1 - jaccard_mat)
+  
+  # Hierarchical clustering
+  hc <- hclust(dist_mat, method = "average")
+  
+  # Cut tree at height corresponding to 1 - jaccard_threshold
+  clusters <- cutree(hc, h = 1 - jaccard_threshold)
+  
+  # Select the most significant pathway per cluster
+  pathway_results$cluster <- clusters
+  
+  # Ensure padj is not NA, replace NA with 1 for sorting purposes
+  sort_padj <- pathway_results$padj
+  sort_padj[is.na(sort_padj)] <- 1
+  
+  keep_idx <- integer(0)
+  for (cl in unique(clusters)) {
+    cl_idx <- which(clusters == cl)
+    # Get index of minimum padj
+    best <- cl_idx[which.min(sort_padj[cl_idx])]
+    keep_idx <- c(keep_idx, best)
+  }
+  
+  dedup <- pathway_results[sort(keep_idx), ]
+  dedup$cluster <- NULL
+  dedup
 }
 
 #' Cross-study pathway heatmap
@@ -165,17 +224,16 @@ mx_pathway_dedup <- function(pathway_results, jaccard_threshold = 0.5) {
 #' pathways across all studies.
 #'
 #' @param pathway_results A list of per-study pathway enrichment
-#'   \code{data.frame} objects, or a single \code{data.frame} from
-#'   \code{\link{mx_pathway_meta}}.
+#'   \code{data.frame} objects.
 #' @param top_n Integer. Number of top pathways to display. Default: \code{30}.
 #' @param value Character scalar. Value to display: \code{"padj"} (default)
 #'   or \code{"NES"} (for GSEA results).
 #'
-#' @return A \code{ggplot2} object.
+#' @return A \code{ComplexHeatmap::Heatmap} object.
 #'
 #' @examples
 #' \dontrun{
-#'   mx_pathway_heatmap(result@pathway_result, top_n = 20)
+#'   mx_pathway_heatmap(per_study_pathways, top_n = 20)
 #' }
 #'
 #' @seealso \code{\link{mx_pathway_meta}}
@@ -183,7 +241,71 @@ mx_pathway_dedup <- function(pathway_results, jaccard_threshold = 0.5) {
 #' @export
 mx_pathway_heatmap <- function(pathway_results, top_n = 30,
                                 value = c("padj", "NES")) {
-  stop("mx_pathway_heatmap() is not yet implemented.")
+  if (!is.list(pathway_results) || is.data.frame(pathway_results)) {
+    stop("'pathway_results' must be a list of data.frames from per-study enrichment")
+  }
+  
+  value <- match.arg(value)
+  
+  # Extract top pathways based on significance across all studies
+  all_paths <- do.call(rbind, lapply(pathway_results, function(x) {
+    if(nrow(x) == 0) return(NULL)
+    x[, c("pathway_id", "pathway_name", "padj", if(value == "NES" && "NES" %in% colnames(x)) "NES" else NULL)]
+  }))
+  
+  if(is.null(all_paths) || nrow(all_paths) == 0) {
+    stop("No pathways to plot.")
+  }
+  
+  # Get top N by lowest median padj
+  path_medians <- aggregate(padj ~ pathway_id, data = all_paths, FUN = median, na.rm = TRUE)
+  top_paths <- head(path_medians$pathway_id[order(path_medians$padj)], top_n)
+  
+  k <- length(pathway_results)
+  mat <- matrix(NA_real_, nrow = length(top_paths), ncol = k, 
+                dimnames = list(top_paths, names(pathway_results)))
+  
+  # Fill matrix
+  for(i in seq_len(k)) {
+    pr <- pathway_results[[i]]
+    if(nrow(pr) == 0) next
+    
+    idx <- match(top_paths, pr$pathway_id)
+    if(value == "padj") {
+      mat[, i] <- -log10(pr$padj[idx])
+    } else {
+      mat[, i] <- pr$NES[idx]
+    }
+  }
+  
+  # Get pathway names
+  path_names <- all_paths$pathway_name[match(top_paths, all_paths$pathway_id)]
+  rownames(mat) <- path_names
+  
+  # Clean up NAs
+  mat[is.na(mat)] <- 0
+  
+  # Color scale
+  if(value == "padj") {
+    col_fun <- circlize::colorRamp2(c(0, max(mat, na.rm=TRUE)), c("white", "red"))
+    title <- "-log10(padj)"
+  } else {
+    max_val <- max(abs(mat), na.rm=TRUE)
+    col_fun <- circlize::colorRamp2(c(-max_val, 0, max_val), c("blue", "white", "red"))
+    title <- "NES"
+  }
+  
+  ComplexHeatmap::Heatmap(
+    mat, 
+    name = title,
+    col = col_fun,
+    cluster_rows = TRUE,
+    cluster_columns = TRUE,
+    show_row_names = TRUE,
+    show_column_names = TRUE,
+    row_names_gp = grid::gpar(fontsize = 8),
+    column_title = paste0("Top ", length(top_paths), " Consensus Pathways")
+  )
 }
 
 # ============================================================================
@@ -247,6 +369,7 @@ mx_pathway_heatmap <- function(pathway_results, top_n = 30,
     pvalue       = res_df$pvalue,
     padj         = res_df$p.adjust,
     gene_ratio   = res_df$GeneRatio,
+    geneID       = res_df$geneID,
     stringsAsFactors = FALSE
   )
 }
@@ -283,6 +406,7 @@ mx_pathway_heatmap <- function(pathway_results, top_n = 30,
     pvalue       = res_df$pvalue,
     padj         = res_df$p.adjust,
     NES          = res_df$NES,
+    geneID       = res_df$core_enrichment,
     stringsAsFactors = FALSE
   )
 }

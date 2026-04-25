@@ -273,8 +273,7 @@ mx_heatmap <- function(meta_result, studies, top_n = 50) {
 #' @param padj_threshold Numeric. Adjusted p-value threshold. Default: \code{0.05}.
 #' @param lfc_threshold Numeric. Log2 fold-change threshold. Default: \code{1}.
 #'
-#' @return A \code{ggplot2} object (requires \pkg{ggupset} or
-#'   \code{ComplexHeatmap::UpSet}).
+#' @return A \code{ComplexHeatmap::UpSet} object.
 #'
 #' @examples
 #' \dontrun{
@@ -283,17 +282,42 @@ mx_heatmap <- function(meta_result, studies, top_n = 50) {
 #'
 #' @export
 mx_upset <- function(de_results, padj_threshold = 0.05, lfc_threshold = 1) {
-  stop("mx_upset() is not yet implemented.")
+  if (!is.list(de_results))
+    stop("'de_results' must be a list of per-study DE data.frames")
+    
+  # Extract significant genes per study
+  sig_lists <- lapply(de_results, function(d) {
+    if (!is.data.frame(d) || nrow(d) == 0) return(character(0))
+    sig <- d$gene_id[!is.na(d$padj) & d$padj <= padj_threshold & abs(d$log2FC) >= lfc_threshold]
+    as.character(sig)
+  })
+  
+  if (all(lengths(sig_lists) == 0)) {
+    warning("No significant genes found in any study at the given thresholds.")
+    return(NULL)
+  }
+  
+  # Create combination matrix
+  comb_mat <- ComplexHeatmap::make_comb_mat(sig_lists)
+  
+  # Plot
+  ComplexHeatmap::UpSet(
+    comb_mat,
+    set_order = order(ComplexHeatmap::set_size(comb_mat), decreasing = TRUE),
+    comb_order = order(ComplexHeatmap::comb_size(comb_mat), decreasing = TRUE),
+    top_annotation = ComplexHeatmap::upset_top_annotation(comb_mat, add_numbers = TRUE),
+    right_annotation = ComplexHeatmap::upset_right_annotation(comb_mat, add_numbers = TRUE)
+  )
 }
 
 #' Study characteristics overview plot
 #'
 #' Creates a multi-panel summary of study-level QC metrics including
-#' QC scores, sample sizes, sequencing depths, and gene detection rates.
+#' QC scores, sample sizes, and sequencing depths.
 #'
 #' @param studies A named list of \code{\linkS4class{metaXpressStudy}} objects.
 #'
-#' @return A \code{ggplot2} object (or list of plots).
+#' @return A \code{patchwork} object containing multiple \code{ggplot2} plots.
 #'
 #' @examples
 #' \dontrun{
@@ -302,7 +326,40 @@ mx_upset <- function(de_results, padj_threshold = 0.05, lfc_threshold = 1) {
 #'
 #' @export
 mx_study_overview <- function(studies) {
-  stop("mx_study_overview() is not yet implemented.")
+  if (!is.list(studies)) stop("'studies' must be a list of metaXpressStudy objects")
+  
+  .require_package("patchwork", "multi-panel plotting")
+  
+  df <- data.frame(
+    study = names(studies),
+    qc_score = vapply(studies, function(s) if(is.null(s@qc_score)) NA_real_ else s@qc_score, numeric(1)),
+    n_samples = vapply(studies, function(s) ncol(s@counts), numeric(1)),
+    median_depth = vapply(studies, function(s) median(colSums(s@counts, na.rm = TRUE)) / 1e6, numeric(1)),
+    stringsAsFactors = FALSE
+  )
+  
+  df$study <- factor(df$study, levels = df$study[order(df$qc_score, decreasing = TRUE)])
+  
+  p1 <- ggplot2::ggplot(df, ggplot2::aes(x = study, y = qc_score)) +
+    ggplot2::geom_bar(stat = "identity", fill = "#377EB8", alpha = 0.8) +
+    ggplot2::geom_hline(yintercept = 7, linetype = "dashed", colour = "red") +
+    ggplot2::labs(title = "QC Score (0-10)", x = NULL, y = "Score") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+    
+  p2 <- ggplot2::ggplot(df, ggplot2::aes(x = study, y = n_samples)) +
+    ggplot2::geom_bar(stat = "identity", fill = "#4DAF4A", alpha = 0.8) +
+    ggplot2::labs(title = "Sample Size", x = NULL, y = "N") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+    
+  p3 <- ggplot2::ggplot(df, ggplot2::aes(x = study, y = median_depth)) +
+    ggplot2::geom_bar(stat = "identity", fill = "#984EA3", alpha = 0.8) +
+    ggplot2::labs(title = "Median Seq Depth", x = NULL, y = "Millions of Reads") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+    
+  p1 / (p2 | p3)
 }
 
 #' I-squared distribution plot
