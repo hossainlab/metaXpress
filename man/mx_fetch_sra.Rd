@@ -4,25 +4,35 @@
 \alias{mx_fetch_sra}
 \title{Fetch raw RNA-seq data from SRA}
 \usage{
-mx_fetch_sra(srp_ids, cache_dir = tempdir())
+mx_fetch_sra(srp_ids, cache_dir = tempdir(), organism = "human")
 }
 \arguments{
 \item{srp_ids}{Character vector of SRA project IDs (e.g., \code{"SRP123456"}).}
 
 \item{cache_dir}{Character scalar. Directory for caching downloaded files.}
+
+\item{organism}{Character scalar. Species for the studies. Default:
+\code{"human"}. (Note: \pkg{recount3} uses \code{"human"} or \code{"mouse"}).}
 }
 \value{
 A named list of \code{\linkS4class{metaXpressStudy}} objects.
 }
 \description{
-Downloads count matrices for SRA project IDs. Requires \code{sratools}
-(prefetch + fasterq-dump) to be installed and on the system PATH.
+Downloads pre-quantified count matrices for SRA project IDs using the
+\\pkg{recount3} package. This avoids computationally expensive local
+alignment while ensuring uniform processing across studies (Collado-Torres
+et al. 2017; Wilks et al. 2021).
 }
 \examples{
 \dontrun{
   studies <- mx_fetch_sra("SRP123456")
 }
 
+}
+\references{
+Wilks, C. et al. (2021) recount3: summaries and queries for large-scale RNA-seq
+expression and splicing. \emph{Genome Biology}, \strong{22}(1), 323.
+\doi{10.1186/s13059-021-02533-6}
 }
 \seealso{
 \code{\link{mx_fetch_geo}}, \code{\link{mx_load_local}}

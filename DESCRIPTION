@@ -42,7 +42,11 @@ Suggests:
     Biobase,
     SummarizedExperiment,
     circlize,
-    grid
+    grid,
+    recount3,
+    stringdist,
+    impute,
+    patchwork
 VignetteBuilder: knitr
 biocViews: RNASeq, DifferentialExpression, GeneExpression,
     Transcriptomics, BatchEffect, Normalization, Pathways,

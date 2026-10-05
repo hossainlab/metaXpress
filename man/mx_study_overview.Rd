@@ -10,11 +10,11 @@ mx_study_overview(studies)
 \item{studies}{A named list of \code{\linkS4class{metaXpressStudy}} objects.}
 }
 \value{
-A \code{ggplot2} object (or list of plots).
+A \code{patchwork} object containing multiple \code{ggplot2} plots.
 }
 \description{
 Creates a multi-panel summary of study-level QC metrics including
-QC scores, sample sizes, sequencing depths, and gene detection rates.
+QC scores, sample sizes, and sequencing depths.
 }
 \examples{
 \dontrun{

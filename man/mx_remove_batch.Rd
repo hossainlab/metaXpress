@@ -27,7 +27,8 @@ levels across studies before meta-analysis.
 \details{
 Batch is defined as study of origin. \code{"ComBat-seq"} operates on raw
 counts and is preferred for count data. \code{"ComBat"} and
-\code{"limma"} operate on log-transformed values.
+\code{"limma"} operate on log-transformed values. \code{"harmony"} operates 
+on PCA projections of the data, which is computationally efficient.
 }
 \examples{
 \dontrun{
@@ -48,6 +49,10 @@ lqaa078. \doi{10.1093/nargab/lqaa078}
 Ritchie, M.E. et al. (2015) limma powers differential expression analyses
 for RNA-sequencing and microarray studies. \emph{Nucleic Acids Research},
 \strong{43}(7), e47. \doi{10.1093/nar/gkv007}
+
+Korsunsky, I. et al. (2019) Fast, sensitive and accurate integration of 
+single-cell data with Harmony. \emph{Nature Methods}, \strong{16}(12), 1289-1296.
+\doi{10.1038/s41592-019-0619-0}
 }
 \seealso{
 \code{\link{mx_normalize}}
