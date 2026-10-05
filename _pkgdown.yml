@@ -26,6 +26,8 @@ navbar:
     articles:
       text: Articles
       menu:
+        - text: "Live Demonstration Tutorial"
+          href: articles/live_tutorial.html
         - text: "Getting Started (Quickstart)"
           href: articles/quickstart.html
         - text: "Full Workflow: GEO to Report"
