@@ -1,0 +1,389 @@
+# metaXpress
+
+![](reference/figures/logo.png)
+
+**An end-to-end R/Bioconductor package for bulk RNA-seq meta-analysis**
+
+[![R CMD
+Check](https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml/badge.svg)](https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml)
+[![Documentation](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://hossainlab.github.io/metaXpress/)
+[![Live
+Demo](https://img.shields.io/badge/Shiny-Interactive%20Demo-brightgreen?logo=r)](https://hossainlab.shinyapps.io/metaXpress-demo/)
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![License:
+MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Bioconductor](https://img.shields.io/badge/Bioconductor-submission-blueviolet?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTI1IDVDMTMuOSA1IDUgMTMuOSA1IDI1czguOSAyMCAyMCAyMCAyMC04LjkgMjAtMjBTMzYuMSA1IDI1IDV6bTAgMzZjLTguOCAwLTE2LTcuMi0xNi0xNlMxNi4yIDkgMjUgOXMxNiA3LjIgMTYgMTYtNy4yIDE2LTE2IDE2eiIvPjwvc3ZnPg==)](https://bioconductor.org/)
+[![R
+version](https://img.shields.io/badge/R-%E2%89%A54.3.0-276DC3?logo=r)](https://www.r-project.org/)
+[![GitHub
+issues](https://img.shields.io/github/issues/hossainlab/metaXpress?color=red)](https://github.com/hossainlab/metaXpress/issues)
+[![PRs
+Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/hossainlab/metaXpress/pulls)
+
+------------------------------------------------------------------------
+
+### 🌐 Online Resources & Live Demos
+
+- 📖 **[Interactive Documentation
+  Website](https://hossainlab.github.io/metaXpress/)** — Browse complete
+  function references, Quickstart guide, and the full end-to-end GEO
+  workflow with high-resolution figures.
+- 🚀 **[Live Interactive Web
+  Demo](https://hossainlab.shinyapps.io/metaXpress-demo/)** — Test the
+  multi-study RNA-seq meta-analysis pipeline, volcano plots, and gene
+  forest plots directly in your browser without installing R.
+- 🔬 **[Public GEO Pan-Cancer Case Study
+  Report](https://hossainlab.github.io/metaXpress/case_study_results/README.md)**
+  — Complete multi-cohort validation on 52 patient samples across
+  colorectal, pancreatic, and renal cancer with embedded
+  publication-grade figures.
+- 💻 **Local Interactive Explorer:** Run
+  [`metaXpress::mx_run_app()`](https://hossainlab.github.io/metaXpress/reference/mx_run_app.md)
+  to launch the Shiny application locally.
+
+------------------------------------------------------------------------
+
+## Overview
+
+Most transcriptomic meta-analysis tools address only one part of the
+workflow — existing packages handle data harmonization **or** DE
+analysis **or** meta-statistics, but not the full pipeline.
+**metaXpress** closes this gap.
+
+It provides a single, opinionated, end-to-end pipeline:
+
+    GEO / SRA / Local files
+            │
+            ▼
+    ┌───────────────────┐
+    │  Module 1: Ingest │  mx_fetch_geo · mx_load_local · mx_qc_study
+    └────────┬──────────┘
+             │
+             ▼
+    ┌──────────────────────┐
+    │ Module 2: Harmonize  │  mx_reannotate · mx_normalize · mx_remove_batch
+    └────────┬─────────────┘
+             │
+             ▼
+    ┌─────────────────────┐
+    │  Module 3: Per-Study │  mx_de · mx_de_all  (DESeq2 / edgeR / limma-voom)
+    │  Differential Expr. │
+    └────────┬────────────┘
+             │
+             ▼
+    ┌──────────────────────┐
+    │ Module 5: Missing    │  mx_impute · mx_filter_coverage
+    │ Gene Handling        │
+    └────────┬─────────────┘
+             │
+             ▼
+    ┌──────────────────────┐
+    │  Module 4: Meta-     │  mx_meta  (6 statistical methods)
+    │  Analysis Statistics │
+    └────────┬─────────────┘
+             │
+             ├─────────────────────────┐
+             ▼                         ▼
+    ┌──────────────────┐    ┌────────────────────┐
+    │  Module 6:       │    │  Module 7:         │
+    │  Pathway         │    │  Visualization     │
+    │  Meta-Analysis   │    │  (volcano · forest │
+    │                  │    │   heatmap · UpSet) │
+    └────────┬─────────┘    └────────────────────┘
+             │
+             ▼
+    ┌──────────────────────┐
+    │  Module 8: Report    │  mx_report (HTML / PDF) · mx_export
+    └──────────────────────┘
+
+------------------------------------------------------------------------
+
+## Why metaXpress?
+
+| Feature                      | metaXpress | DExMA | GEDI | limma |
+|------------------------------|:----------:|:-----:|:----:|:-----:|
+| GEO data ingestion           |     ✅     |  ❌   |  ❌  |  ❌   |
+| 10-point study QC            |     ✅     |  ❌   |  ❌  |  ❌   |
+| Cross-platform harmonization |     ✅     |  ❌   |  ✅  |  ❌   |
+| Library-type correction      |     ✅     |  ❌   |  ✅  |  ❌   |
+| Per-study DE (3 engines)     |     ✅     |  ❌   |  ❌  |  ✅   |
+| 6 meta-analysis methods      |     ✅     |  ✅   |  ❌  |  ❌   |
+| Missing gene imputation      |     ✅     |  ✅   |  ❌  |  ❌   |
+| Pathway meta-analysis        |     ✅     |  ❌   |  ❌  |  ❌   |
+| Reproducible report          |     ✅     |  ❌   |  ❌  |  ❌   |
+
+------------------------------------------------------------------------
+
+## Installation
+
+``` r
+
+# Bioconductor (once released)
+BiocManager::install("metaXpress")
+
+# Development version from GitHub
+remotes::install_github("hossainlab/metaXpress")
+```
+
+------------------------------------------------------------------------
+
+## Quick Start
+
+``` r
+
+library(metaXpress)
+
+# ── 1. Fetch and QC studies from GEO or SRA ───────────────────────────────
+geo_studies <- mx_fetch_geo(c("GSE53697", "GSE95587"))
+# Fetch pre-quantified count matrices directly from recount3
+sra_studies <- mx_fetch_sra(c("SRP253805")) 
+
+studies <- c(geo_studies, sra_studies)
+
+# Auto-cluster missing case/control conditions using metadata text
+studies[[3]] <- mx_cluster_samples(studies[[3]]) 
+
+studies <- mx_filter_studies(studies, qc_threshold = 7)
+
+# ── 2. Harmonize ──────────────────────────────────────────────────────────
+studies <- mx_reannotate(studies, org = "Homo sapiens", target_id = "SYMBOL")
+# Correct for polyA vs rRNA-depleted library bias (Bush et al. 2017)
+studies <- mx_correct_library_type(studies)
+# Batch effect removal via PCA and Harmony
+studies <- mx_remove_batch(studies, method = "harmony")
+studies <- mx_align_genes(studies)
+
+# ── 3. Per-study DE ───────────────────────────────────────────────────────
+studies <- mx_de_all(studies, method = "DESeq2", formula = ~ condition)
+mx_de_summary(studies)
+
+# ── 4. Handle missing genes ───────────────────────────────────────────────
+de_results <- lapply(studies, function(s) s@de_result)
+# k-NN imputation for genes missing in some studies
+de_results <- mx_impute(de_results, method = "knn")
+de_results <- mx_filter_coverage(de_results, min_studies = 2)
+
+# ── 5. Meta-analysis ──────────────────────────────────────────────────────
+meta_result <- mx_meta(de_results, method = "random_effects")
+
+# ── 6. Pathway enrichment ─────────────────────────────────────────────────
+meta_result <- mx_pathway_meta(meta_result, db = "Hallmarks")
+# Remove highly overlapping/redundant pathways via Jaccard similarity
+meta_result@pathway_result <- mx_pathway_dedup(meta_result@pathway_result)
+
+# ── 7. Visualize ──────────────────────────────────────────────────────────
+mx_study_overview(studies) # Dashboard of QC scores, sample sizes, depths
+mx_upset(de_results)       # UpSet plot of DEG overlap across studies
+mx_volcano(meta_result, label_top = 15)
+mx_heterogeneity_plot(meta_result)
+
+# ── 8. Export ─────────────────────────────────────────────────────────────
+mx_report(meta_result, studies, de_results, format = "html")
+mx_export(meta_result, format = "excel")
+```
+
+------------------------------------------------------------------------
+
+## Meta-Analysis Methods
+
+metaXpress implements six methods selectable via the `method` argument
+of
+[`mx_meta()`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md):
+
+| Method | `method =` | Effect Size | Handles Heterogeneity | Min Studies | Reference |
+|----|----|:--:|:--:|:--:|----|
+| Fisher’s combined p-value | `"fisher"` | ❌ | ❌ | 2 | Rau et al. 2013 |
+| Stouffer’s Z-score | `"stouffer"` | ❌ | ❌ | 2 | Rau et al. 2013 |
+| Fused inverse-normal | `"inverse_normal"` | ❌ | Partial | 2 | Prasad & Li 2021 |
+| Fixed effects | `"fixed_effects"` | ✅ | ❌ | 2 | Keel & Lindholm-Perry 2022 |
+| **Random effects** *(default)* | `"random_effects"` | ✅ | ✅ | 3 | Keel & Lindholm-Perry 2022 |
+| Adaptive weighting (AWmeta) | `"awmeta"` | ✅ | ✅ | 3 | Hu et al. 2025 |
+
+**Choosing a method:** - **2 studies** → use `"fisher"` or
+`"stouffer"` - **3+ studies, I² \< 25%** → use `"fixed_effects"` - **3+
+studies, I² ≥ 25%** → use `"random_effects"` (default) - **Mixed/unknown
+heterogeneity** → use `"awmeta"`
+
+------------------------------------------------------------------------
+
+## S4 Data Structures
+
+    mx_fetch_geo() ──► metaXpressStudy ──► mx_de() ──► mx_meta() ──► metaXpressResult
+                       ├── counts                                      ├── meta_table
+                       ├── metadata                                    ├── method
+                       ├── accession                                   ├── n_studies
+                       ├── organism                                    ├── heterogeneity
+                       ├── qc_score (0–10)                            └── pathway_result
+                       └── de_result
+
+------------------------------------------------------------------------
+
+## Study QC Scoring
+
+[`mx_qc_study()`](https://hossainlab.github.io/metaXpress/reference/mx_qc_study.md)
+scores each study against 10 criteria (Heberle et al. 2025), awarding 1
+point per criterion:
+
+| \#  | Criterion             | Threshold                                     |
+|-----|-----------------------|-----------------------------------------------|
+| 1   | Minimum sample size   | ≥ 3 replicates per group                      |
+| 2   | Sequencing depth      | Median ≥ 10M reads                            |
+| 3   | Alignment rate        | Mean ≥ 70%                                    |
+| 4   | rRNA contamination    | \< 10%                                        |
+| 5   | Duplicate rate        | \< 50%                                        |
+| 6   | Gene detection rate   | ≥ 15,000 genes in ≥ 50% of samples            |
+| 7   | Metadata completeness | `condition` + `sample_id` present             |
+| 8   | Clear case/control    | Exactly 2 condition levels                    |
+| 9   | No batch confounding  | Batch not perfectly correlated with condition |
+| 10  | Raw counts            | Integer counts (not FPKM/TPM)                 |
+
+Studies scoring below `qc_threshold = 7` are removed by
+[`mx_filter_studies()`](https://hossainlab.github.io/metaXpress/reference/mx_filter_studies.md).
+
+------------------------------------------------------------------------
+
+## Function Reference
+
+**Module 1 — Data Ingestion & QC**
+
+| Function | Description |
+|----|----|
+| `mx_fetch_geo(accessions)` | Download count matrices + metadata from GEO |
+| `mx_fetch_sra(srp_ids)` | Fetch from SRA via `recount3` |
+| `mx_load_local(count_paths, metadata_paths)` | Load user-supplied files |
+| `mx_qc_study(study)` | Apply 10-point QC checklist |
+| `mx_cluster_samples(study)` | Auto-cluster samples from metadata strings |
+| `mx_filter_studies(studies, qc_threshold)` | Remove studies below QC threshold |
+
+**Module 2 — Normalization & Harmonization**
+
+| Function | Description |
+|----|----|
+| `mx_reannotate(studies, org, target_id)` | Standardize gene ID namespace |
+| `mx_normalize(study, method)` | TMM / VST / CPM / TPM / quantile |
+| `mx_correct_library_type(studies)` | polyA vs rRNA-depleted correction |
+| `mx_remove_batch(studies, method)` | ComBat-seq / ComBat / limma / harmony |
+| `mx_align_genes(studies)` | Restrict to common gene universe |
+
+**Module 3 — Per-Study DE**
+
+| Function | Description |
+|----|----|
+| `mx_de(study, method, formula)` | DESeq2 / edgeR / limma-voom on one study |
+| `mx_de_all(studies, method, BPPARAM)` | Parallel DE across all studies |
+| `mx_de_summary(studies)` | n DEGs per study summary table |
+
+**Module 4 — Meta-Analysis Statistics**
+
+| Function                       | Description                        |
+|--------------------------------|------------------------------------|
+| `mx_meta(de_results, method)`  | Run meta-analysis (6 methods)      |
+| `mx_heterogeneity(de_results)` | I², Q-stat, τ² per gene            |
+| `mx_sensitivity(de_results)`   | Leave-one-out sensitivity analysis |
+
+**Module 5 — Missing Gene Handling**
+
+| Function | Description |
+|----|----|
+| `mx_missing_summary(de_results)` | Gene × study coverage matrix |
+| `mx_impute(de_results, method)` | exclude / mean / KNN / weighted |
+| `mx_filter_coverage(de_results, min_studies)` | Filter by study coverage |
+
+**Module 6 — Pathway Meta-Analysis**
+
+| Function | Description |
+|----|----|
+| `mx_pathway_meta(meta_result, db)` | ORA / GSEA with Hallmarks, KEGG, Reactome, GO |
+| `mx_pathway_consensus(pathway_results)` | Pathways significant across majority of studies |
+| `mx_pathway_dedup(pathway_results)` | Remove redundant pathways |
+| `mx_pathway_heatmap(pathway_results)` | Cross-study pathway heatmap |
+
+**Module 7 — Visualization**
+
+| Function | Description |
+|----|----|
+| `mx_volcano(meta_result)` | Meta-analysis volcano plot |
+| `mx_forest(gene, de_results)` | Forest plot with I² for a single gene |
+| `mx_heatmap(meta_result, studies)` | Top DEG heatmap across studies |
+| `mx_upset(de_results)` | UpSet plot of DEG overlap |
+| `mx_study_overview(studies)` | QC metrics summary plot |
+| `mx_heterogeneity_plot(meta_result)` | I² distribution histogram |
+
+**Module 8 — Report & Export**
+
+| Function | Description |
+|----|----|
+| `mx_report(meta_result, ..., format)` | Render HTML / PDF report |
+| `mx_export(meta_result, format)` | Export CSV / Excel / RDS |
+| [`mx_session_info()`](https://hossainlab.github.io/metaXpress/reference/mx_session_info.md) | Capture session info for reproducibility |
+| [`mx_run_app()`](https://hossainlab.github.io/metaXpress/reference/mx_run_app.md) | Launch interactive Shiny web explorer |
+
+------------------------------------------------------------------------
+
+## Citation
+
+If you use `metaXpress` in your research, academic applications, or
+benchmarking, please cite:
+
+``` bibtex
+@manual{metaXpress2026,
+  title  = {metaXpress: End-to-End Bulk RNA-seq Meta-Analysis},
+  author = {Hossain, Md. Jubayer},
+  year   = {2026},
+  note   = {R package version 0.99.0},
+  url    = {https://github.com/hossainlab/metaXpress}
+}
+```
+
+------------------------------------------------------------------------
+
+## Roadmap
+
+Package scaffold & S4 classes
+
+Module 1: GEO ingestion + 10-point QC
+
+Module 2: Normalization & batch correction
+
+Module 3: DESeq2 / edgeR / limma-voom wrappers
+
+Module 4: All 6 meta-analysis methods
+
+Module 5: Missing gene handling
+
+Module 6: Pathway meta-analysis (ORA + GSEA)
+
+Module 7: Visualization suite
+
+Module 8: Report generation & export
+
+Interactive Shiny live demo explorer
+([`mx_run_app()`](https://hossainlab.github.io/metaXpress/reference/mx_run_app.md))
+
+Live public data ingestion from NCBI GEO
+
+pkgdown documentation website configuration
+
+Bioconductor submission
+
+------------------------------------------------------------------------
+
+## Key References
+
+| Method | Reference |
+|----|----|
+| Fisher / Stouffer meta-analysis | Rau, Marot & Jaffrézic (2013) *BMC Bioinformatics* |
+| Fused inverse-normal | Prasad & Li (2021) *BMC Bioinformatics* |
+| Random effects (DerSimonian-Laird) | Keel & Lindholm-Perry (2022) *Front. Genetics* |
+| AWmeta adaptive weighting | Hu et al. (2025) *bioRxiv* |
+| Missing gene imputation | Villatoro-García et al. (2022) *Mathematics* (DExMA) |
+| Library-type correction | Bush et al. (2017) *BMC Bioinformatics* |
+| Study QC criteria | Heberle et al. (2025) *Alzheimer’s & Dementia* |
+| Sample clustering from GEO | Coke, Niranjan & Ewing (2025) *bioRxiv* |
+
+------------------------------------------------------------------------
+
+## License
+
+MIT © [Md. Jubayer Hossain](https://github.com/hossainlab)
