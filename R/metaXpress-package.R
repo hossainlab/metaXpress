@@ -154,14 +154,6 @@
 #'     reproducibility records.}
 #' }
 #'
-#' @section Example data:
-#' \describe{
-#'   \item{\code{\link{metaXpress_example}}}{
-#'     A minimal simulated dataset: three \code{metaXpressStudy} objects
-#'     (500/500/480 genes, 6/6/8 samples) for use in examples and tests.
-#'     Load with \code{data(metaXpress_example)}.}
-#' }
-#'
 #' @section Getting started:
 #' The fastest way to explore the package is the quickstart vignette:
 #' \code{vignette("quickstart", package = "metaXpress")}.

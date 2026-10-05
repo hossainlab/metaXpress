@@ -16,3 +16,6 @@
 ^docs$
 ^cache$
 ^geo_cache$
+^\.positai$
+^_pkgdown\.yml$
+^CITATION\.cff$

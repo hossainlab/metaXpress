@@ -34,14 +34,14 @@ through a minimal example using the built-in simulated dataset.
 library(metaXpress)
 ```
 
-# Load Example Data
+# Ingest Public Data from GEO
 
-The package ships with a small simulated dataset: three studies with 500 genes
-each and partial gene overlap.
+Users can fetch public RNA-seq count matrices and metadata directly from
+NCBI GEO using accession IDs:
 
 ```{r load-data, eval=FALSE}
-data(metaXpress_example)
-studies <- metaXpress_example
+# Fetch two bulk RNA-seq cohorts from GEO
+studies <- mx_fetch_geo(c("GSE53697", "GSE95587"))
 lapply(studies, show)
 ```
 

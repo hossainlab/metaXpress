@@ -7,15 +7,25 @@
 **An end-to-end R/Bioconductor package for bulk RNA-seq meta-analysis**
 
 [![R CMD Check](https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml/badge.svg)](https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml)
+[![Documentation](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://hossainlab.github.io/metaXpress/)
+[![Live Demo](https://img.shields.io/badge/Shiny-Interactive%20Demo-brightgreen?logo=r)](https://hossainlab.shinyapps.io/metaXpress-demo/)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bioconductor](https://img.shields.io/badge/Bioconductor-submission-blueviolet?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTI1IDVDMTMuOSA1IDUgMTMuOSA1IDI1czguOSAyMCAyMCAyMCAyMC04LjkgMjAtMjBTMzYuMSA1IDI1IDV6bTAgMzZjLTguOCAwLTE2LTcuMi0xNi0xNlMxNi4yIDkgMjUgOXMxNiA3LjIgMTYgMTYtNy4yIDE2LTE2IDE2eiIvPjwvc3ZnPg==)](https://bioconductor.org/)
 [![R version](https://img.shields.io/badge/R-%E2%89%A54.3.0-276DC3?logo=r)](https://www.r-project.org/)
 [![GitHub issues](https://img.shields.io/github/issues/hossainlab/metaXpress?color=red)](https://github.com/hossainlab/metaXpress/issues)
-[![GitHub last commit](https://img.shields.io/github/last-commit/hossainlab/metaXpress)](https://github.com/hossainlab/metaXpress/commits/main)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/hossainlab/metaXpress/pulls)
 
 </div>
+
+---
+
+### 🌐 Online Resources & Live Demos
+
+* 📖 **[Interactive Documentation Website](https://hossainlab.github.io/metaXpress/)** — Browse complete function references, Quickstart guide, and the full end-to-end GEO workflow with high-resolution figures.
+* 🚀 **[Live Interactive Web Demo](https://hossainlab.shinyapps.io/metaXpress-demo/)** — Test the multi-study RNA-seq meta-analysis pipeline, volcano plots, and gene forest plots directly in your browser without installing R.
+* 🔬 **[Public GEO Pan-Cancer Case Study Report](case_study_results/README.md)** — Complete multi-cohort validation on 52 patient samples across colorectal, pancreatic, and renal cancer with embedded publication-grade figures.
+* 💻 **Local Interactive Explorer:** Run `metaXpress::mx_run_app()` to launch the Shiny application locally.
 
 ---
 
@@ -306,28 +316,24 @@ Studies scoring below `qc_threshold = 7` are removed by `mx_filter_studies()`.
 | `mx_report(meta_result, ..., format)` | Render HTML / PDF report |
 | `mx_export(meta_result, format)` | Export CSV / Excel / RDS |
 | `mx_session_info()` | Capture session info for reproducibility |
+| `mx_run_app()` | Launch interactive Shiny web explorer |
 
 </details>
 
 ---
 
-## Development
+## Citation
 
-```r
-# Load all functions without installing (standard dev workflow)
-devtools::load_all()       # Ctrl+Shift+L in RStudio
+If you use `metaXpress` in your research, academic applications, or benchmarking, please cite:
 
-# Run all tests
-devtools::test()
-
-# Run a single test file
-devtools::test_file("tests/testthat/test-meta.R")
-
-# Full R CMD check
-devtools::check()
-
-# Bioconductor-specific checks
-BiocCheck::BiocCheck(".")
+```bibtex
+@manual{metaXpress2026,
+  title  = {metaXpress: End-to-End Bulk RNA-seq Meta-Analysis},
+  author = {Hossain, Md. Jubayer},
+  year   = {2026},
+  note   = {R package version 0.99.0},
+  url    = {https://github.com/hossainlab/metaXpress}
+}
 ```
 
 ---
@@ -343,8 +349,9 @@ BiocCheck::BiocCheck(".")
 - [x] Module 6: Pathway meta-analysis (ORA + GSEA)
 - [x] Module 7: Visualization suite
 - [x] Module 8: Report generation & export
-- [ ] Example dataset (`data/metaXpress_example.rda`)
-- [ ] pkgdown documentation site
+- [x] Interactive Shiny live demo explorer (`mx_run_app()`)
+- [x] Live public data ingestion from NCBI GEO
+- [x] pkgdown documentation website configuration
 - [ ] Bioconductor submission
 
 ---

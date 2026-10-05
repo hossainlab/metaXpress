@@ -180,7 +180,47 @@ mx_correct_library_type <- function(studies) {
     return(studies)
   }
 
-  stop("mx_correct_library_type() implementation in progress.")
+  # Bush et al. (2017) ratio-based correction:
+  # Scale rRNA-depleted libraries to match polyA by a per-gene scaling factor
+  # computed from genes stably expressed across both library types.
+  polya_idx    <- which(lib_types == "polyA")
+  rrna_idx     <- which(lib_types == "rRNA_depleted")
+
+  if (length(polya_idx) == 0 || length(rrna_idx) == 0) {
+    message("Only one library type found in studies with known type; ",
+            "no correction applied.")
+    return(studies)
+  }
+
+  # Align genes first
+  aligned <- mx_align_genes(studies)
+
+  # Compute mean CPM per gene per library type
+  polya_cpm <- Reduce("+", lapply(aligned[polya_idx], function(s) {
+    dge <- edgeR::DGEList(counts = s@counts)
+    edgeR::cpm(dge, log = FALSE)
+  })) / length(polya_idx)
+
+  rrna_cpm <- Reduce("+", lapply(aligned[rrna_idx], function(s) {
+    dge <- edgeR::DGEList(counts = s@counts)
+    edgeR::cpm(dge, log = FALSE)
+  })) / length(rrna_idx)
+
+  # Per-gene ratio: polyA / rRNA (avoid division by zero)
+  mean_polya <- rowMeans(polya_cpm)
+  mean_rrna  <- rowMeans(rrna_cpm)
+  ratio      <- mean_polya / pmax(mean_rrna, 0.01)
+
+  # Apply ratio to rRNA-depleted studies
+  for (i in rrna_idx) {
+    dge <- edgeR::DGEList(counts = aligned[[i]]@counts)
+    cpm_vals <- edgeR::cpm(dge, log = FALSE)
+    aligned[[i]]@counts <- round(sweep(cpm_vals, 1, ratio, "*"))
+  }
+
+  message(sprintf("Library type correction applied to %d rRNA-depleted studies.",
+                  length(rrna_idx)))
+  aligned
 }
 
 #' Remove batch effects across studies
@@ -238,14 +278,43 @@ mx_remove_batch <- function(studies,
                times = vapply(aligned, function(s) ncol(s@counts), integer(1)))
 
   corrected_combined <- switch(method,
-    `ComBat-seq` = sva::ComBat_seq(combined_counts, batch = batch),
+    `ComBat-seq` = {
+      if (!requireNamespace("sva", quietly = TRUE))
+        stop("Package 'sva' is required: BiocManager::install('sva')")
+      sva::ComBat_seq(combined_counts, batch = batch)
+    },
     ComBat       = {
+      if (!requireNamespace("sva", quietly = TRUE))
+        stop("Package 'sva' is required: BiocManager::install('sva')")
       log_counts <- log1p(combined_counts)
       sva::ComBat(log_counts, batch = batch)
     },
-    limma        = limma::removeBatchEffect(log1p(combined_counts),
-                                            batch = batch),
-    harmony      = stop("harmony batch correction is not yet implemented")
+    limma        = {
+      if (!requireNamespace("limma", quietly = TRUE))
+        stop("Package 'limma' is required: BiocManager::install('limma')")
+      limma::removeBatchEffect(log1p(combined_counts), batch = batch)
+    },
+    harmony      = {
+      if (!requireNamespace("harmony", quietly = TRUE))
+        stop("Package 'harmony' is required: BiocManager::install('harmony')")
+      # Harmony operates on PCA embeddings of log-CPM values
+      log_counts <- log1p(combined_counts)
+      # PCA reduction (top 30 PCs)
+      pca_res <- prcomp(t(log_counts), center = TRUE, scale. = FALSE,
+                        rank. = min(30, ncol(log_counts) - 1))
+      pca_embed <- pca_res$x  # samples x PCs
+      # Run Harmony on embeddings
+      harm_embed <- harmony::RunHarmony(
+        pca_embed,
+        meta_data  = data.frame(batch = as.character(batch)),
+        vars_use   = "batch",
+        verbose    = FALSE
+      )
+      # Project back to gene space: corrected = t(rotation) %*% t(harm)
+      # (approximate reconstruction)
+      t(pca_res$rotation %*% t(harm_embed)) * apply(log_counts, 1, sd) +
+        rowMeans(log_counts)
+    }
   )
 
   col_idx <- 0
@@ -373,7 +442,16 @@ mx_align_genes <- function(studies) {
 .normalize_tpm <- function(study) {
   if (!"gene_length" %in% colnames(study@metadata))
     stop("TPM normalization requires a 'gene_length' column in metadata")
-  stop("TPM normalization is not yet implemented.")
+
+  gene_lengths <- study@metadata$gene_length
+  if (length(gene_lengths) != nrow(study@counts))
+    stop("Length of 'gene_length' must equal the number of genes in counts")
+
+  # RPK: reads per kilobase
+  rpk <- sweep(study@counts, 1, gene_lengths / 1000, "/")
+  # Scale each sample to per-million
+  col_sums <- colSums(rpk) / 1e6
+  sweep(rpk, 2, col_sums, "/")
 }
 
 .normalize_quantile <- function(study) {

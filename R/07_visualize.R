@@ -177,7 +177,7 @@ mx_forest <- function(gene, de_results, meta_result = NULL) {
     ggplot2::geom_point(size = 3, colour = "#377EB8") +
     ggplot2::geom_errorbar(
       ggplot2::aes(xmin = ci_lo, xmax = ci_hi),
-      width = 0.2, colour = "#377EB8", orientation = "y"
+      width = 0.2, colour = "#377EB8"
     ) +
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed",
                         colour = "grey40") +
@@ -283,7 +283,53 @@ mx_heatmap <- function(meta_result, studies, top_n = 50) {
 #'
 #' @export
 mx_upset <- function(de_results, padj_threshold = 0.05, lfc_threshold = 1) {
-  stop("mx_upset() is not yet implemented.")
+  if (is.list(de_results) && all(vapply(de_results, is, logical(1),
+                                         "metaXpressStudy")))
+    de_results <- lapply(de_results, function(s) s@de_result)
+
+  study_names <- names(de_results)
+  if (is.null(study_names))
+    study_names <- paste0("Study_", seq_along(de_results))
+
+  # Build a list of significant gene sets per study
+  sig_sets <- lapply(de_results, function(d) {
+    d$gene_id[!is.na(d$padj) & d$padj <= padj_threshold &
+                abs(d$log2FC) >= lfc_threshold]
+  })
+  names(sig_sets) <- study_names
+
+  if (length(unique(unlist(sig_sets))) == 0)
+    stop("No significant genes found at padj <= ", padj_threshold,
+         " and |log2FC| >= ", lfc_threshold)
+
+  # Use ComplexHeatmap::UpSet if available, else ggplot2-based bar chart
+  if (requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+    comb_mat <- ComplexHeatmap::make_comb_mat(sig_sets)
+    ComplexHeatmap::UpSet(
+      comb_mat,
+      set_order   = study_names,
+      comb_order  = order(ComplexHeatmap::comb_size(comb_mat),
+                          decreasing = TRUE),
+      top_annotation = ComplexHeatmap::upset_top_annotation(comb_mat,
+                                                             add_numbers = TRUE),
+      left_annotation = ComplexHeatmap::upset_left_annotation(comb_mat,
+                                                               add_numbers = TRUE)
+    )
+  } else {
+    # Fallback: per-study DEG count bar chart
+    df <- data.frame(
+      study  = names(sig_sets),
+      n_degs = vapply(sig_sets, length, integer(1)),
+      stringsAsFactors = FALSE
+    )
+    df$study <- factor(df$study, levels = df$study)
+    ggplot2::ggplot(df, ggplot2::aes(x = study, y = n_degs)) +
+      ggplot2::geom_col(fill = "#377EB8") +
+      ggplot2::labs(title = "Significant DEGs per study",
+                    x = NULL, y = "Number of significant DEGs") +
+      ggplot2::theme_bw() +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+  }
 }
 
 #' Study characteristics overview plot
@@ -302,7 +348,64 @@ mx_upset <- function(de_results, padj_threshold = 0.05, lfc_threshold = 1) {
 #'
 #' @export
 mx_study_overview <- function(studies) {
-  stop("mx_study_overview() is not yet implemented.")
+  if (!is.list(studies) || length(studies) == 0)
+    stop("'studies' must be a non-empty named list of metaXpressStudy objects")
+
+  study_names <- names(studies)
+  if (is.null(study_names))
+    study_names <- paste0("Study_", seq_along(studies))
+
+  # Collect study-level metrics
+  df <- data.frame(
+    study      = study_names,
+    n_samples  = vapply(studies, function(s) ncol(s@counts), integer(1)),
+    n_genes    = vapply(studies, function(s) nrow(s@counts), integer(1)),
+    qc_score   = vapply(studies, function(s) {
+      if (is.na(s@qc_score)) NA_real_ else s@qc_score
+    }, numeric(1)),
+    median_lib = vapply(studies, function(s) {
+      median(colSums(s@counts)) / 1e6
+    }, numeric(1)),
+    stringsAsFactors = FALSE
+  )
+  df$study <- factor(df$study, levels = study_names)
+
+  # Panel 1: QC scores
+  p1 <- ggplot2::ggplot(df[!is.na(df$qc_score), ],
+                         ggplot2::aes(x = study, y = qc_score)) +
+    ggplot2::geom_col(fill = "#4DAF4A") +
+    ggplot2::geom_hline(yintercept = 7, linetype = "dashed", colour = "red") +
+    ggplot2::ylim(0, 10) +
+    ggplot2::labs(title = "QC score", x = NULL, y = "Score (0-10)") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+
+  # Panel 2: sample sizes
+  p2 <- ggplot2::ggplot(df, ggplot2::aes(x = study, y = n_samples)) +
+    ggplot2::geom_col(fill = "#377EB8") +
+    ggplot2::labs(title = "Sample size", x = NULL, y = "Number of samples") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+
+  # Panel 3: median library size
+  p3 <- ggplot2::ggplot(df, ggplot2::aes(x = study, y = median_lib)) +
+    ggplot2::geom_col(fill = "#FF7F00") +
+    ggplot2::geom_hline(yintercept = 10, linetype = "dashed", colour = "red") +
+    ggplot2::labs(title = "Median library size", x = NULL,
+                  y = "Millions of reads") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+
+  # Panel 4: gene detection
+  p4 <- ggplot2::ggplot(df, ggplot2::aes(x = study, y = n_genes / 1000)) +
+    ggplot2::geom_col(fill = "#984EA3") +
+    ggplot2::labs(title = "Genes detected", x = NULL,
+                  y = "Thousands of genes") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+
+  list(qc_scores = p1, sample_sizes = p2, library_sizes = p3,
+       gene_detection = p4)
 }
 
 #' I-squared distribution plot

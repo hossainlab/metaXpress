@@ -27,6 +27,7 @@ Suggests:
     openxlsx,
     harmony,
     covr,
+    shiny,
     S4Vectors,
     tximport,
     GEOquery,
@@ -48,9 +49,8 @@ biocViews: RNASeq, DifferentialExpression, GeneExpression,
     Transcriptomics, BatchEffect, Normalization, Pathways,
     MultipleComparison, ReportWriting
 BugReports: https://github.com/hossainlab/metaXpress/issues
-URL: https://github.com/hossainlab/metaXpress
+URL: https://hossainlab.github.io/metaXpress/, https://github.com/hossainlab/metaXpress
 Config/testthat/edition: 3
-RoxygenNote: 7.3.3
 Collate: 
     'AllClasses.R'
     '01_ingest.R'
@@ -62,6 +62,7 @@ Collate:
     '07_visualize.R'
     '08_report.R'
     'AllGenerics.R'
-    'data.R'
     'metaXpress-package.R'
+    'mx_run_app.R'
     'utils.R'
+Config/roxygen2/version: 8.1.0

@@ -1,0 +1,109 @@
+url: https://hossainlab.github.io/metaXpress/
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    primary: "#2C3E50"
+    secondary: "#18BC9C"
+    success: "#2ECC71"
+    info: "#3498DB"
+    warning: "#F39C12"
+    danger: "#E74C3C"
+
+home:
+  title: "metaXpress: End-to-End Bulk RNA-seq Meta-Analysis"
+  description: >
+    A unified, reproducible pipeline for multi-study bulk RNA-seq meta-analysis
+    in R/Bioconductor — spanning ingestion, harmonization, differential expression,
+    meta-statistics, missing gene imputation, pathway enrichment, and reporting.
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    articles:
+      text: Articles
+      menu:
+        - text: "Getting Started (Quickstart)"
+          href: articles/quickstart.html
+        - text: "Full Workflow: GEO to Report"
+          href: articles/full_workflow.html
+
+reference:
+  - title: "S4 Data Structures"
+    desc: "Core container classes for studies and meta-analysis results."
+    contents:
+      - metaXpressStudy-class
+      - metaXpressResult-class
+
+  - title: "Module 1: Ingestion & Quality Control"
+    desc: "Fetch studies from GEO/SRA, evaluate 10-point QC criteria, and filter datasets."
+    contents:
+      - mx_fetch_geo
+      - mx_fetch_sra
+      - mx_load_local
+      - mx_qc_study
+      - mx_filter_studies
+      - mx_cluster_samples
+      - mx_study_overview
+
+  - title: "Module 2: Normalization & Cross-Study Harmonization"
+    desc: "Reannotate gene IDs, harmonize library types, correct batch effects, and align gene spaces."
+    contents:
+      - mx_reannotate
+      - mx_normalize
+      - mx_correct_library_type
+      - mx_remove_batch
+      - mx_align_genes
+
+  - title: "Module 3: Per-Study Differential Expression"
+    desc: "Perform independent differential expression using DESeq2, edgeR, or limma-voom."
+    contents:
+      - mx_de
+      - mx_de_all
+      - mx_de_summary
+
+  - title: "Module 4: Meta-Analysis Statistics"
+    desc: "P-value combination (Fisher, Stouffer), effect-size meta-analysis (REM, FEM), and heterogeneity."
+    contents:
+      - mx_meta
+      - mx_heterogeneity
+      - mx_sensitivity
+
+  - title: "Module 5: Missing Gene Handling"
+    desc: "Identify missingness patterns across studies and apply imputation or coverage filtering."
+    contents:
+      - mx_impute
+      - mx_filter_coverage
+      - mx_missing_summary
+
+  - title: "Module 6: Pathway Meta-Analysis"
+    desc: "Cross-study over-representation (ORA) and GSEA, consensus pathways, and deduplication."
+    contents:
+      - mx_pathway_meta
+      - mx_pathway_consensus
+      - mx_pathway_dedup
+      - mx_pathway_heatmap
+
+  - title: "Module 7: Visualization"
+    desc: "Publication-grade plots including volcano plots, forest plots, heatmaps, and UpSet diagrams."
+    contents:
+      - mx_volcano
+      - mx_forest
+      - mx_heatmap
+      - mx_upset
+      - mx_heterogeneity_plot
+
+  - title: "Module 8: Reporting & Export"
+    desc: "Generate reproducible HTML/PDF reports and export meta-analysis results."
+    contents:
+      - mx_report
+      - mx_export
+      - mx_session_info
+      - mx_run_app
+
+footer:
+  left: "Developed by [Md. Jubayer Hossain](https://github.com/jubayerhossain) | [Hossain Lab](https://github.com/hossainlab)"
+  right: "Built with [pkgdown](https://pkgdown.r-lib.org/) & Bootstrap 5"

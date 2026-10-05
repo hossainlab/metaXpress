@@ -177,16 +177,6 @@ parallelised via \pkg{BiocParallel}.
 }
 }
 
-\section{Example data}{
-
-\describe{
-  \item{\code{\link{metaXpress_example}}}{
-    A minimal simulated dataset: three \code{metaXpressStudy} objects
-    (500/500/480 genes, 6/6/8 samples) for use in examples and tests.
-    Load with \code{data(metaXpress_example)}.}
-}
-}
-
 \section{Getting started}{
 
 The fastest way to explore the package is the quickstart vignette:
@@ -236,6 +226,7 @@ microarray expression data using empirical Bayes methods.
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://hossainlab.github.io/metaXpress/}
   \item \url{https://github.com/hossainlab/metaXpress}
   \item Report bugs at \url{https://github.com/hossainlab/metaXpress/issues}
 }

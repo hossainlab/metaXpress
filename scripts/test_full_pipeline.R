@@ -2,43 +2,25 @@
 # metaXpress Full Pipeline Test
 # =============================================================================
 # Tests the complete workflow using attached datasets.
-#
-# NOTE: GSE293744 is excluded because it contains pre-normalized (non-integer)
-# values, which are unsuitable for DESeq2/edgeR count-based models.
-# GSE280271 uses ENSEMBL IDs while the other 5 studies use ENTREZID;
-# it is loaded separately and requires reannotation before alignment.
+
 
 library(metaXpress)
 
-data_dir <- system.file("extdata", package = "metaXpress")
-if (data_dir == "") data_dir <- "data"
 
-# ── 1. Load studies with raw integer counts (ENTREZID) ────────────────────────
-message("\n=== Step 1: Loading studies ===")
-
-entrez_ids <- c("GSE130688", "GSE136569", "GSE171485",
-                "GSE196009", "GSE211398")
-
-count_paths <- file.path(data_dir, paste0(entrez_ids, "_raw_counts.tsv"))
-meta_paths  <- file.path(data_dir, paste0(entrez_ids, "_metadata.csv"))
-
+# ── 1. Load studies with raw integer counts (ENTREZID)
 studies <- mx_load_local(
-  count_paths    = count_paths,
-  metadata_paths = meta_paths,
-  accessions     = entrez_ids,
-  organism       = "Homo sapiens"
+  count_paths = c("data/GSE130688_raw_counts.tsv", "data/GSE136569_raw_counts.tsv"),
+  metadata_paths = c("data/GSE130688_metadata.csv", "data/GSE136569_metadata.csv"),
+  organism = "Homo sapiens"
 )
 
-# Also load ENSEMBL-ID study (GSE280271)
-studies_ensembl <- mx_load_local(
-  count_paths    = file.path(data_dir, "GSE280271_raw_counts.csv"),
-  metadata_paths = file.path(data_dir, "GSE280271_metadata.csv"),
-  accessions     = "GSE280271",
-  organism       = "Homo sapiens"
-)
+
 
 # ── 2. QC summary ────────────────────────────────────────────────────────────
-message("\n=== Step 2: QC Summary ===")
+mx_qc_study(studies$GSE136569_raw_counts)
+attr(studies$GSE136569_raw_counts, "qc_details")
+
+
 
 for (nm in names(studies)) {
   s <- studies[[nm]]

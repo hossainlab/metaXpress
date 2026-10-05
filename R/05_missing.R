@@ -100,8 +100,8 @@ mx_impute <- function(de_results,
   switch(method,
     exclude  = .impute_exclude(de_results),
     mean     = .impute_mean(de_results),
-    knn      = stop("KNN imputation is not yet implemented."),
-    weighted = stop("Weighted imputation is not yet implemented.")
+    knn      = .impute_knn(de_results),
+    weighted = .impute_weighted(de_results)
   )
 }
 
@@ -182,6 +182,88 @@ mx_filter_coverage <- function(de_results, min_studies = 2) {
   }
 
   result <- lapply(seq_len(k), function(i) {
+    data.frame(
+      gene_id  = all_genes,
+      log2FC   = lfc_mat[, i],
+      pvalue   = pval_mat[, i],
+      padj     = p.adjust(pval_mat[, i], method = "BH"),
+      baseMean = NA_real_,
+      stringsAsFactors = FALSE
+    )
+  })
+  names(result) <- names(de_results)
+  result
+}
+
+.impute_knn <- function(de_results, k = 5) {
+  mats      <- .build_gene_matrices(de_results)
+  all_genes <- mats$all_genes
+  lfc_mat   <- mats$lfc_mat
+  pval_mat  <- mats$pval_mat
+  n_studies <- ncol(lfc_mat)
+
+  complete_mask <- rowSums(!is.na(lfc_mat)) == n_studies
+  complete_lfc  <- lfc_mat[complete_mask, , drop = FALSE]
+
+  for (g in which(!complete_mask)) {
+    available_studies <- !is.na(lfc_mat[g, ])
+    if (sum(available_studies) == 0) {
+      lfc_mat[g, ]  <- 0
+      pval_mat[g, ] <- 1
+      next
+    }
+    if (nrow(complete_lfc) == 0) {
+      lfc_mat[g, !available_studies]  <- mean(lfc_mat[g, available_studies])
+      pval_mat[g, !available_studies] <- 1
+      next
+    }
+    ref    <- lfc_mat[g, available_studies]
+    comp   <- complete_lfc[, available_studies, drop = FALSE]
+    dists  <- sqrt(rowSums((sweep(comp, 2, ref, "-"))^2))
+    nn_idx <- order(dists)[seq_len(min(k, length(dists)))]
+    for (s in which(!available_studies)) {
+      lfc_mat[g, s]  <- mean(complete_lfc[nn_idx, s])
+      pval_mat[g, s] <- 1
+    }
+  }
+
+  result <- lapply(seq_len(n_studies), function(i) {
+    data.frame(
+      gene_id  = all_genes,
+      log2FC   = lfc_mat[, i],
+      pvalue   = pval_mat[, i],
+      padj     = p.adjust(pval_mat[, i], method = "BH"),
+      baseMean = NA_real_,
+      stringsAsFactors = FALSE
+    )
+  })
+  names(result) <- names(de_results)
+  result
+}
+
+.impute_weighted <- function(de_results) {
+  mats      <- .build_gene_matrices(de_results)
+  all_genes <- mats$all_genes
+  lfc_mat   <- mats$lfc_mat
+  pval_mat  <- mats$pval_mat
+  n_studies <- ncol(lfc_mat)
+
+  study_weights <- colSums(!is.na(lfc_mat))
+  study_weights <- study_weights / sum(study_weights)
+
+  for (g in seq_len(nrow(lfc_mat))) {
+    avail <- !is.na(lfc_mat[g, ])
+    if (all(avail) || !any(avail)) {
+      if (!any(avail)) { lfc_mat[g, ] <- 0; pval_mat[g, ] <- 1 }
+      next
+    }
+    w <- study_weights[avail] / sum(study_weights[avail])
+    weighted_lfc <- sum(lfc_mat[g, avail] * w)
+    lfc_mat[g, !avail]  <- weighted_lfc
+    pval_mat[g, !avail] <- 1
+  }
+
+  result <- lapply(seq_len(n_studies), function(i) {
     data.frame(
       gene_id  = all_genes,
       log2FC   = lfc_mat[, i],

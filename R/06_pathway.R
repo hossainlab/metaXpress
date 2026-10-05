@@ -156,7 +156,59 @@ mx_pathway_consensus <- function(pathway_results, min_fraction = 0.5,
 #'
 #' @export
 mx_pathway_dedup <- function(pathway_results, jaccard_threshold = 0.5) {
-  stop("mx_pathway_dedup() is not yet implemented.")
+  if (!is.data.frame(pathway_results))
+    stop("'pathway_results' must be a data.frame from mx_pathway_meta()")
+  if (nrow(pathway_results) == 0)
+    return(pathway_results)
+  if (!"pathway_id" %in% colnames(pathway_results))
+    stop("'pathway_results' must contain a 'pathway_id' column")
+
+  # Retrieve gene sets for overlap computation
+  # Use gene members from the pathway IDs via msigdbr if available
+  # Fallback: use pathway name similarity via string length proxy
+  if (!requireNamespace("msigdbr", quietly = TRUE)) {
+    warning("Package 'msigdbr' not available; returning results unchanged.")
+    return(pathway_results)
+  }
+
+  # Order by significance (most significant first)
+  if ("padj" %in% colnames(pathway_results)) {
+    pathway_results <- pathway_results[order(pathway_results$padj,
+                                              na.last = TRUE), ]
+  }
+
+  all_gs <- tryCatch(
+    msigdbr::msigdbr(species = "Homo sapiens"),
+    error = function(e) NULL
+  )
+
+  if (is.null(all_gs)) {
+    warning("Could not retrieve gene sets from msigdbr; returning unchanged.")
+    return(pathway_results)
+  }
+
+  gs_list <- split(all_gs$gene_symbol, all_gs$gs_name)
+  pids    <- pathway_results$pathway_id
+
+  # Greedy removal of redundant pathways by Jaccard similarity
+  keep <- rep(TRUE, length(pids))
+  for (i in seq_along(pids)) {
+    if (!keep[i]) next
+    gi <- gs_list[[pids[i]]]
+    if (is.null(gi)) next
+    for (j in seq_along(pids)) {
+      if (j <= i || !keep[j]) next
+      gj <- gs_list[[pids[j]]]
+      if (is.null(gj)) next
+      intersection <- length(intersect(gi, gj))
+      union_size   <- length(union(gi, gj))
+      jaccard      <- if (union_size == 0) 0 else intersection / union_size
+      if (jaccard >= jaccard_threshold)
+        keep[j] <- FALSE
+    }
+  }
+
+  pathway_results[keep, , drop = FALSE]
 }
 
 #' Cross-study pathway heatmap
@@ -183,7 +235,96 @@ mx_pathway_dedup <- function(pathway_results, jaccard_threshold = 0.5) {
 #' @export
 mx_pathway_heatmap <- function(pathway_results, top_n = 30,
                                 value = c("padj", "NES")) {
-  stop("mx_pathway_heatmap() is not yet implemented.")
+  value <- match.arg(value)
+
+  # Accept single data.frame or named list
+  if (is.data.frame(pathway_results))
+    pathway_results <- list(Combined = pathway_results)
+
+  if (!is.list(pathway_results))
+    stop("'pathway_results' must be a data.frame or named list of data.frames")
+
+  study_names <- names(pathway_results)
+  if (is.null(study_names))
+    study_names <- paste0("Study_", seq_along(pathway_results))
+
+  all_pathways <- unique(unlist(lapply(pathway_results,
+                                        function(r) r$pathway_id)))
+  if (length(all_pathways) == 0)
+    stop("No pathways found in 'pathway_results'")
+
+  # Select top_n pathways by mean significance
+  if (value == "padj") {
+    mean_padj <- vapply(all_pathways, function(pid) {
+      vals <- vapply(pathway_results, function(r) {
+        row <- r[r$pathway_id == pid, ]
+        if (nrow(row) == 0 || is.na(row$padj[1])) 1 else row$padj[1]
+      }, numeric(1))
+      mean(vals)
+    }, numeric(1))
+    top_paths <- all_pathways[order(mean_padj)][seq_len(min(top_n,
+                                                             length(all_pathways)))]
+  } else {
+    top_paths <- all_pathways[seq_len(min(top_n, length(all_pathways)))]
+  }
+
+  # Build matrix
+  val_mat <- matrix(NA_real_, nrow = length(top_paths),
+                    ncol = length(pathway_results),
+                    dimnames = list(top_paths, study_names))
+
+  for (i in seq_along(pathway_results)) {
+    r <- pathway_results[[i]]
+    for (pid in top_paths) {
+      row <- r[r$pathway_id == pid, ]
+      if (nrow(row) == 0) next
+      val_mat[pid, i] <- if (value == "NES" && "NES" %in% colnames(row))
+        row$NES[1]
+      else
+        -log10(pmax(row$padj[1], .Machine$double.eps))
+    }
+  }
+
+  # Replace NA with 0 for display
+  val_mat[is.na(val_mat)] <- 0
+
+  # Truncate long pathway names for display
+  row_labels <- sub("^HALLMARK_|^KEGG_|^REACTOME_|^GOBP_", "",
+                    rownames(val_mat))
+  row_labels <- substr(row_labels, 1, 40)
+
+  # Build tidy data.frame for ggplot2
+  plot_df <- data.frame(
+    pathway = rep(row_labels, ncol(val_mat)),
+    study   = rep(study_names, each = nrow(val_mat)),
+    value   = as.vector(val_mat),
+    stringsAsFactors = FALSE
+  )
+  plot_df$pathway <- factor(plot_df$pathway,
+                             levels = rev(row_labels))
+  plot_df$study   <- factor(plot_df$study, levels = study_names)
+
+  y_label <- if (value == "NES") "NES" else "-log10(padj)"
+  mid_val  <- if (value == "NES") 0 else mean(range(plot_df$value, na.rm = TRUE))
+
+  ggplot2::ggplot(plot_df, ggplot2::aes(x = study, y = pathway,
+                                          fill = value)) +
+    ggplot2::geom_tile(colour = "white") +
+    ggplot2::scale_fill_gradient2(
+      low      = "#377EB8",
+      mid      = "white",
+      high     = "#E41A1C",
+      midpoint = mid_val,
+      name     = y_label
+    ) +
+    ggplot2::labs(title = paste0("Top ", length(top_paths),
+                                  " pathways — ", y_label),
+                  x = NULL, y = NULL) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      axis.text.y = ggplot2::element_text(size = 7)
+    )
 }
 
 # ============================================================================

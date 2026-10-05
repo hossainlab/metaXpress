@@ -28,8 +28,8 @@ knitr::opts_chunk$set(
 
 This vignette demonstrates the complete metaXpress workflow, from fetching
 studies from GEO through pathway enrichment and report generation.
-All `mx_fetch_*()` calls require internet access and are shown with
-`eval=FALSE`; substitute `data(metaXpress_example)` for local testing.
+All `mx_fetch_*()` calls fetch public data directly from NCBI GEO.
+Users can provide accession IDs or local count matrices via `mx_load_local()`.
 
 ```{r load-package, purl=FALSE}
 library(metaXpress)
