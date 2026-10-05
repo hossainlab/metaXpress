@@ -3,12 +3,10 @@ title: "metaXpress Full Workflow: GEO to Report"
 author: "Md. Jubayer Hossain"
 date: "`r Sys.Date()`"
 output:
-  BiocStyle::html_document:
+  rmarkdown::html_vignette:
     toc: true
-    toc_float: true
-    code_folding: show
 vignette: >
-  %\VignetteIndexEntry{metaXpress Full Workflow}
+  %\VignetteIndexEntry{metaXpress Full Workflow: GEO to Report}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

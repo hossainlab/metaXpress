@@ -32,11 +32,18 @@ navbar:
           href: articles/full_workflow.html
 
 reference:
+  - title: "Package Overview"
+    desc: "Top-level package documentation and architecture."
+    contents:
+      - metaXpress-package
+
   - title: "S4 Data Structures"
     desc: "Core container classes for studies and meta-analysis results."
     contents:
       - metaXpressStudy-class
       - metaXpressResult-class
+      - 'show,metaXpressStudy-method'
+      - 'show,metaXpressResult-method'
 
   - title: "Module 1: Ingestion & Quality Control"
     desc: "Fetch studies from GEO/SRA, evaluate 10-point QC criteria, and filter datasets."
