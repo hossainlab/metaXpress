@@ -18,16 +18,12 @@ You can install the package directly from GitHub using `remotes` or
 
 ``` r
 
-# Ensure BiocManager is available for Bioconductor dependencies
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
 # Install remotes if needed
 if (!requireNamespace("remotes", quietly = TRUE))
     install.packages("remotes")
 
-# Install metaXpress with all dependencies
-remotes::install_github("hossainlab/metaXpress", dependencies = TRUE)
+# Install metaXpress directly from GitHub
+remotes::install_github("hossainlab/metaXpress")
 ```
 
 Alternatively, using `pak`:

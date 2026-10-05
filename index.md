@@ -27,8 +27,11 @@ Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://gith
 
 - 📖 **[Interactive Documentation
   Website](https://mdjubayerhossain.com/metaXpress/)** — Complete
-  function references, Getting Started quickstart, full pipeline
-  tutorial, and public GEO case studies.
+  function references, guides, and tutorials.
+- ⚡ **[Live Demonstration
+  Tutorial](https://mdjubayerhossain.com/metaXpress/articles/live_tutorial.html)**
+  — Step-by-step hands-on tutorial from GitHub installation to
+  multi-study meta-analysis with live rendered outputs and plots.
 - 🚀 **[Live Interactive Web
   Demo](https://hossainlab.shinyapps.io/metaXpress-demo/)** — Test the
   multi-study RNA-seq meta-analysis pipeline, volcano plots, and gene
@@ -102,60 +105,25 @@ It provides a single, opinionated, end-to-end pipeline:
 
 ## 📦 Installation
 
-> **Note:** `metaXpress` is actively maintained on GitHub and is
-> prepared for upcoming Bioconductor submission. Please follow the
-> instructions below to install directly from GitHub.
-
-### Option 1: Standard Installation from GitHub (Recommended)
-
-`metaXpress` utilizes packages from both CRAN and Bioconductor. To
-ensure all upstream dependencies (such as `DESeq2`, `edgeR`, and
-`GEOquery`) are resolved automatically, install using `remotes`:
+Install `metaXpress` directly from GitHub:
 
 ``` r
 
-# 1. Install BiocManager if not already available
-if (!requireNamespace("BiocManager", quietly = TRUE)) {
-  install.packages("BiocManager")
-}
-
-# 2. Install remotes
+# Install remotes if not already installed
 if (!requireNamespace("remotes", quietly = TRUE)) {
   install.packages("remotes")
 }
 
-# 3. Install metaXpress with all dependencies
-remotes::install_github("hossainlab/metaXpress", dependencies = TRUE)
+# Install metaXpress directly from GitHub
+remotes::install_github("hossainlab/metaXpress")
 ```
 
-### Option 2: Fast Installation via `pak`
-
-If you use `pak`, it automatically resolves CRAN and Bioconductor
-packages concurrently:
+### Alternative Installation with `pak`
 
 ``` r
 
 # install.packages("pak")
 pak::pkg_install("hossainlab/metaXpress")
-```
-
-### Troubleshooting: Manual Bioconductor Pre-Installation
-
-If you work in a restricted environment or encounter network timeouts
-during dependency downloads, you can pre-install the core Bioconductor
-packages first:
-
-``` r
-
-# Pre-install core Bioconductor engines
-BiocManager::install(c(
-  "BiocParallel", "GEOquery", "DESeq2", "edgeR", "limma",
-  "sva", "AnnotationDbi", "clusterProfiler", "msigdbr",
-  "ComplexHeatmap", "SummarizedExperiment"
-))
-
-# Install metaXpress from GitHub
-remotes::install_github("hossainlab/metaXpress", upgrade = "never")
 ```
 
 ### Verify Installation

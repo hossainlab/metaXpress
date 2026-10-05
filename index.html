@@ -43,7 +43,8 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/quickstart.html">Getting Started (Quickstart)</a></li>
+<li><a class="dropdown-item" href="articles/live_tutorial.html">Live Demonstration Tutorial</a></li>
+    <li><a class="dropdown-item" href="articles/quickstart.html">Getting Started (Quickstart)</a></li>
     <li><a class="dropdown-item" href="articles/full_workflow.html">Full Workflow: GEO to Report</a></li>
     <li><a class="dropdown-item" href="articles/case_study.html">Public GEO Case Study: Pan-Cancer</a></li>
   </ul>
@@ -78,7 +79,8 @@
 <h3 id="globe_with_meridians-online-resources--live-demos">🌐 Online Resources &amp; Live Demos<a class="anchor" aria-label="anchor" href="#globe_with_meridians-online-resources--live-demos"></a>
 </h3>
 <ul>
-<li>📖 <strong><a href="https://mdjubayerhossain.com/metaXpress/">Interactive Documentation Website</a></strong> — Complete function references, Getting Started quickstart, full pipeline tutorial, and public GEO case studies.</li>
+<li>📖 <strong><a href="https://mdjubayerhossain.com/metaXpress/">Interactive Documentation Website</a></strong> — Complete function references, guides, and tutorials.</li>
+<li>⚡ <strong><a href="https://mdjubayerhossain.com/metaXpress/articles/live_tutorial.html">Live Demonstration Tutorial</a></strong> — Step-by-step hands-on tutorial from GitHub installation to multi-study meta-analysis with live rendered outputs and plots.</li>
 <li>🚀 <strong><a href="https://hossainlab.shinyapps.io/metaXpress-demo/" class="external-link">Live Interactive Web Demo</a></strong> — Test the multi-study RNA-seq meta-analysis pipeline, volcano plots, and gene forest plots directly in your browser without installing R.</li>
 <li>🔬 <strong><a href="case_study_results/README.html">Public GEO Pan-Cancer Case Study Report</a></strong> (or view the <a href="https://mdjubayerhossain.com/metaXpress/articles/case_study.html">Online Vignette</a>) — Multi-cohort validation on 52 patient samples across colorectal, pancreatic, and renal cancers with embedded publication-grade figures.</li>
 <li>💻 <strong>Local Interactive Explorer:</strong> Run <code><a href="reference/mx_run_app.html">metaXpress::mx_run_app()</a></code> to launch the full-featured Shiny application locally.</li>
@@ -138,55 +140,27 @@
 <div class="section level2">
 <h2 id="package-installation">📦 Installation<a class="anchor" aria-label="anchor" href="#package-installation"></a>
 </h2>
-<blockquote>
-<p><strong>Note:</strong> <code>metaXpress</code> is actively maintained on GitHub and is prepared for upcoming Bioconductor submission. Please follow the instructions below to install directly from GitHub.</p>
-</blockquote>
-<div class="section level3">
-<h3 id="option-1-standard-installation-from-github-recommended">Option 1: Standard Installation from GitHub (Recommended)<a class="anchor" aria-label="anchor" href="#option-1-standard-installation-from-github-recommended"></a>
-</h3>
-<p><code>metaXpress</code> utilizes packages from both CRAN and Bioconductor. To ensure all upstream dependencies (such as <code>DESeq2</code>, <code>edgeR</code>, and <code>GEOquery</code>) are resolved automatically, install using <code>remotes</code>:</p>
+<p>Install <code>metaXpress</code> directly from GitHub:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># 1. Install BiocManager if not already available</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="co"># 2. Install remotes</span></span>
+<code class="sourceCode R"><span><span class="co"># Install remotes if not already installed</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"remotes"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="co"># 3. Install metaXpress with all dependencies</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-</div>
+<span><span class="co"># Install metaXpress directly from GitHub</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="option-2-fast-installation-via-pak">Option 2: Fast Installation via <code>pak</code>
-<a class="anchor" aria-label="anchor" href="#option-2-fast-installation-via-pak"></a>
+<h3 id="alternative-installation-with-pak">Alternative Installation with <code>pak</code>
+<a class="anchor" aria-label="anchor" href="#alternative-installation-with-pak"></a>
 </h3>
-<p>If you use <code>pak</code>, it automatically resolves CRAN and Bioconductor packages concurrently:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="troubleshooting-manual-bioconductor-pre-installation">Troubleshooting: Manual Bioconductor Pre-Installation<a class="anchor" aria-label="anchor" href="#troubleshooting-manual-bioconductor-pre-installation"></a>
-</h3>
-<p>If you work in a restricted environment or encounter network timeouts during dependency downloads, you can pre-install the core Bioconductor packages first:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Pre-install core Bioconductor engines</span></span>
-<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">"BiocParallel"</span>, <span class="st">"GEOquery"</span>, <span class="st">"DESeq2"</span>, <span class="st">"edgeR"</span>, <span class="st">"limma"</span>,</span>
-<span>  <span class="st">"sva"</span>, <span class="st">"AnnotationDbi"</span>, <span class="st">"clusterProfiler"</span>, <span class="st">"msigdbr"</span>,</span>
-<span>  <span class="st">"ComplexHeatmap"</span>, <span class="st">"SummarizedExperiment"</span></span>
-<span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Install metaXpress from GitHub</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span>, upgrade <span class="op">=</span> <span class="st">"never"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
 <h3 id="verify-installation">Verify Installation<a class="anchor" aria-label="anchor" href="#verify-installation"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mdjubayerhossain.com/metaXpress/">metaXpress</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"metaXpress"</span><span class="op">)</span></span>
 <span><span class="co"># [1] '0.99.0'</span></span></code></pre></div>
@@ -315,7 +289,7 @@
 <div class="section level2">
 <h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mdjubayerhossain.com/metaXpress/">metaXpress</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># ── 1. Fetch and QC studies from GEO ──────────────────────────────────────</span></span>
@@ -759,13 +733,13 @@
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>If you use <code>metaXpress</code> in your research, academic applications, or benchmarking, please cite:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="va">@manual</span>{<span class="ot">metaXpress2026</span>,</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="dt">title</span>  = {metaXpress: End-to-End Bulk RNA-seq Meta-Analysis},</span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="dt">author</span> = {Hossain, Md. Jubayer},</span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
-<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="dt">note</span>   = {R package version 0.99.0},</span>
-<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  <span class="dt">url</span>    = {https://mdjubayerhossain.com/metaXpress/}</span>
-<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="va">@manual</span>{<span class="ot">metaXpress2026</span>,</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="dt">title</span>  = {metaXpress: End-to-End Bulk RNA-seq Meta-Analysis},</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="dt">author</span> = {Hossain, Md. Jubayer},</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="dt">note</span>   = {R package version 0.99.0},</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="dt">url</span>    = {https://mdjubayerhossain.com/metaXpress/}</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>}</span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">

@@ -20,16 +20,12 @@ submission to Bioconductor.
 
 ``` r
 
-# 1. Ensure BiocManager is present for Bioconductor dependencies
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-# 2. Install remotes
+# Install remotes if needed
 if (!requireNamespace("remotes", quietly = TRUE))
     install.packages("remotes")
 
-# 3. Install metaXpress
-remotes::install_github("hossainlab/metaXpress", dependencies = TRUE)
+# Install metaXpress directly from GitHub
+remotes::install_github("hossainlab/metaXpress")
 ```
 
 Load the package:
