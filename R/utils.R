@@ -153,3 +153,16 @@
   list(lfc_mat = lfc_mat, pval_mat = pval_mat, se_mat = se_mat,
        all_genes = all_genes)
 }
+
+# Silence R CMD check notes for ggplot2 non-standard evaluation variables
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(c(
+    "pathway", "qc_score", "n_samples", "median_lib", "n_genes",
+    "n_degs", "ci_lo", "ci_hi", "study", "sig", "neg_log10_padj",
+    "gene_id", "meta_log2FC", "i_squared", "is_pooled"
+  ))
+}
+
+#' @importFrom stats prcomp sd
+NULL
+

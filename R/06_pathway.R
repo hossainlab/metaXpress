@@ -144,7 +144,7 @@ mx_pathway_consensus <- function(pathway_results, min_fraction = 0.5,
 #' @return A \code{data.frame} with redundant pathways removed.
 #'
 #' @references
-#' Gu, Z. & Hübschmann, D. (2023) simplifyEnrichment: a Bioconductor package
+#' Gu, Z. & Huebschmann, D. (2023) simplifyEnrichment: a Bioconductor package
 #' for clustering and visualizing functional enrichment results.
 #' \emph{Genomics, Proteomics & Bioinformatics}, \strong{21}(1), 190--202.
 #' \doi{10.1016/j.gpb.2022.04.008}
@@ -318,7 +318,7 @@ mx_pathway_heatmap <- function(pathway_results, top_n = 30,
       name     = y_label
     ) +
     ggplot2::labs(title = paste0("Top ", length(top_paths),
-                                  " pathways — ", y_label),
+                                  " pathways - ", y_label),
                   x = NULL, y = NULL) +
     ggplot2::theme_bw() +
     ggplot2::theme(

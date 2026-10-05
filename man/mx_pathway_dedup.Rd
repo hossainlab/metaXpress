@@ -28,7 +28,7 @@ pathways.
 
 }
 \references{
-Gu, Z. & Hübschmann, D. (2023) simplifyEnrichment: a Bioconductor package
+Gu, Z. & Huebschmann, D. (2023) simplifyEnrichment: a Bioconductor package
 for clustering and visualizing functional enrichment results.
 \emph{Genomics, Proteomics & Bioinformatics}, \strong{21}(1), 190--202.
 \doi{10.1016/j.gpb.2022.04.008}

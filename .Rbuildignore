@@ -19,3 +19,5 @@
 ^\.positai$
 ^_pkgdown\.yml$
 ^CITATION\.cff$
+^case_study_results$
+^scripts$

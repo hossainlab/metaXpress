@@ -70,6 +70,8 @@ importFrom(stats,
   p.adjust,
   pchisq,
   pnorm,
-  qnorm
+  prcomp,
+  qnorm,
+  sd
 )
 importFrom(utils,head)

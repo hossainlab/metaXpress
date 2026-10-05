@@ -11,7 +11,6 @@ Description: metaXpress provides a unified, reproducible pipeline for
     meta-analysis, and reproducible HTML/PDF reporting.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: false
 Depends:
     R (>= 4.3.0)
 Imports:
