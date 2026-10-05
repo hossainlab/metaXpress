@@ -226,7 +226,7 @@ microarray expression data using empirical Bayes methods.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://hossainlab.github.io/metaXpress/}
+  \item \url{https://mdjubayerhossain.com/metaXpress/}
   \item \url{https://github.com/hossainlab/metaXpress}
   \item Report bugs at \url{https://github.com/hossainlab/metaXpress/issues}
 }

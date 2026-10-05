@@ -52,7 +52,7 @@ biocViews: RNASeq, DifferentialExpression, GeneExpression,
     Transcriptomics, BatchEffect, Normalization, Pathways,
     MultipleComparison, ReportWriting
 BugReports: https://github.com/hossainlab/metaXpress/issues
-URL: https://hossainlab.github.io/metaXpress/, https://github.com/hossainlab/metaXpress
+URL: https://mdjubayerhossain.com/metaXpress/, https://github.com/hossainlab/metaXpress
 Config/testthat/edition: 3
 Collate: 
     'AllClasses.R'

@@ -1,4 +1,4 @@
-url: https://hossainlab.github.io/metaXpress/
+url: https://mdjubayerhossain.com/metaXpress/
 
 template:
   bootstrap: 5
@@ -15,7 +15,7 @@ home:
   title: "metaXpress: End-to-End Bulk RNA-seq Meta-Analysis"
   description: >
     A unified, reproducible pipeline for multi-study bulk RNA-seq meta-analysis
-    in R/Bioconductor — spanning ingestion, harmonization, differential expression,
+    in R — spanning data ingestion, harmonization, differential expression,
     meta-statistics, missing gene imputation, pathway enrichment, and reporting.
 
 navbar:
@@ -30,6 +30,8 @@ navbar:
           href: articles/quickstart.html
         - text: "Full Workflow: GEO to Report"
           href: articles/full_workflow.html
+        - text: "Public GEO Case Study: Pan-Cancer"
+          href: articles/case_study.html
 
 reference:
   - title: "Package Overview"
@@ -112,5 +114,5 @@ reference:
       - mx_run_app
 
 footer:
-  left: "Developed by [Md. Jubayer Hossain](https://github.com/jubayerhossain) | [Hossain Lab](https://github.com/hossainlab)"
+  left: "Developed by [Md. Jubayer Hossain](https://mdjubayerhossain.com) | [Hossain Lab](https://github.com/hossainlab)"
   right: "Built with [pkgdown](https://pkgdown.r-lib.org/) & Bootstrap 5"

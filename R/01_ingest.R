@@ -104,7 +104,7 @@ mx_fetch_geo <- function(accessions, count_type = "raw",
 #' Fetch raw RNA-seq data from SRA
 #'
 #' Downloads pre-quantified count matrices for SRA project IDs using the
-#' \\pkg{recount3} package. This avoids computationally expensive local
+#' \code{recount3} package. This avoids computationally expensive local
 #' alignment while ensuring uniform processing across studies (Collado-Torres
 #' et al. 2017; Wilks et al. 2021).
 #'
@@ -152,11 +152,11 @@ mx_fetch_sra <- function(srp_ids, cache_dir = tempdir(), organism = "human") {
       rse <- recount3::create_rse(proj_info[proj_idx[1], ])
       
       # Compute read counts from coverage (recount3 standard transformation)
-      assay(rse, "counts") <- recount3::transform_counts(rse)
-      counts <- as.matrix(assay(rse, "counts"))
+      SummarizedExperiment::assay(rse, "counts") <- recount3::transform_counts(rse)
+      counts <- as.matrix(SummarizedExperiment::assay(rse, "counts"))
       
       # Extract metadata
-      meta <- as.data.frame(colData(rse))
+      meta <- as.data.frame(SummarizedExperiment::colData(rse))
       
       # Attempt to find sample_id and condition
       meta$sample_id <- if ("external_id" %in% colnames(meta)) meta$external_id else rownames(meta)
@@ -459,7 +459,7 @@ mx_qc_study <- function(study) {
 #' Automatically cluster samples by metadata
 #'
 #' Uses text mining on metadata fields to assign samples to case/control groups,
-#' mimicking the \\pkg{sampleclusteR} approach for automated group assignment from
+#' mimicking the \code{sampleclusteR} approach for automated group assignment from
 #' GEO metadata. It computes string distances between sample descriptions and
 #' uses hierarchical clustering to partition them into two groups.
 #'

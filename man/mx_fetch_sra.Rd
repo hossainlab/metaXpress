@@ -19,7 +19,7 @@ A named list of \code{\linkS4class{metaXpressStudy}} objects.
 }
 \description{
 Downloads pre-quantified count matrices for SRA project IDs using the
-\\pkg{recount3} package. This avoids computationally expensive local
+\code{recount3} package. This avoids computationally expensive local
 alignment while ensuring uniform processing across studies (Collado-Torres
 et al. 2017; Wilks et al. 2021).
 }

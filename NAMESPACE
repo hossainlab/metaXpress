@@ -65,6 +65,9 @@ importFrom(methods,
   new
 )
 importFrom(stats,
+  as.dist,
+  cutree,
+  hclust,
   median,
   na.omit,
   p.adjust,

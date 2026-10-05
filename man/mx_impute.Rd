@@ -4,11 +4,7 @@
 \alias{mx_impute}
 \title{Impute missing gene statistics across studies}
 \usage{
-mx_impute(
-  de_results,
-  method = c("exclude", "mean", "knn", "weighted"),
-  weights = NULL
-)
+mx_impute(de_results, method = c("exclude", "mean", "knn", "weighted"))
 }
 \arguments{
 \item{de_results}{A named list of \code{data.frame} objects from
@@ -21,13 +17,10 @@ mx_impute(
   \item{\code{"mean"}}{Impute missing log2FC with the mean across
     available studies; impute p-values as 1.}
   \item{\code{"knn"}}{K-nearest neighbours imputation based on
-    gene expression profiles (Hastie et al. 1999).}
+    gene expression profiles.}
   \item{\code{"weighted"}}{Weighted imputation proportional to study
     sample size.}
 }}
-
-\item{weights}{Numeric vector. Study weights for \code{"weighted"} imputation.
-Default: \code{NULL} (uses equal weights, equivalent to \code{"mean"}).}
 }
 \value{
 The input list with missing values filled according to the chosen
@@ -44,9 +37,6 @@ imputation strategies before meta-analysis.
 
 }
 \references{
-Hastie, T. et al. (1999) Imputing missing data for gene expression arrays.
-Stanford University Statistics Department Technical report.
-
 Villatoro-García, J.A. et al. (2022) Missing gene expression data
 imputation for gene-study meta-analysis. \emph{Mathematics},
 \strong{10}(18), 3376. \doi{10.3390/math10183376}

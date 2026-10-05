@@ -87,7 +87,7 @@ ui <- fluidPage(
         tags$div(
           class = "mt-2 mt-md-0",
           tags$a(
-            href = "https://hossainlab.github.io/metaXpress/",
+            href = "https://mdjubayerhossain.com/metaXpress/",
             target = "_blank",
             class = "btn btn-outline-light btn-sm me-2",
             "📖 Documentation"
@@ -162,7 +162,8 @@ ui <- fluidPage(
       tags$div(
         class = "small text-muted",
         tags$p(tags$strong("Pipeline Specs:"), br(),
-               "• Version: 0.99.0 (Bioconductor-ready)", br(),
+               "• Version: 0.99.0", br(),
+               "• Platform: R (GitHub / Bioconductor-ready)", br(),
                "• Architecture: S4 Object System", br(),
                "• Author: Md. Jubayer Hossain")
       )

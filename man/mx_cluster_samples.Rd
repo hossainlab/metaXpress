@@ -15,7 +15,7 @@ The input \code{study} with the \code{condition} column updated
 }
 \description{
 Uses text mining on metadata fields to assign samples to case/control groups,
-mimicking the \\pkg{sampleclusteR} approach for automated group assignment from
+mimicking the \code{sampleclusteR} approach for automated group assignment from
 GEO metadata. It computes string distances between sample descriptions and
 uses hierarchical clustering to partition them into two groups.
 }

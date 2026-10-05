@@ -200,7 +200,7 @@
 #'
 #' @author Md. Jubayer Hossain \email{contact.jubayerhossain@@gmail.com}
 #'
-#' @importFrom stats median na.omit
+#' @importFrom stats median na.omit as.dist cutree hclust
 #' @importFrom utils head
 "_PACKAGE"
 
