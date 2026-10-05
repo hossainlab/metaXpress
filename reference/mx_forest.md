@@ -21,15 +21,15 @@ mx_forest(gene, de_results, meta_result = NULL)
 - de_results:
 
   A named list of per-study DE `data.frame`s (from
-  [`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md)
+  [`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md)
   result slots), or a list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects.
 
 - meta_result:
 
   Optional. A
-  [`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+  [`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
   object. When provided, the pooled estimate diamond and I-squared are
   taken from the meta-analysis result.
 
@@ -45,8 +45,8 @@ the trees. *BMJ*, **322**(7300), 1479–1480.
 
 ## See also
 
-[`mx_volcano`](https://hossainlab.github.io/metaXpress/reference/mx_volcano.md),
-[`mx_heterogeneity_plot`](https://hossainlab.github.io/metaXpress/reference/mx_heterogeneity_plot.md)
+[`mx_volcano`](https://mdjubayerhossain.com/metaXpress/reference/mx_volcano.md),
+[`mx_heterogeneity_plot`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity_plot.md)
 
 ## Examples
 

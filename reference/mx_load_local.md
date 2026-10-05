@@ -39,13 +39,13 @@ mx_load_local(
 ## Value
 
 A named list of
-[`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+[`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
 objects.
 
 ## See also
 
-[`mx_fetch_geo`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_geo.md),
-[`mx_qc_study`](https://hossainlab.github.io/metaXpress/reference/mx_qc_study.md)
+[`mx_fetch_geo`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_geo.md),
+[`mx_qc_study`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md)
 
 ## Examples
 

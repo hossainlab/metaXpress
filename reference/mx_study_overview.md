@@ -1,7 +1,7 @@
 # Study characteristics overview plot
 
 Creates a multi-panel summary of study-level QC metrics including QC
-scores, sample sizes, and sequencing depths.
+scores, sample sizes, sequencing depths, and gene detection rates.
 
 ## Usage
 
@@ -14,12 +14,12 @@ mx_study_overview(studies)
 - studies:
 
   A named list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects.
 
 ## Value
 
-A `patchwork` object containing multiple `ggplot2` plots.
+A `ggplot2` object (or list of plots).
 
 ## Examples
 

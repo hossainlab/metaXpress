@@ -14,13 +14,13 @@ mx_heatmap(meta_result, studies, top_n = 50)
 - meta_result:
 
   A
-  [`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+  [`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
   object.
 
 - studies:
 
   A named list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects (used to extract per-study log2FC if needed).
 
 - top_n:
@@ -36,8 +36,8 @@ object.
 
 ## See also
 
-[`mx_volcano`](https://hossainlab.github.io/metaXpress/reference/mx_volcano.md),
-[`mx_upset`](https://hossainlab.github.io/metaXpress/reference/mx_upset.md)
+[`mx_volcano`](https://mdjubayerhossain.com/metaXpress/reference/mx_volcano.md),
+[`mx_upset`](https://mdjubayerhossain.com/metaXpress/reference/mx_upset.md)
 
 ## Examples
 

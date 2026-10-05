@@ -22,7 +22,7 @@ mx_reannotate(
 - studies:
 
   A named list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects.
 
 - org:
@@ -63,8 +63,8 @@ annotations in Bioconductor. R package version 1.66.0.
 
 ## See also
 
-[`mx_normalize`](https://hossainlab.github.io/metaXpress/reference/mx_normalize.md),
-[`mx_align_genes`](https://hossainlab.github.io/metaXpress/reference/mx_align_genes.md)
+[`mx_normalize`](https://mdjubayerhossain.com/metaXpress/reference/mx_normalize.md),
+[`mx_align_genes`](https://mdjubayerhossain.com/metaXpress/reference/mx_align_genes.md)
 
 ## Examples
 

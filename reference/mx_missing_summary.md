@@ -15,9 +15,9 @@ mx_missing_summary(de_results)
 - de_results:
 
   A named list of `data.frame` objects from
-  [`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md),
+  [`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md),
   or a list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects.
 
 ## Value
@@ -28,8 +28,8 @@ percentage of studies covering each gene.
 
 ## See also
 
-[`mx_impute`](https://hossainlab.github.io/metaXpress/reference/mx_impute.md),
-[`mx_filter_coverage`](https://hossainlab.github.io/metaXpress/reference/mx_filter_coverage.md)
+[`mx_impute`](https://mdjubayerhossain.com/metaXpress/reference/mx_impute.md),
+[`mx_filter_coverage`](https://mdjubayerhossain.com/metaXpress/reference/mx_filter_coverage.md)
 
 ## Examples
 

@@ -22,9 +22,9 @@ mx_pathway_meta(
 - meta_result:
 
   A
-  [`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+  [`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
   object from
-  [`mx_meta`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md).
+  [`mx_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md).
 
 - db:
 
@@ -52,7 +52,7 @@ mx_pathway_meta(
 ## Value
 
 A
-[`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+[`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
 object with the `pathway_result` slot populated. The `pathway_result`
 `data.frame` contains: `pathway_id`, `pathway_name`, `n_genes`,
 `pvalue`, `padj`, `gene_ratio`.
@@ -75,9 +75,9 @@ profiles. *Proceedings of the National Academy of Sciences*,
 
 ## See also
 
-[`mx_pathway_consensus`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_consensus.md),
-[`mx_pathway_dedup`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_dedup.md),
-[`mx_pathway_heatmap`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_heatmap.md)
+[`mx_pathway_consensus`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_consensus.md),
+[`mx_pathway_dedup`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_dedup.md),
+[`mx_pathway_heatmap`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_heatmap.md)
 
 ## Examples
 

@@ -25,9 +25,8 @@ mx_upset(de_results, padj_threshold = 0.05, lfc_threshold = 1)
 
 ## Value
 
-A
-[`ComplexHeatmap::UpSet`](https://rdrr.io/pkg/ComplexHeatmap/man/UpSet.html)
-object.
+A `ggplot2` object (requires ggupset or
+[`ComplexHeatmap::UpSet`](https://rdrr.io/pkg/ComplexHeatmap/man/UpSet.html)).
 
 ## Examples
 

@@ -15,7 +15,7 @@ mx_correct_library_type(studies)
 - studies:
 
   A named list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects. Studies must have a `library_type` column in `metadata` with
   values `"polyA"` or `"rRNA_depleted"`.
 

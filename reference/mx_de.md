@@ -20,7 +20,7 @@ mx_de(
 - study:
 
   A
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   object with raw counts.
 
 - method:
@@ -74,8 +74,8 @@ R29.
 
 ## See also
 
-[`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md),
-[`mx_de_summary`](https://hossainlab.github.io/metaXpress/reference/mx_de_summary.md)
+[`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md),
+[`mx_de_summary`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_summary.md)
 
 ## Examples
 

@@ -40,6 +40,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/quickstart.html">Getting Started (Quickstart)</a></li>
     <li><a class="dropdown-item" href="../articles/full_workflow.html">Full Workflow: GEO to Report</a></li>
+    <li><a class="dropdown-item" href="../articles/case_study.html">Public GEO Case Study: Pan-Cancer</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -77,18 +78,43 @@ Hossain</h4>
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p><code>metaXpress</code> provides an end-to-end pipeline for
-integrating multiple bulk RNA-seq studies into a single meta-analysis
-result. This vignette walks through a minimal example using the built-in
-simulated dataset.</p>
+integrating multiple bulk RNA-seq studies into a unified meta-analysis.
+This guide walks through installation from GitHub and a minimal workflow
+for ingesting public data from NCBI GEO, performing quality control,
+differential expression analysis, meta-analysis, and visualization.</p>
+</div>
+<div class="section level2">
+<h2 id="installation-from-github">Installation from GitHub<a class="anchor" aria-label="anchor" href="#installation-from-github"></a>
+</h2>
+<p><code>metaXpress</code> is currently available on GitHub and targets
+future submission to Bioconductor.</p>
+<p>You can install the package directly from GitHub using
+<code>remotes</code> or <code>pak</code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hossainlab.github.io/metaXpress/">metaXpress</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Ensure BiocManager is available for Bioconductor dependencies</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install remotes if needed</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"remotes"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install metaXpress with all dependencies</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>Alternatively, using <code>pak</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span><span class="op">)</span></span></code></pre></div>
+<p>Once installed, load the library:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mdjubayerhossain.com/metaXpress/">metaXpress</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="ingest-public-data-from-geo">Ingest Public Data from GEO<a class="anchor" aria-label="anchor" href="#ingest-public-data-from-geo"></a>
 </h2>
-<p>Users can fetch public RNA-seq count matrices and metadata directly
-from NCBI GEO using accession IDs:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>You can fetch public RNA-seq count matrices and curated metadata
+directly from NCBI GEO using accession numbers:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Fetch two bulk RNA-seq cohorts from GEO</span></span>
 <span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_fetch_geo.html">mx_fetch_geo</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GSE53697"</span>, <span class="st">"GSE95587"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">studies</span>, <span class="va">show</span><span class="op">)</span></span></code></pre></div>
@@ -96,33 +122,35 @@ from NCBI GEO using accession IDs:</p>
 <div class="section level2">
 <h2 id="step-1-qc-filtering">Step 1 — QC Filtering<a class="anchor" aria-label="anchor" href="#step-1-qc-filtering"></a>
 </h2>
-<p>Studies are already QC-scored in the example data. In a real
-workflow, QC scores are computed by <code><a href="../reference/mx_fetch_geo.html">mx_fetch_geo()</a></code>
-automatically, or manually via <code><a href="../reference/mx_qc_study.html">mx_qc_study()</a></code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_filter_studies.html">mx_filter_studies</a></span><span class="op">(</span><span class="va">studies</span>, qc_threshold <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
+<p>Each study is evaluated against a 10-point quality control standard
+(replicate counts, depth, alignment rate, raw integer counts, etc.):</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Filter studies passing QC threshold (score &gt;= 7)</span></span>
+<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_filter_studies.html">mx_filter_studies</a></span><span class="op">(</span><span class="va">studies</span>, qc_threshold <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Studies passing QC: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="step-2-align-genes">Step 2 — Align Genes<a class="anchor" aria-label="anchor" href="#step-2-align-genes"></a>
+<h2 id="step-2-align-gene-spaces">Step 2 — Align Gene Spaces<a class="anchor" aria-label="anchor" href="#step-2-align-gene-spaces"></a>
 </h2>
-<p>Find the common gene universe across all studies.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>Identify the common gene universe across all cohorts:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_align_genes.html">mx_align_genes</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="step-3-per-study-differential-expression">Step 3 — Per-Study Differential Expression<a class="anchor" aria-label="anchor" href="#step-3-per-study-differential-expression"></a>
 </h2>
-<p>Run DESeq2 on each study independently.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>Run negative binomial GLMs on each study independently using DESeq2,
+edgeR, or limma-voom:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_de_all.html">mx_de_all</a></span><span class="op">(</span><span class="va">studies</span>, method <span class="op">=</span> <span class="st">"DESeq2"</span>, formula <span class="op">=</span> <span class="op">~</span> <span class="va">condition</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/mx_de_summary.html">mx_de_summary</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="step-4-meta-analysis">Step 4 — Meta-Analysis<a class="anchor" aria-label="anchor" href="#step-4-meta-analysis"></a>
 </h2>
-<p>Combine per-study DE results using the random effects model.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>Combine per-study effect sizes and standard errors using the
+DerSimonian-Laird Random Effects Model:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">de_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">studies</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="va">s</span><span class="op">@</span><span class="va">de_result</span><span class="op">)</span></span>
 <span><span class="va">meta_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_meta.html">mx_meta</a></span><span class="op">(</span><span class="va">de_results</span>, method <span class="op">=</span> <span class="st">"random_effects"</span><span class="op">)</span></span>
 <span><span class="va">meta_result</span></span></code></pre></div>
@@ -130,26 +158,39 @@ automatically, or manually via <code><a href="../reference/mx_qc_study.html">mx_
 <div class="section level2">
 <h2 id="step-5-visualise">Step 5 — Visualise<a class="anchor" aria-label="anchor" href="#step-5-visualise"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_volcano.html">mx_volcano</a></span><span class="op">(</span><span class="va">meta_result</span>, label_top <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Forest plot for the top gene</span></span>
+<p>Generate publication-grade plots:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Volcano plot of meta-analysis results</span></span>
+<span><span class="fu"><a href="../reference/mx_volcano.html">mx_volcano</a></span><span class="op">(</span><span class="va">meta_result</span>, label_top <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Multi-study forest plot for the top gene</span></span>
 <span><span class="va">top_gene</span> <span class="op">&lt;-</span> <span class="va">meta_result</span><span class="op">@</span><span class="va">meta_table</span><span class="op">$</span><span class="va">gene_id</span><span class="op">[</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.min</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">@</span><span class="va">meta_table</span><span class="op">$</span><span class="va">meta_padj</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="../reference/mx_forest.html">mx_forest</a></span><span class="op">(</span><span class="va">top_gene</span>, <span class="va">de_results</span>, <span class="va">meta_result</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_heterogeneity_plot.html">mx_heterogeneity_plot</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Between-study heterogeneity distribution</span></span>
+<span><span class="fu"><a href="../reference/mx_heterogeneity_plot.html">mx_heterogeneity_plot</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="step-6-export-results">Step 6 — Export Results<a class="anchor" aria-label="anchor" href="#step-6-export-results"></a>
+<h2 id="step-6-interactive-shiny-explorer">Step 6 — Interactive Shiny Explorer<a class="anchor" aria-label="anchor" href="#step-6-interactive-shiny-explorer"></a>
 </h2>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<p>You can also explore your meta-analysis results interactively in your
+browser:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Launch local Shiny dashboard</span></span>
+<span><span class="fu">metaXpress</span><span class="fu">::</span><span class="fu"><a href="../reference/mx_run_app.html">mx_run_app</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>Or test the online demo at <a href="https://hossainlab.shinyapps.io/metaXpress-demo/" class="external-link">https://hossainlab.shinyapps.io/metaXpress-demo/</a>.</p>
+</div>
+<div class="section level2">
+<h2 id="step-7-export-results">Step 7 — Export Results<a class="anchor" aria-label="anchor" href="#step-7-export-results"></a>
+</h2>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_export.html">mx_export</a></span><span class="op">(</span><span class="va">meta_result</span>, format <span class="op">=</span> <span class="st">"csv"</span>, output_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_session_info.html">mx_session_info</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">session_info</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

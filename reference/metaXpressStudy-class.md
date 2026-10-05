@@ -2,10 +2,10 @@
 
 Represents a single bulk RNA-seq study, holding raw counts, sample
 metadata, accession information, and QC results. Populated by
-[`mx_fetch_geo`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_geo.md),
-[`mx_fetch_sra`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_sra.md),
+[`mx_fetch_geo`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_geo.md),
+[`mx_fetch_sra`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_sra.md),
 or
-[`mx_load_local`](https://hossainlab.github.io/metaXpress/reference/mx_load_local.md).
+[`mx_load_local`](https://mdjubayerhossain.com/metaXpress/reference/mx_load_local.md).
 
 ## Slots
 
@@ -31,19 +31,19 @@ or
 - `qc_score`:
 
   A length-1 numeric in \[0, 10\]. Filled by
-  [`mx_qc_study`](https://hossainlab.github.io/metaXpress/reference/mx_qc_study.md);
+  [`mx_qc_study`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md);
   `NA` until then.
 
 - `de_result`:
 
   A `data.frame` of per-study differential expression results. Empty
   until
-  [`mx_de`](https://hossainlab.github.io/metaXpress/reference/mx_de.md)
+  [`mx_de`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md)
   is called. Required columns when populated: `gene_id`, `log2FC`,
   `pvalue`, `padj`, `baseMean`.
 
 ## See also
 
-[`mx_fetch_geo`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_geo.md),
-[`mx_qc_study`](https://hossainlab.github.io/metaXpress/reference/mx_qc_study.md),
-[`mx_de`](https://hossainlab.github.io/metaXpress/reference/mx_de.md)
+[`mx_fetch_geo`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_geo.md),
+[`mx_qc_study`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md),
+[`mx_de`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md)

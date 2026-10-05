@@ -23,7 +23,7 @@ mx_volcano(
 - meta_result:
 
   A
-  [`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+  [`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
   object.
 
 - padj_threshold:
@@ -56,8 +56,8 @@ mRNA microarrays. *Journal of Bioinformatics and Computational Biology*,
 
 ## See also
 
-[`mx_forest`](https://hossainlab.github.io/metaXpress/reference/mx_forest.md),
-[`mx_heatmap`](https://hossainlab.github.io/metaXpress/reference/mx_heatmap.md)
+[`mx_forest`](https://mdjubayerhossain.com/metaXpress/reference/mx_forest.md),
+[`mx_heatmap`](https://mdjubayerhossain.com/metaXpress/reference/mx_heatmap.md)
 
 ## Examples
 

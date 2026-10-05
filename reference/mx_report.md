@@ -22,20 +22,20 @@ mx_report(
 - meta_result:
 
   A
-  [`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+  [`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
   object from
-  [`mx_meta`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md).
+  [`mx_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md).
 
 - studies:
 
   A named list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects.
 
 - de_results:
 
   A named list of per-study DE `data.frame`s from
-  [`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md).
+  [`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md).
 
 - format:
 
@@ -57,8 +57,8 @@ The path to the generated report file (invisibly).
 
 ## See also
 
-[`mx_export`](https://hossainlab.github.io/metaXpress/reference/mx_export.md),
-[`mx_session_info`](https://hossainlab.github.io/metaXpress/reference/mx_session_info.md)
+[`mx_export`](https://mdjubayerhossain.com/metaXpress/reference/mx_export.md),
+[`mx_session_info`](https://mdjubayerhossain.com/metaXpress/reference/mx_session_info.md)
 
 ## Examples
 

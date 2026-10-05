@@ -16,11 +16,11 @@
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="metaXpress: End-to-End Bulk RNA-seq Meta-Analysis">
-<meta name="description" content="A unified, reproducible pipeline for multi-study bulk RNA-seq meta-analysis in R/Bioconductor — spanning ingestion, harmonization, differential expression, meta-statistics, missing gene imputation, pathway enrichment, and reporting.
+<meta name="description" content="A unified, reproducible pipeline for multi-study bulk RNA-seq meta-analysis in R — spanning data ingestion, harmonization, differential expression, meta-statistics, missing gene imputation, pathway enrichment, and reporting.
 ">
-<meta property="og:description" content="A unified, reproducible pipeline for multi-study bulk RNA-seq meta-analysis in R/Bioconductor — spanning ingestion, harmonization, differential expression, meta-statistics, missing gene imputation, pathway enrichment, and reporting.
+<meta property="og:description" content="A unified, reproducible pipeline for multi-study bulk RNA-seq meta-analysis in R — spanning data ingestion, harmonization, differential expression, meta-statistics, missing gene imputation, pathway enrichment, and reporting.
 ">
-<meta property="og:image" content="https://hossainlab.github.io/metaXpress/logo.png">
+<meta property="og:image" content="https://mdjubayerhossain.com/metaXpress/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -45,6 +45,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/quickstart.html">Getting Started (Quickstart)</a></li>
     <li><a class="dropdown-item" href="articles/full_workflow.html">Full Workflow: GEO to Report</a></li>
+    <li><a class="dropdown-item" href="articles/case_study.html">Public GEO Case Study: Pan-Cancer</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -62,14 +63,14 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div align="center">
-<p><img src="reference/figures/logo.png" align="center" height="180"></p>
+<p><img src="reference/figures/logo.png" align="center" height="180" alt="metaXpress logo"></p>
 <div class="section level1">
 <div class="page-header">
 <img src="logo.png" class="logo" alt=""><h1 id="metaxpress">metaXpress<a class="anchor" aria-label="anchor" href="#metaxpress"></a>
 </h1>
 </div>
-<p><strong>An end-to-end R/Bioconductor package for bulk RNA-seq meta-analysis</strong></p>
-<p><a href="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml" class="external-link"><img src="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml/badge.svg" alt="R CMD Check"></a> <a href="https://hossainlab.github.io/metaXpress/"><img src="https://img.shields.io/badge/docs-pkgdown-blue.svg" alt="Documentation"></a> <a href="https://hossainlab.shinyapps.io/metaXpress-demo/" class="external-link"><img src="https://img.shields.io/badge/Shiny-Interactive%20Demo-brightgreen?logo=r" alt="Live Demo"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://bioconductor.org/" class="external-link"><img src="https://img.shields.io/badge/Bioconductor-submission-blueviolet?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MCA1MCI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTI1IDVDMTMuOSA1IDUgMTMuOSA1IDI1czguOSAyMCAyMCAyMCAyMC04LjkgMjAtMjBTMzYuMSA1IDI1IDV6bTAgMzZjLTguOCAwLTE2LTcuMi0xNi0xNlMxNi4yIDkgMjUgOXMxNiA3LjIgMTYgMTYtNy4yIDE2LTE2IDE2eiIvPjwvc3ZnPg==" alt="Bioconductor"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%E2%89%A54.3.0-276DC3?logo=r" alt="R version"></a> <a href="https://github.com/hossainlab/metaXpress/issues" class="external-link"><img src="https://img.shields.io/github/issues/hossainlab/metaXpress?color=red" alt="GitHub issues"></a> <a href="https://github.com/hossainlab/metaXpress/pulls" class="external-link"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a></p>
+<p><strong>An end-to-end R package for bulk RNA-seq multi-study meta-analysis</strong></p>
+<p><a href="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml" class="external-link"><img src="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml/badge.svg" alt="R CMD Check"></a> <a href="https://mdjubayerhossain.com/metaXpress/"><img src="https://img.shields.io/badge/docs-pkgdown-blue.svg" alt="Documentation"></a> <a href="https://hossainlab.shinyapps.io/metaXpress-demo/" class="external-link"><img src="https://img.shields.io/badge/Shiny-Interactive%20Demo-brightgreen?logo=r" alt="Live Demo"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://github.com/hossainlab/metaXpress" class="external-link"><img src="https://img.shields.io/badge/version-0.99.0-276DC3?logo=github" alt="Version"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%E2%89%A54.3.0-276DC3?logo=r" alt="R version"></a> <a href="https://github.com/hossainlab/metaXpress/issues" class="external-link"><img src="https://img.shields.io/github/issues/hossainlab/metaXpress?color=red" alt="GitHub issues"></a> <a href="https://github.com/hossainlab/metaXpress/pulls" class="external-link"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a></p>
 </div>
 </div>
 <hr>
@@ -77,10 +78,10 @@
 <h3 id="globe_with_meridians-online-resources--live-demos">🌐 Online Resources &amp; Live Demos<a class="anchor" aria-label="anchor" href="#globe_with_meridians-online-resources--live-demos"></a>
 </h3>
 <ul>
-<li>📖 <strong><a href="https://hossainlab.github.io/metaXpress/">Interactive Documentation Website</a></strong> — Browse complete function references, Quickstart guide, and the full end-to-end GEO workflow with high-resolution figures.</li>
+<li>📖 <strong><a href="https://mdjubayerhossain.com/metaXpress/">Interactive Documentation Website</a></strong> — Complete function references, Getting Started quickstart, full pipeline tutorial, and public GEO case studies.</li>
 <li>🚀 <strong><a href="https://hossainlab.shinyapps.io/metaXpress-demo/" class="external-link">Live Interactive Web Demo</a></strong> — Test the multi-study RNA-seq meta-analysis pipeline, volcano plots, and gene forest plots directly in your browser without installing R.</li>
-<li>🔬 <strong><a href="case_study_results/README.html">Public GEO Pan-Cancer Case Study Report</a></strong> — Complete multi-cohort validation on 52 patient samples across colorectal, pancreatic, and renal cancer with embedded publication-grade figures.</li>
-<li>💻 <strong>Local Interactive Explorer:</strong> Run <code><a href="reference/mx_run_app.html">metaXpress::mx_run_app()</a></code> to launch the Shiny application locally.</li>
+<li>🔬 <strong><a href="case_study_results/README.html">Public GEO Pan-Cancer Case Study Report</a></strong> (or view the <a href="https://mdjubayerhossain.com/metaXpress/articles/case_study.html">Online Vignette</a>) — Multi-cohort validation on 52 patient samples across colorectal, pancreatic, and renal cancers with embedded publication-grade figures.</li>
+<li>💻 <strong>Local Interactive Explorer:</strong> Run <code><a href="reference/mx_run_app.html">metaXpress::mx_run_app()</a></code> to launch the full-featured Shiny application locally.</li>
 </ul>
 <hr>
 </div>
@@ -135,6 +136,97 @@
 <hr>
 </div>
 <div class="section level2">
+<h2 id="package-installation">📦 Installation<a class="anchor" aria-label="anchor" href="#package-installation"></a>
+</h2>
+<blockquote>
+<p><strong>Note:</strong> <code>metaXpress</code> is actively maintained on GitHub and is prepared for upcoming Bioconductor submission. Please follow the instructions below to install directly from GitHub.</p>
+</blockquote>
+<div class="section level3">
+<h3 id="option-1-standard-installation-from-github-recommended">Option 1: Standard Installation from GitHub (Recommended)<a class="anchor" aria-label="anchor" href="#option-1-standard-installation-from-github-recommended"></a>
+</h3>
+<p><code>metaXpress</code> utilizes packages from both CRAN and Bioconductor. To ensure all upstream dependencies (such as <code>DESeq2</code>, <code>edgeR</code>, and <code>GEOquery</code>) are resolved automatically, install using <code>remotes</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># 1. Install BiocManager if not already available</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># 2. Install remotes</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"remotes"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># 3. Install metaXpress with all dependencies</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="option-2-fast-installation-via-pak">Option 2: Fast Installation via <code>pak</code>
+<a class="anchor" aria-label="anchor" href="#option-2-fast-installation-via-pak"></a>
+</h3>
+<p>If you use <code>pak</code>, it automatically resolves CRAN and Bioconductor packages concurrently:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="troubleshooting-manual-bioconductor-pre-installation">Troubleshooting: Manual Bioconductor Pre-Installation<a class="anchor" aria-label="anchor" href="#troubleshooting-manual-bioconductor-pre-installation"></a>
+</h3>
+<p>If you work in a restricted environment or encounter network timeouts during dependency downloads, you can pre-install the core Bioconductor packages first:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Pre-install core Bioconductor engines</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"BiocParallel"</span>, <span class="st">"GEOquery"</span>, <span class="st">"DESeq2"</span>, <span class="st">"edgeR"</span>, <span class="st">"limma"</span>,</span>
+<span>  <span class="st">"sva"</span>, <span class="st">"AnnotationDbi"</span>, <span class="st">"clusterProfiler"</span>, <span class="st">"msigdbr"</span>,</span>
+<span>  <span class="st">"ComplexHeatmap"</span>, <span class="st">"SummarizedExperiment"</span></span>
+<span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install metaXpress from GitHub</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span>, upgrade <span class="op">=</span> <span class="st">"never"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="verify-installation">Verify Installation<a class="anchor" aria-label="anchor" href="#verify-installation"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mdjubayerhossain.com/metaXpress/">metaXpress</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"metaXpress"</span><span class="op">)</span></span>
+<span><span class="co"># [1] '0.99.0'</span></span></code></pre></div>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="microscope-scientific-validation-public-geo-pan-cancer-case-study">🔬 Scientific Validation: Public GEO Pan-Cancer Case Study<a class="anchor" aria-label="anchor" href="#microscope-scientific-validation-public-geo-pan-cancer-case-study"></a>
+</h2>
+<p><code>metaXpress</code> has been benchmarked and scientifically validated across <strong>three independent public NCBI GEO bulk RNA-seq cohorts</strong> totaling <strong>52 patient samples</strong> and <strong>39,376 aligned genes</strong>: - <strong>Colorectal Adenocarcinoma (CRC):</strong> <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE130688" class="external-link">GSE130688</a> (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>30</mn></mrow><annotation encoding="application/x-tex">n = 30</annotation></semantics></math>, 10/10 QC score) - <strong>Pancreatic Ductal Adenocarcinoma (PDAC):</strong> <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE136569" class="external-link">GSE136569</a> (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>10</mn></mrow><annotation encoding="application/x-tex">n = 10</annotation></semantics></math>, 10/10 QC score) - <strong>Clear Cell Renal Cell Carcinoma (ccRCC):</strong> <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE171485" class="external-link">GSE171485</a> (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>12</mn></mrow><annotation encoding="application/x-tex">n = 12</annotation></semantics></math>, 10/10 QC score)</p>
+<div class="section level3">
+<h3 id="key-discoveries">Key Discoveries<a class="anchor" aria-label="anchor" href="#key-discoveries"></a>
+</h3>
+<ul>
+<li>
+<strong>558 Shared Meta-DEGs</strong> identified (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">FDR</mtext><mo>&lt;</mo><mn>0.05</mn><mo>,</mo><mo stretchy="false" form="prefix">|</mo><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>2</mn></msub><mtext mathvariant="normal">FC</mtext><mo stretchy="false" form="prefix">|</mo><mo>≥</mo><mn>1.0</mn></mrow><annotation encoding="application/x-tex">\text{FDR} &lt; 0.05, |\log_2\text{FC}| \ge 1.0</annotation></semantics></math>) with 100% directional concordance and zero between-study heterogeneity (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>I</mi><mn>2</mn></msup><mo>=</mo><mn>0</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">I^2 = 0\%</annotation></semantics></math>).</li>
+<li>
+<strong>Statistical Power Amplification:</strong> Rescued small-sample cohorts (e.g. GSE171485 with only 18 individual DEGs) into a well-powered pooled consensus.</li>
+<li>
+<strong>Biomarker Recovery:</strong> Successfully recovered canonical oncogenes (<strong><code>MST1R</code></strong>, <strong><code>MUC4</code></strong>, <strong><code>IGF2BP3</code></strong>, <strong><code>CDCP1</code></strong>) and conserved tumor suppressors (<strong><code>FAM107A</code></strong>).</li>
+</ul>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th align="center">Study Characteristics Overview</th>
+<th align="center">Pan-Cancer Meta-Volcano</th>
+</tr></thead>
+<tbody><tr>
+<td align="center"><img src="reference/figures/case_study_study_overview.png" width="480" alt="Study Overview"></td>
+<td align="center"><img src="reference/figures/case_study_volcano_plot.png" width="480" alt="Volcano Plot"></td>
+</tr></tbody>
+</table>
+<p>👉 <strong>Read the complete scientific report:</strong> <a href="case_study_results/README.html">case_study_results/README.md</a> or online at <a href="https://mdjubayerhossain.com/metaXpress/articles/case_study.html">https://mdjubayerhossain.com/metaXpress/articles/case_study.html</a>.</p>
+<hr>
+</div>
+</div>
+<div class="section level2">
 <h2 id="why-metaxpress">Why metaXpress?<a class="anchor" aria-label="anchor" href="#why-metaxpress"></a>
 </h2>
 <table class="table">
@@ -147,14 +239,14 @@
 </tr></thead>
 <tbody>
 <tr>
-<td>GEO data ingestion</td>
+<td>GEO public data ingestion</td>
 <td align="center">✅</td>
 <td align="center">❌</td>
 <td align="center">❌</td>
 <td align="center">❌</td>
 </tr>
 <tr>
-<td>10-point study QC</td>
+<td>10-point study QC checklist</td>
 <td align="center">✅</td>
 <td align="center">❌</td>
 <td align="center">❌</td>
@@ -168,7 +260,7 @@
 <td align="center">❌</td>
 </tr>
 <tr>
-<td>Library-type correction</td>
+<td>Library-type bias correction</td>
 <td align="center">✅</td>
 <td align="center">❌</td>
 <td align="center">✅</td>
@@ -203,7 +295,14 @@
 <td align="center">❌</td>
 </tr>
 <tr>
-<td>Reproducible report</td>
+<td>Interactive Shiny Explorer</td>
+<td align="center">✅</td>
+<td align="center">❌</td>
+<td align="center">❌</td>
+<td align="center">❌</td>
+</tr>
+<tr>
+<td>Reproducible report export</td>
 <td align="center">✅</td>
 <td align="center">❌</td>
 <td align="center">❌</td>
@@ -214,75 +313,62 @@
 <hr>
 </div>
 <div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Bioconductor (once released)</span></span>
-<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"metaXpress"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Development version from GitHub</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level2">
 <h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hossainlab.github.io/metaXpress/">metaXpress</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mdjubayerhossain.com/metaXpress/">metaXpress</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ── 1. Fetch and QC studies from GEO or SRA ───────────────────────────────</span></span>
-<span><span class="va">geo_studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_fetch_geo.html">mx_fetch_geo</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GSE53697"</span>, <span class="st">"GSE95587"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co"># Fetch pre-quantified count matrices directly from recount3</span></span>
-<span><span class="va">sra_studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_fetch_sra.html">mx_fetch_sra</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SRP253805"</span><span class="op">)</span><span class="op">)</span> </span>
+<span><span class="co"># ── 1. Fetch and QC studies from GEO ──────────────────────────────────────</span></span>
+<span><span class="co"># Download count matrices and curated metadata directly from NCBI GEO</span></span>
+<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_fetch_geo.html">mx_fetch_geo</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GSE130688"</span>, <span class="st">"GSE136569"</span>, <span class="st">"GSE171485"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">geo_studies</span>, <span class="va">sra_studies</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Auto-cluster missing case/control conditions using metadata text</span></span>
-<span><span class="va">studies</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_cluster_samples.html">mx_cluster_samples</a></span><span class="op">(</span><span class="va">studies</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> </span>
-<span></span>
+<span><span class="co"># Filter studies passing quality control criteria (score &gt;= 7/10)</span></span>
 <span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_filter_studies.html">mx_filter_studies</a></span><span class="op">(</span><span class="va">studies</span>, qc_threshold <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># ── 2. Harmonize ──────────────────────────────────────────────────────────</span></span>
+<span><span class="co"># Standardize gene identifiers to SYMBOL</span></span>
 <span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_reannotate.html">mx_reannotate</a></span><span class="op">(</span><span class="va">studies</span>, org <span class="op">=</span> <span class="st">"Homo sapiens"</span>, target_id <span class="op">=</span> <span class="st">"SYMBOL"</span><span class="op">)</span></span>
-<span><span class="co"># Correct for polyA vs rRNA-depleted library bias (Bush et al. 2017)</span></span>
-<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_correct_library_type.html">mx_correct_library_type</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span></span>
-<span><span class="co"># Batch effect removal via PCA and Harmony</span></span>
-<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_remove_batch.html">mx_remove_batch</a></span><span class="op">(</span><span class="va">studies</span>, method <span class="op">=</span> <span class="st">"harmony"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Align common gene universe across cohorts</span></span>
 <span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_align_genes.html">mx_align_genes</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ── 3. Per-study DE ───────────────────────────────────────────────────────</span></span>
+<span><span class="co"># ── 3. Per-study Differential Expression ──────────────────────────────────</span></span>
+<span><span class="co"># Fit negative binomial GLMs independently across cohorts</span></span>
 <span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_de_all.html">mx_de_all</a></span><span class="op">(</span><span class="va">studies</span>, method <span class="op">=</span> <span class="st">"DESeq2"</span>, formula <span class="op">=</span> <span class="op">~</span> <span class="va">condition</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/mx_de_summary.html">mx_de_summary</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ── 4. Handle missing genes ───────────────────────────────────────────────</span></span>
+<span><span class="co"># ── 4. Handle Missing Genes ───────────────────────────────────────────────</span></span>
 <span><span class="va">de_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">studies</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="va">s</span><span class="op">@</span><span class="va">de_result</span><span class="op">)</span></span>
-<span><span class="co"># k-NN imputation for genes missing in some studies</span></span>
-<span><span class="va">de_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_impute.html">mx_impute</a></span><span class="op">(</span><span class="va">de_results</span>, method <span class="op">=</span> <span class="st">"knn"</span><span class="op">)</span></span>
 <span><span class="va">de_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_filter_coverage.html">mx_filter_coverage</a></span><span class="op">(</span><span class="va">de_results</span>, min_studies <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ── 5. Meta-analysis ──────────────────────────────────────────────────────</span></span>
+<span><span class="co"># ── 5. Statistical Meta-Analysis ──────────────────────────────────────────</span></span>
+<span><span class="co"># Combine effect sizes and standard errors via DerSimonian-Laird Random Effects</span></span>
 <span><span class="va">meta_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_meta.html">mx_meta</a></span><span class="op">(</span><span class="va">de_results</span>, method <span class="op">=</span> <span class="st">"random_effects"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ── 6. Pathway enrichment ─────────────────────────────────────────────────</span></span>
-<span><span class="va">meta_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_pathway_meta.html">mx_pathway_meta</a></span><span class="op">(</span><span class="va">meta_result</span>, db <span class="op">=</span> <span class="st">"Hallmarks"</span><span class="op">)</span></span>
-<span><span class="co"># Remove highly overlapping/redundant pathways via Jaccard similarity</span></span>
-<span><span class="va">meta_result</span><span class="op">@</span><span class="va">pathway_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_pathway_dedup.html">mx_pathway_dedup</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">@</span><span class="va">pathway_result</span><span class="op">)</span></span>
+<span><span class="co"># ── 6. Pathway Meta-Analysis ──────────────────────────────────────────────</span></span>
+<span><span class="va">meta_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_pathway_meta.html">mx_pathway_meta</a></span><span class="op">(</span><span class="va">meta_result</span>, db <span class="op">=</span> <span class="st">"Hallmarks"</span>, method <span class="op">=</span> <span class="st">"ORA"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ── 7. Visualize ──────────────────────────────────────────────────────────</span></span>
-<span><span class="fu"><a href="reference/mx_study_overview.html">mx_study_overview</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span> <span class="co"># Dashboard of QC scores, sample sizes, depths</span></span>
-<span><span class="fu"><a href="reference/mx_upset.html">mx_upset</a></span><span class="op">(</span><span class="va">de_results</span><span class="op">)</span>       <span class="co"># UpSet plot of DEG overlap across studies</span></span>
-<span><span class="fu"><a href="reference/mx_volcano.html">mx_volcano</a></span><span class="op">(</span><span class="va">meta_result</span>, label_top <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/mx_heterogeneity_plot.html">mx_heterogeneity_plot</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">)</span></span>
+<span><span class="co"># ── 7. Visualize Results ──────────────────────────────────────────────────</span></span>
+<span><span class="fu"><a href="reference/mx_study_overview.html">mx_study_overview</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span>           <span class="co"># QC metrics and cohort depths</span></span>
+<span><span class="fu"><a href="reference/mx_volcano.html">mx_volcano</a></span><span class="op">(</span><span class="va">meta_result</span>, label_top <span class="op">=</span> <span class="fl">15</span><span class="op">)</span>  <span class="co"># Publication-grade volcano plot</span></span>
+<span><span class="fu"><a href="reference/mx_heterogeneity_plot.html">mx_heterogeneity_plot</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">)</span>   <span class="co"># Higgins I² distribution</span></span>
 <span></span>
-<span><span class="co"># ── 8. Export ─────────────────────────────────────────────────────────────</span></span>
-<span><span class="fu"><a href="reference/mx_report.html">mx_report</a></span><span class="op">(</span><span class="va">meta_result</span>, <span class="va">studies</span>, <span class="va">de_results</span>, format <span class="op">=</span> <span class="st">"html"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/mx_export.html">mx_export</a></span><span class="op">(</span><span class="va">meta_result</span>, format <span class="op">=</span> <span class="st">"excel"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Forest plot for top-ranked candidate gene</span></span>
+<span><span class="va">top_gene</span> <span class="op">&lt;-</span> <span class="va">meta_result</span><span class="op">@</span><span class="va">meta_table</span><span class="op">$</span><span class="va">gene_id</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.min</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">@</span><span class="va">meta_table</span><span class="op">$</span><span class="va">meta_padj</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="fu"><a href="reference/mx_forest.html">mx_forest</a></span><span class="op">(</span><span class="va">top_gene</span>, <span class="va">de_results</span>, <span class="va">meta_result</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># ── 8. Interactive Explorer &amp; Export ──────────────────────────────────────</span></span>
+<span><span class="co"># Launch interactive dashboard locally</span></span>
+<span><span class="fu"><a href="reference/mx_run_app.html">mx_run_app</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Export results table</span></span>
+<span><span class="fu"><a href="reference/mx_export.html">mx_export</a></span><span class="op">(</span><span class="va">meta_result</span>, format <span class="op">=</span> <span class="st">"csv"</span>, output_dir <span class="op">=</span> <span class="st">"results/"</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="meta-analysis-methods">Meta-Analysis Methods<a class="anchor" aria-label="anchor" href="#meta-analysis-methods"></a>
+<h2 id="meta-analysis-statistical-methods">Meta-Analysis Statistical Methods<a class="anchor" aria-label="anchor" href="#meta-analysis-statistical-methods"></a>
 </h2>
-<p>metaXpress implements six methods selectable via the <code>method</code> argument of <code><a href="reference/mx_meta.html">mx_meta()</a></code>:</p>
+<p>metaXpress implements six statistical methods selectable via the <code>method</code> argument in <code><a href="reference/mx_meta.html">mx_meta()</a></code>:</p>
 <table class="table">
 <colgroup>
 <col width="12%">
@@ -326,7 +412,7 @@
 <td>Prasad &amp; Li 2021</td>
 </tr>
 <tr>
-<td>Fixed effects</td>
+<td>Fixed effects (Inverse-variance)</td>
 <td><code>"fixed_effects"</code></td>
 <td align="center">✅</td>
 <td align="center">❌</td>
@@ -353,7 +439,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Choosing a method:</strong> - <strong>2 studies</strong> → use <code>"fisher"</code> or <code>"stouffer"</code> - <strong>3+ studies, I² &lt; 25%</strong> → use <code>"fixed_effects"</code> - <strong>3+ studies, I² ≥ 25%</strong> → use <code>"random_effects"</code> (default) - <strong>Mixed/unknown heterogeneity</strong> → use <code>"awmeta"</code></p>
+<p><strong>Method Selection Guide:</strong> - <strong>2 studies:</strong> use <code>"fisher"</code> or <code>"stouffer"</code> - <strong>3+ studies, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>I</mi><mn>2</mn></msup><mo>&lt;</mo><mn>25</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">I^2 &lt; 25\%</annotation></semantics></math>:</strong> use <code>"fixed_effects"</code> - <strong>3+ studies, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>I</mi><mn>2</mn></msup><mo>≥</mo><mn>25</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">I^2 \ge 25\%</annotation></semantics></math>:</strong> use <code>"random_effects"</code> (default) - <strong>Mixed or unknown heterogeneity:</strong> use <code>"awmeta"</code></p>
 <hr>
 </div>
 <div class="section level2">
@@ -369,9 +455,9 @@
 <hr>
 </div>
 <div class="section level2">
-<h2 id="study-qc-scoring">Study QC Scoring<a class="anchor" aria-label="anchor" href="#study-qc-scoring"></a>
+<h2 id="id_10-point-study-qc-scoring">10-Point Study QC Scoring<a class="anchor" aria-label="anchor" href="#id_10-point-study-qc-scoring"></a>
 </h2>
-<p><code><a href="reference/mx_qc_study.html">mx_qc_study()</a></code> scores each study against 10 criteria (Heberle et al. 2025), awarding 1 point per criterion:</p>
+<p><code><a href="reference/mx_qc_study.html">mx_qc_study()</a></code> benchmarks each study against 10 objective criteria (Heberle et al. 2025):</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -437,7 +523,6 @@
 </tr>
 </tbody>
 </table>
-<p>Studies scoring below <code>qc_threshold = 7</code> are removed by <code><a href="reference/mx_filter_studies.html">mx_filter_studies()</a></code>.</p>
 <hr>
 </div>
 <div class="section level2">
@@ -644,7 +729,7 @@
 <td>I² distribution histogram</td>
 </tr>
 </tbody>
-</table></details><details><summary><strong>Module 8 — Report &amp; Export</strong>
+</table></details><details><summary><strong>Module 8 — Reporting &amp; Export</strong>
 </summary><table class="table">
 <thead><tr>
 <th>Function</th>
@@ -674,13 +759,13 @@
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>If you use <code>metaXpress</code> in your research, academic applications, or benchmarking, please cite:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="va">@manual</span>{<span class="ot">metaXpress2026</span>,</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="dt">title</span>  = {metaXpress: End-to-End Bulk RNA-seq Meta-Analysis},</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="dt">author</span> = {Hossain, Md. Jubayer},</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="dt">note</span>   = {R package version 0.99.0},</span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="dt">url</span>    = {https://github.com/hossainlab/metaXpress}</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="va">@manual</span>{<span class="ot">metaXpress2026</span>,</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="dt">title</span>  = {metaXpress: End-to-End Bulk RNA-seq Meta-Analysis},</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="dt">author</span> = {Hossain, Md. Jubayer},</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="dt">note</span>   = {R package version 0.99.0},</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  <span class="dt">url</span>    = {https://mdjubayerhossain.com/metaXpress/}</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>}</span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -698,7 +783,7 @@
 <li><label><input type="checkbox" checked>Module 8: Report generation &amp; export</label></li>
 <li><label><input type="checkbox" checked>Interactive Shiny live demo explorer (<code><a href="reference/mx_run_app.html">mx_run_app()</a></code>)</label></li>
 <li><label><input type="checkbox" checked>Live public data ingestion from NCBI GEO</label></li>
-<li><label><input type="checkbox" checked>pkgdown documentation website configuration</label></li>
+<li><label><input type="checkbox" checked>Full documentation website at <a href="https://mdjubayerhossain.com/metaXpress/">https://mdjubayerhossain.com/metaXpress/</a></label></li>
 <li><label><input type="checkbox">Bioconductor submission</label></li>
 </ul>
 <hr>
@@ -762,7 +847,7 @@
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
-<p>MIT © <a href="https://github.com/hossainlab" class="external-link">Md. Jubayer Hossain</a></p>
+<p>MIT © <a href="https://mdjubayerhossain.com" class="external-link">Md. Jubayer Hossain</a></p>
 </div>
 
   </main><aside class="col-md-3"><div class="links">

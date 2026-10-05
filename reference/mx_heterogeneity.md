@@ -14,9 +14,9 @@ mx_heterogeneity(de_results)
 - de_results:
 
   A named list of `data.frame` objects from
-  [`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md),
+  [`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md),
   or a list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects.
 
 ## Value
@@ -36,8 +36,8 @@ meta-analysis. *Statistics in Medicine*, **21**(11), 1539–1558.
 
 ## See also
 
-[`mx_meta`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md),
-[`mx_heterogeneity_plot`](https://hossainlab.github.io/metaXpress/reference/mx_heterogeneity_plot.md)
+[`mx_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md),
+[`mx_heterogeneity_plot`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity_plot.md)
 
 ## Examples
 

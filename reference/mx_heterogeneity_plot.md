@@ -18,7 +18,7 @@ mx_heterogeneity_plot(meta_result)
 - meta_result:
 
   A
-  [`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+  [`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
   object.
 
 ## Value
@@ -33,8 +33,8 @@ Higgins, J.P.T. et al. (2003) Measuring inconsistency in meta-analyses.
 
 ## See also
 
-[`mx_heterogeneity`](https://hossainlab.github.io/metaXpress/reference/mx_heterogeneity.md),
-[`mx_forest`](https://hossainlab.github.io/metaXpress/reference/mx_forest.md)
+[`mx_heterogeneity`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity.md),
+[`mx_forest`](https://mdjubayerhossain.com/metaXpress/reference/mx_forest.md)
 
 ## Examples
 

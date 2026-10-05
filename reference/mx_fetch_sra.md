@@ -1,7 +1,7 @@
 # Fetch raw RNA-seq data from SRA
 
 Downloads pre-quantified count matrices for SRA project IDs using the
-\pkgrecount3 package. This avoids computationally expensive local
+`recount3` package. This avoids computationally expensive local
 alignment while ensuring uniform processing across studies
 (Collado-Torres et al. 2017; Wilks et al. 2021).
 
@@ -29,7 +29,7 @@ mx_fetch_sra(srp_ids, cache_dir = tempdir(), organism = "human")
 ## Value
 
 A named list of
-[`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+[`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
 objects.
 
 ## References
@@ -40,8 +40,8 @@ RNA-seq expression and splicing. *Genome Biology*, **22**(1), 323.
 
 ## See also
 
-[`mx_fetch_geo`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_geo.md),
-[`mx_load_local`](https://hossainlab.github.io/metaXpress/reference/mx_load_local.md)
+[`mx_fetch_geo`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_geo.md),
+[`mx_load_local`](https://mdjubayerhossain.com/metaXpress/reference/mx_load_local.md)
 
 ## Examples
 

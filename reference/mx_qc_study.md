@@ -16,7 +16,7 @@ mx_qc_study(study)
 - study:
 
   A
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   object.
 
 ## Value

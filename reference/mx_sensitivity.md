@@ -20,7 +20,7 @@ mx_sensitivity(
 - de_results:
 
   A named list of `data.frame` objects from
-  [`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md).
+  [`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md).
 
 - method:
 
@@ -29,7 +29,7 @@ mx_sensitivity(
 ## Value
 
 A list of
-[`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+[`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
 objects, one per leave-one-out iteration. Names correspond to the
 excluded study.
 
@@ -41,7 +41,7 @@ Reviews of Interventions*. 2nd edn. Chichester: John Wiley & Sons.
 
 ## See also
 
-[`mx_meta`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md)
+[`mx_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md)
 
 ## Examples
 

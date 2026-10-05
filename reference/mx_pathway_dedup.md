@@ -15,7 +15,7 @@ mx_pathway_dedup(pathway_results, jaccard_threshold = 0.5)
 - pathway_results:
 
   A `data.frame` from
-  [`mx_pathway_meta`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_meta.md)
+  [`mx_pathway_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_meta.md)
   or a list thereof.
 
 - jaccard_threshold:

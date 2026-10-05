@@ -13,7 +13,9 @@ mx_pathway_heatmap(pathway_results, top_n = 30, value = c("padj", "NES"))
 
 - pathway_results:
 
-  A list of per-study pathway enrichment `data.frame` objects.
+  A list of per-study pathway enrichment `data.frame` objects, or a
+  single `data.frame` from
+  [`mx_pathway_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_meta.md).
 
 - top_n:
 
@@ -26,18 +28,16 @@ mx_pathway_heatmap(pathway_results, top_n = 30, value = c("padj", "NES"))
 
 ## Value
 
-A
-[`ComplexHeatmap::Heatmap`](https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html)
-object.
+A `ggplot2` object.
 
 ## See also
 
-[`mx_pathway_meta`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_meta.md)
+[`mx_pathway_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_meta.md)
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-  mx_pathway_heatmap(per_study_pathways, top_n = 20)
+  mx_pathway_heatmap(result@pathway_result, top_n = 20)
 } # }
 ```

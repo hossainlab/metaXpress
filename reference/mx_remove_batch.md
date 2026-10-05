@@ -17,7 +17,7 @@ mx_remove_batch(
 - studies:
 
   A named list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects.
 
 - method:
@@ -33,8 +33,7 @@ The input list of studies with batch effects removed from `counts`.
 
 Batch is defined as study of origin. `"ComBat-seq"` operates on raw
 counts and is preferred for count data. `"ComBat"` and `"limma"` operate
-on log-transformed values. `"harmony"` operates on PCA projections of
-the data, which is computationally efficient.
+on log-transformed values.
 
 ## References
 
@@ -52,13 +51,9 @@ analyses for RNA-sequencing and microarray studies. *Nucleic Acids
 Research*, **43**(7), e47.
 [doi:10.1093/nar/gkv007](https://doi.org/10.1093/nar/gkv007)
 
-Korsunsky, I. et al. (2019) Fast, sensitive and accurate integration of
-single-cell data with Harmony. *Nature Methods*, **16**(12), 1289-1296.
-[doi:10.1038/s41592-019-0619-0](https://doi.org/10.1038/s41592-019-0619-0)
-
 ## See also
 
-[`mx_normalize`](https://hossainlab.github.io/metaXpress/reference/mx_normalize.md)
+[`mx_normalize`](https://mdjubayerhossain.com/metaXpress/reference/mx_normalize.md)
 
 ## Examples
 

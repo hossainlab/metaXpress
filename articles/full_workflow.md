@@ -2,60 +2,103 @@
 
 ## Overview
 
-This vignette demonstrates the complete metaXpress workflow, from
-fetching studies from GEO through pathway enrichment and report
-generation. All `mx_fetch_*()` calls fetch public data directly from
-NCBI GEO. Users can provide accession IDs or local count matrices via
-[`mx_load_local()`](https://hossainlab.github.io/metaXpress/reference/mx_load_local.md).
+`metaXpress` is an end-to-end R package designed for multi-study
+transcriptomic meta-analysis. It provides a standardized pipeline
+covering data ingestion from NCBI GEO and SRA, 10-point quality control
+scoring, cross-platform harmonization, per-study differential
+expression, six statistical meta-analysis models, missing gene handling,
+pathway enrichment, interactive visualization, and reproducible
+reporting.
+
+For full documentation and online tutorials, visit the official website
+at <https://mdjubayerhossain.com/metaXpress/>.
+
+## Installation from GitHub
+
+`metaXpress` is currently available on GitHub and targets future
+submission to Bioconductor.
+
+``` r
+
+# 1. Ensure BiocManager is present for Bioconductor dependencies
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+# 2. Install remotes
+if (!requireNamespace("remotes", quietly = TRUE))
+    install.packages("remotes")
+
+# 3. Install metaXpress
+remotes::install_github("hossainlab/metaXpress", dependencies = TRUE)
+```
+
+Load the package:
 
 ``` r
 
 library(metaXpress)
 ```
 
-## 1. Data Ingestion
+------------------------------------------------------------------------
 
-### 1a. Fetch from GEO
+## 1. Data Ingestion & Quality Control
+
+### 1a. Fetch Public Data from GEO
+
+You can ingest multiple public RNA-seq datasets directly using their
+NCBI GEO accessions:
 
 ``` r
 
-# Fetch three Alzheimer's disease RNA-seq studies
-accessions <- c("GSE53697", "GSE95587", "GSE118553")
-studies    <- mx_fetch_geo(accessions, count_type = "raw",
-                            cache_dir = "geo_cache/")
+# Fetch three bulk RNA-seq cohorts from GEO
+accessions <- c("GSE130688", "GSE136569", "GSE171485")
+studies    <- mx_fetch_geo(accessions, count_type = "raw", cache_dir = "geo_cache/")
 ```
 
-### 1b. Inspect QC Results
+Alternatively, load local count matrices and metadata with
+[`mx_load_local()`](https://mdjubayerhossain.com/metaXpress/reference/mx_load_local.md).
+
+### 1b. Inspect 10-Point QC Scoring
+
+[`mx_qc_study()`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md)
+benchmarks each study against 10 criteria (sample size, depth, alignment
+rate, duplicate rate, case/control completeness, integer counts, etc.):
 
 ``` r
 
 qc_scores <- vapply(studies, function(s) s@qc_score, numeric(1))
 print(qc_scores)
 
-# View detailed QC breakdown for the first study
+# Inspect detailed metrics for study 1
 attr(studies[[1]], "qc_details")
 ```
 
-### 1c. Filter Low-Quality Studies
+### 1c. Filter Low-Quality Cohorts
 
 ``` r
 
+# Filter out cohorts failing the QC threshold (minimum score: 7/10)
 studies <- mx_filter_studies(studies, qc_threshold = 7)
 ```
 
-## 2. Harmonization
+------------------------------------------------------------------------
 
-### 2a. Reannotate Gene IDs
+## 2. Cross-Study Harmonization
+
+### 2a. Reannotate Gene Identifiers
+
+Convert diverse gene identifiers (Ensembl, Entrez, RefSeq) to a uniform
+namespace:
 
 ``` r
 
-studies <- mx_reannotate(studies, org = "Homo sapiens",
-                          target_id = "SYMBOL")
+studies <- mx_reannotate(studies, org = "Homo sapiens", target_id = "SYMBOL")
 ```
 
 ### 2b. Correct Library Type Bias
 
-If studies mix polyA-selected and rRNA-depleted libraries:
+If cohorts mix poly(A)-selected and rRNA-depleted protocols, adjust for
+library type biases:
 
 ``` r
 
@@ -69,130 +112,156 @@ studies <- mx_correct_library_type(studies)
 studies <- mx_remove_batch(studies, method = "ComBat-seq")
 ```
 
-### 2d. Align to Common Genes
+### 2d. Align Common Gene Space
 
 ``` r
 
 studies <- mx_align_genes(studies)
 ```
 
+------------------------------------------------------------------------
+
 ## 3. Per-Study Differential Expression
 
-``` r
-
-studies <- mx_de_all(studies, method = "DESeq2",
-                      formula = ~ condition,
-                      BPPARAM = BiocParallel::MulticoreParam(4))
-```
+Run independent statistical tests on each cohort using DESeq2, edgeR, or
+limma-voom:
 
 ``` r
 
-mx_de_summary(studies, padj_threshold = 0.05, lfc_threshold = 1)
+studies <- mx_de_all(
+  studies,
+  method  = "DESeq2",
+  formula = ~ condition,
+  BPPARAM = BiocParallel::MulticoreParam(4)
+)
 ```
+
+Inspect significant gene counts:
+
+``` r
+
+mx_de_summary(studies, padj_threshold = 0.05, lfc_threshold = 1.0)
+```
+
+------------------------------------------------------------------------
 
 ## 4. Handle Missing Genes
+
+When cohorts have varying gene detection rates:
 
 ``` r
 
 de_results <- lapply(studies, function(s) s@de_result)
 
-# Check coverage across studies
+# Inspect gene coverage across cohorts
 cov_mat <- mx_missing_summary(de_results)
-hist(attr(cov_mat, "coverage_pct"),
-     main = "Gene coverage across studies",
-     xlab = "% studies with gene detected")
 
-# Keep genes in at least 2 of 3 studies
+# Retain genes present in at least 2 cohorts or apply k-NN imputation
 de_results <- mx_filter_coverage(de_results, min_studies = 2)
+# de_results <- mx_impute(de_results, method = "knn")
 ```
 
-## 5. Meta-Analysis
+------------------------------------------------------------------------
 
-### 5a. Choose the Right Method
+## 5. Statistical Meta-Analysis
 
-Use the decision guide: - 2 studies → `"fisher"` or `"stouffer"` - 3+
-studies, low heterogeneity → `"fixed_effects"` - 3+ studies, high
-heterogeneity → `"random_effects"` (default) - Mixed heterogeneity →
-`"awmeta"`
+### 5a. Model Selection Guide
+
+- **2 cohorts:** `"fisher"` (Fisher’s combined probability) or
+  `"stouffer"` (Z-score weighting).
+- **3+ cohorts, low heterogeneity ($`I^2 < 25\%`$):** `"fixed_effects"`
+  (Inverse-variance).
+- **3+ cohorts, moderate-to-high heterogeneity ($`I^2 \ge 25\%`$):**
+  `"random_effects"` (DerSimonian-Laird, recommended default).
+- **Mixed heterogeneity:** `"awmeta"` (Adaptive weighting).
 
 ``` r
 
-meta_result <- mx_meta(de_results, method = "random_effects",
-                        min_studies = 2)
+meta_result <- mx_meta(de_results, method = "random_effects", min_studies = 2)
 meta_result
 ```
 
-### 5b. Heterogeneity Assessment
+### 5b. Quantify Between-Study Heterogeneity
+
+Assess Cochran’s $`Q`$, Higgins $`I^2`$, and $`\tau^2`$ for every gene:
 
 ``` r
 
 het <- mx_heterogeneity(de_results)
 summary(het$I_sq)
-
-# Genes with high heterogeneity
-high_het <- het[!is.na(het$I_sq) & het$I_sq > 75, ]
-nrow(high_het)
 ```
 
-### 5c. Sensitivity Analysis
+### 5c. Leave-One-Out Sensitivity Analysis
+
+Ensure discoveries are not driven by an individual outlier cohort:
 
 ``` r
 
 loo <- mx_sensitivity(de_results, method = "random_effects")
-# Compare significant gene counts across LOO runs
-vapply(loo, function(r) sum(r@meta_table$meta_padj <= 0.05, na.rm = TRUE),
-        integer(1))
+vapply(loo, function(r) sum(r@meta_table$meta_padj <= 0.05, na.rm = TRUE), integer(1))
 ```
+
+------------------------------------------------------------------------
 
 ## 6. Pathway Meta-Analysis
 
+Perform cross-study Over-Representation Analysis (ORA) or Gene Set
+Enrichment Analysis (GSEA) on Hallmark, KEGG, or GO sets:
+
 ``` r
 
-meta_result <- mx_pathway_meta(meta_result, db = "Hallmarks",
-                                method = "ORA")
-head(meta_result@pathway_result[
-  order(meta_result@pathway_result$padj), ], 10)
+meta_result <- mx_pathway_meta(meta_result, db = "Hallmarks", method = "ORA")
+head(meta_result@pathway_result[order(meta_result@pathway_result$padj), ], 10)
 ```
 
-## 7. Visualization
+------------------------------------------------------------------------
+
+## 7. Publication Visualizations
+
+### Volcano Plot
 
 ``` r
 
-mx_volcano(meta_result, padj_threshold = 0.05, lfc_threshold = 1,
-            label_top = 15)
+mx_volcano(meta_result, padj_threshold = 0.05, lfc_threshold = 1.0, label_top = 15)
 ```
 
+### Forest Plot
+
 ``` r
 
-top_gene <- meta_result@meta_table$gene_id[
-  which.min(meta_result@meta_table$meta_padj)]
+top_gene <- meta_result@meta_table$gene_id[which.min(meta_result@meta_table$meta_padj)]
 mx_forest(top_gene, de_results, meta_result)
 ```
 
-``` r
-
-mx_heatmap(meta_result, studies, top_n = 30)
-```
+### Heterogeneity Plot
 
 ``` r
 
 mx_heterogeneity_plot(meta_result)
 ```
 
-## 8. Report & Export
+------------------------------------------------------------------------
+
+## 8. Interactive Explorer & Report Generation
+
+### Launch Interactive Shiny App
+
+Explore results dynamically in your browser:
 
 ``` r
 
-mx_report(meta_result, studies, de_results,
-           format     = "html",
-           output_dir = "results/")
+metaXpress::mx_run_app()
 ```
+
+### Generate Reproducible Reports & Export
 
 ``` r
 
-mx_export(meta_result, format = "excel", output_dir = "results/")
-mx_export(meta_result, format = "csv",   output_dir = "results/")
+mx_report(meta_result, studies, de_results, format = "html", output_dir = "results/")
+mx_export(meta_result, format = "csv", output_dir = "results/")
 ```
+
+------------------------------------------------------------------------
 
 ## Session Information
 

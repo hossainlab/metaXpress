@@ -1,7 +1,7 @@
 # Run differential expression on all studies
 
 Applies
-[`mx_de`](https://hossainlab.github.io/metaXpress/reference/mx_de.md) to
+[`mx_de`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md) to
 each study in a list, optionally in parallel using BiocParallel.
 
 ## Usage
@@ -21,13 +21,13 @@ mx_de_all(
 - studies:
 
   A named list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects.
 
 - method:
 
   Character scalar. DE method passed to
-  [`mx_de`](https://hossainlab.github.io/metaXpress/reference/mx_de.md).
+  [`mx_de`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md).
   Default: `"DESeq2"`.
 
 - formula:
@@ -47,7 +47,7 @@ mx_de_all(
 - ...:
 
   Additional arguments passed to
-  [`mx_de`](https://hossainlab.github.io/metaXpress/reference/mx_de.md).
+  [`mx_de`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md).
 
 ## Value
 
@@ -55,8 +55,8 @@ The input list of studies, each with `de_result` slot filled.
 
 ## See also
 
-[`mx_de`](https://hossainlab.github.io/metaXpress/reference/mx_de.md),
-[`mx_de_summary`](https://hossainlab.github.io/metaXpress/reference/mx_de_summary.md)
+[`mx_de`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md),
+[`mx_de_summary`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_summary.md)
 
 ## Examples
 

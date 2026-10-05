@@ -6,11 +6,7 @@ imputation strategies before meta-analysis.
 ## Usage
 
 ``` r
-mx_impute(
-  de_results,
-  method = c("exclude", "mean", "knn", "weighted"),
-  weights = NULL
-)
+mx_impute(de_results, method = c("exclude", "mean", "knn", "weighted"))
 ```
 
 ## Arguments
@@ -18,7 +14,7 @@ mx_impute(
 - de_results:
 
   A named list of `data.frame` objects from
-  [`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md).
+  [`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md).
 
 - method:
 
@@ -36,17 +32,11 @@ mx_impute(
 
   `"knn"`
 
-  :   K-nearest neighbours imputation based on gene expression profiles
-      (Hastie et al. 1999).
+  :   K-nearest neighbours imputation based on gene expression profiles.
 
   `"weighted"`
 
   :   Weighted imputation proportional to study sample size.
-
-- weights:
-
-  Numeric vector. Study weights for `"weighted"` imputation. Default:
-  `NULL` (uses equal weights, equivalent to `"mean"`).
 
 ## Value
 
@@ -55,17 +45,14 @@ strategy.
 
 ## References
 
-Hastie, T. et al. (1999) Imputing missing data for gene expression
-arrays. Stanford University Statistics Department Technical report.
-
 Villatoro-García, J.A. et al. (2022) Missing gene expression data
 imputation for gene-study meta-analysis. *Mathematics*, **10**(18),
 3376. [doi:10.3390/math10183376](https://doi.org/10.3390/math10183376)
 
 ## See also
 
-[`mx_missing_summary`](https://hossainlab.github.io/metaXpress/reference/mx_missing_summary.md),
-[`mx_filter_coverage`](https://hossainlab.github.io/metaXpress/reference/mx_filter_coverage.md)
+[`mx_missing_summary`](https://mdjubayerhossain.com/metaXpress/reference/mx_missing_summary.md),
+[`mx_filter_coverage`](https://mdjubayerhossain.com/metaXpress/reference/mx_filter_coverage.md)
 
 ## Examples
 

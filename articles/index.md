@@ -2,7 +2,9 @@
 
 ### All vignettes
 
+- [Public GEO Case Study: Pan-Cancer
+  Meta-Analysis](https://mdjubayerhossain.com/metaXpress/articles/case_study.md):
 - [metaXpress Full Workflow: GEO to
-  Report](https://hossainlab.github.io/metaXpress/articles/full_workflow.md):
+  Report](https://mdjubayerhossain.com/metaXpress/articles/full_workflow.md):
 - [metaXpress
-  Quickstart](https://hossainlab.github.io/metaXpress/articles/quickstart.md):
+  Quickstart](https://mdjubayerhossain.com/metaXpress/articles/quickstart.md):

@@ -15,7 +15,7 @@ mx_align_genes(studies)
 - studies:
 
   A named list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects.
 
 ## Value
@@ -25,7 +25,7 @@ intersection of all gene sets.
 
 ## See also
 
-[`mx_reannotate`](https://hossainlab.github.io/metaXpress/reference/mx_reannotate.md)
+[`mx_reannotate`](https://mdjubayerhossain.com/metaXpress/reference/mx_reannotate.md)
 
 ## Examples
 

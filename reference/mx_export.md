@@ -1,7 +1,7 @@
 # Export meta-analysis results to file
 
 Saves the gene-level meta-analysis table from a
-[`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+[`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
 object to CSV, Excel, or RDS format.
 
 ## Usage
@@ -20,7 +20,7 @@ mx_export(
 - meta_result:
 
   A
-  [`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+  [`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
   object.
 
 - format:
@@ -43,7 +43,7 @@ The path to the exported file (invisibly).
 
 ## See also
 
-[`mx_report`](https://hossainlab.github.io/metaXpress/reference/mx_report.md)
+[`mx_report`](https://mdjubayerhossain.com/metaXpress/reference/mx_report.md)
 
 ## Examples
 

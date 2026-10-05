@@ -73,24 +73,24 @@ I²) - `method`, `n_studies`, `heterogeneity`, `pathway_result`
 ## Function Naming
 
 All public functions are prefixed `mx_`. Examples:
-[`mx_fetch_geo()`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_geo.md),
-[`mx_de_all()`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md),
-[`mx_meta()`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md),
-[`mx_volcano()`](https://hossainlab.github.io/metaXpress/reference/mx_volcano.md).
+[`mx_fetch_geo()`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_geo.md),
+[`mx_de_all()`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md),
+[`mx_meta()`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md),
+[`mx_volcano()`](https://mdjubayerhossain.com/metaXpress/reference/mx_volcano.md).
 
 ## Key Design Decisions
 
 - **All methods take and return the standard S4 objects** — functions
   chain cleanly:
-  [`mx_fetch_geo()`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_geo.md)
+  [`mx_fetch_geo()`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_geo.md)
   →
-  [`mx_filter_studies()`](https://hossainlab.github.io/metaXpress/reference/mx_filter_studies.md)
+  [`mx_filter_studies()`](https://mdjubayerhossain.com/metaXpress/reference/mx_filter_studies.md)
   →
-  [`mx_reannotate()`](https://hossainlab.github.io/metaXpress/reference/mx_reannotate.md)
+  [`mx_reannotate()`](https://mdjubayerhossain.com/metaXpress/reference/mx_reannotate.md)
   →
-  [`mx_de_all()`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md)
+  [`mx_de_all()`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md)
   →
-  [`mx_meta()`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md).
+  [`mx_meta()`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md).
 - **Per-study DE is always run independently** on each study before
   meta-analysis (not pooled).
 - **Missing genes across studies** are handled explicitly in Module 5
@@ -119,5 +119,5 @@ targets: S4 class definitions, Module 1 (GEO ingestion + QC), Module 3
 
 Use the Alzheimer’s dataset from Heberle et al. (2025) as the primary
 benchmark for correctness. The QC checklist (10 criteria) in
-[`mx_qc_study()`](https://hossainlab.github.io/metaXpress/reference/mx_qc_study.md)
+[`mx_qc_study()`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md)
 is directly derived from that paper.

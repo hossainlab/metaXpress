@@ -45,11 +45,11 @@ mx_fetch_geo(
 ## Value
 
 A named list of
-[`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+[`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
 objects, one per accession. QC scores are filled by an internal call to
-[`mx_qc_study`](https://hossainlab.github.io/metaXpress/reference/mx_qc_study.md).
+[`mx_qc_study`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md).
 Studies failing QC receive a warning but are returned (use
-[`mx_filter_studies`](https://hossainlab.github.io/metaXpress/reference/mx_filter_studies.md)
+[`mx_filter_studies`](https://mdjubayerhossain.com/metaXpress/reference/mx_filter_studies.md)
 to remove them).
 
 ## References
@@ -66,9 +66,9 @@ and meta-analysis of bulk RNA-seq data. *Alzheimer's & Dementia*,
 
 ## See also
 
-[`mx_load_local`](https://hossainlab.github.io/metaXpress/reference/mx_load_local.md),
-[`mx_qc_study`](https://hossainlab.github.io/metaXpress/reference/mx_qc_study.md),
-[`mx_filter_studies`](https://hossainlab.github.io/metaXpress/reference/mx_filter_studies.md)
+[`mx_load_local`](https://mdjubayerhossain.com/metaXpress/reference/mx_load_local.md),
+[`mx_qc_study`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md),
+[`mx_filter_studies`](https://mdjubayerhossain.com/metaXpress/reference/mx_filter_studies.md)
 
 ## Examples
 

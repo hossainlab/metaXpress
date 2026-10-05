@@ -35,8 +35,8 @@ A `data.frame` of consensus pathways with columns `pathway_id`,
 
 ## See also
 
-[`mx_pathway_meta`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_meta.md),
-[`mx_pathway_dedup`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_dedup.md)
+[`mx_pathway_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_meta.md),
+[`mx_pathway_dedup`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_dedup.md)
 
 ## Examples
 

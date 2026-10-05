@@ -1,7 +1,7 @@
 # The metaXpressResult class
 
 Holds the output of a meta-analysis performed by
-[`mx_meta`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md),
+[`mx_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md),
 including gene-level statistics, heterogeneity estimates, and
 (optionally) pathway enrichment results.
 
@@ -31,11 +31,11 @@ including gene-level statistics, heterogeneity estimates, and
 - `pathway_result`:
 
   A `data.frame` of pathway meta-analysis results. Empty until
-  [`mx_pathway_meta`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_meta.md)
+  [`mx_pathway_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_meta.md)
   is called.
 
 ## See also
 
-[`mx_meta`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md),
-[`mx_heterogeneity`](https://hossainlab.github.io/metaXpress/reference/mx_heterogeneity.md),
-[`mx_pathway_meta`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_meta.md)
+[`mx_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md),
+[`mx_heterogeneity`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity.md),
+[`mx_pathway_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_meta.md)

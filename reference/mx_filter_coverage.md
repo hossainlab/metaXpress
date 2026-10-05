@@ -3,7 +3,7 @@
 Retains only genes present in at least `min_studies` studies. This is
 the simplest approach to handling missing genes and is applied
 automatically inside
-[`mx_meta`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md)
+[`mx_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md)
 via the `min_studies` argument.
 
 ## Usage
@@ -17,7 +17,7 @@ mx_filter_coverage(de_results, min_studies = 2)
 - de_results:
 
   A named list of `data.frame` objects from
-  [`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md).
+  [`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md).
 
 - min_studies:
 
@@ -31,8 +31,8 @@ coverage threshold.
 
 ## See also
 
-[`mx_missing_summary`](https://hossainlab.github.io/metaXpress/reference/mx_missing_summary.md),
-[`mx_impute`](https://hossainlab.github.io/metaXpress/reference/mx_impute.md)
+[`mx_missing_summary`](https://mdjubayerhossain.com/metaXpress/reference/mx_missing_summary.md),
+[`mx_impute`](https://mdjubayerhossain.com/metaXpress/reference/mx_impute.md)
 
 ## Examples
 

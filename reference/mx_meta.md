@@ -1,7 +1,7 @@
 # Run meta-analysis across per-study DE results
 
 Integrates per-study differential expression results from
-[`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md)
+[`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md)
 into a single meta-analysis result using one of six statistical methods.
 
 ## Usage
@@ -23,9 +23,9 @@ mx_meta(
 - de_results:
 
   A named list of `data.frame` objects from
-  [`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md)
+  [`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md)
   (i.e., the `de_result` slots extracted from each study), or a list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects.
 
 - method:
@@ -78,7 +78,7 @@ mx_meta(
 ## Value
 
 A
-[`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+[`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
 object.
 
 ## Details
@@ -127,9 +127,9 @@ combining heterogeneous genomic studies. *bioRxiv*.
 
 ## See also
 
-[`mx_heterogeneity`](https://hossainlab.github.io/metaXpress/reference/mx_heterogeneity.md),
-[`mx_sensitivity`](https://hossainlab.github.io/metaXpress/reference/mx_sensitivity.md),
-[`mx_forest`](https://hossainlab.github.io/metaXpress/reference/mx_forest.md)
+[`mx_heterogeneity`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity.md),
+[`mx_sensitivity`](https://mdjubayerhossain.com/metaXpress/reference/mx_sensitivity.md),
+[`mx_forest`](https://mdjubayerhossain.com/metaXpress/reference/mx_forest.md)
 
 ## Examples
 

@@ -14,7 +14,7 @@ mx_normalize(study, method = c("TMM", "VST", "CPM", "TPM", "quantile"))
 - study:
 
   A
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   object with raw counts.
 
 - method:
@@ -65,8 +65,8 @@ high density oligonucleotide array data based on variance and bias.
 
 ## See also
 
-[`mx_reannotate`](https://hossainlab.github.io/metaXpress/reference/mx_reannotate.md),
-[`mx_remove_batch`](https://hossainlab.github.io/metaXpress/reference/mx_remove_batch.md)
+[`mx_reannotate`](https://mdjubayerhossain.com/metaXpress/reference/mx_reannotate.md),
+[`mx_remove_batch`](https://mdjubayerhossain.com/metaXpress/reference/mx_remove_batch.md)
 
 ## Examples
 

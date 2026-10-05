@@ -10,204 +10,204 @@ pathway-level enrichment, and production-quality reporting.
 
 The pipeline is built around two S4 classes that flow through every
 step:
-[`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+[`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
 (one object per study, output of ingestion) and
-[`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md)
+[`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
 (the combined meta-analysis result). All public functions are prefixed
 `mx_` and parallelised via BiocParallel.
 
 ## S4 Classes
 
-- [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md):
+- [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md):
 
   Holds a single RNA-seq study: raw count matrix, sample metadata,
   accession ID, organism, QC score, and per-study DE result. Created by
-  [`mx_fetch_geo`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_geo.md),
-  [`mx_fetch_sra`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_sra.md),
+  [`mx_fetch_geo`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_geo.md),
+  [`mx_fetch_sra`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_sra.md),
   or
-  [`mx_load_local`](https://hossainlab.github.io/metaXpress/reference/mx_load_local.md).
+  [`mx_load_local`](https://mdjubayerhossain.com/metaXpress/reference/mx_load_local.md).
 
-- [`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md):
+- [`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md):
 
   Holds the combined meta-analysis output: gene-level statistics (meta
   log2FC, combined p-value, FDR, I\\^2\\), heterogeneity table, and
   (optionally) pathway enrichment results. Created by
-  [`mx_meta`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md).
+  [`mx_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md).
 
 ## Module 1 — Data Ingestion and QC
 
-- [`mx_fetch_geo`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_geo.md):
+- [`mx_fetch_geo`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_geo.md):
 
   Download count matrices and sample metadata from GEO for one or more
   accession IDs; applies the 10-point QC checklist automatically.
 
-- [`mx_fetch_sra`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_sra.md):
+- [`mx_fetch_sra`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_sra.md):
 
   Download raw RNA-seq data for SRA project IDs (requires sratools).
 
-- [`mx_load_local`](https://hossainlab.github.io/metaXpress/reference/mx_load_local.md):
+- [`mx_load_local`](https://mdjubayerhossain.com/metaXpress/reference/mx_load_local.md):
 
   Construct `metaXpressStudy` objects from local count-matrix files or
   `SummarizedExperiment` objects.
 
-- [`mx_qc_study`](https://hossainlab.github.io/metaXpress/reference/mx_qc_study.md):
+- [`mx_qc_study`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md):
 
   Score a study against the 10-point QC checklist derived from Heberle
   et al. (2025).
 
-- [`mx_cluster_samples`](https://hossainlab.github.io/metaXpress/reference/mx_cluster_samples.md):
+- [`mx_cluster_samples`](https://mdjubayerhossain.com/metaXpress/reference/mx_cluster_samples.md):
 
   Automatically assign samples to case/control groups using metadata
   clustering.
 
-- [`mx_filter_studies`](https://hossainlab.github.io/metaXpress/reference/mx_filter_studies.md):
+- [`mx_filter_studies`](https://mdjubayerhossain.com/metaXpress/reference/mx_filter_studies.md):
 
   Retain only studies whose `qc_score` meets a minimum threshold.
 
 ## Module 2 — Normalisation and Harmonisation
 
-- [`mx_reannotate`](https://hossainlab.github.io/metaXpress/reference/mx_reannotate.md):
+- [`mx_reannotate`](https://mdjubayerhossain.com/metaXpress/reference/mx_reannotate.md):
 
   Convert gene identifiers to a unified namespace (SYMBOL, ENSEMBL, or
   ENTREZID) using AnnotationDbi.
 
-- [`mx_normalize`](https://hossainlab.github.io/metaXpress/reference/mx_normalize.md):
+- [`mx_normalize`](https://mdjubayerhossain.com/metaXpress/reference/mx_normalize.md):
 
   Normalise within-study counts by TMM, VST, CPM, TPM, or quantile
   methods.
 
-- [`mx_correct_library_type`](https://hossainlab.github.io/metaXpress/reference/mx_correct_library_type.md):
+- [`mx_correct_library_type`](https://mdjubayerhossain.com/metaXpress/reference/mx_correct_library_type.md):
 
   Adjust for systematic bias between polyA-selected and rRNA-depleted
   libraries.
 
-- [`mx_remove_batch`](https://hossainlab.github.io/metaXpress/reference/mx_remove_batch.md):
+- [`mx_remove_batch`](https://mdjubayerhossain.com/metaXpress/reference/mx_remove_batch.md):
 
   Remove cross-study batch effects via ComBat-seq, ComBat, limma, or
   Harmony.
 
-- [`mx_align_genes`](https://hossainlab.github.io/metaXpress/reference/mx_align_genes.md):
+- [`mx_align_genes`](https://mdjubayerhossain.com/metaXpress/reference/mx_align_genes.md):
 
   Restrict all studies to their common gene universe.
 
 ## Module 3 — Per-Study Differential Expression
 
-- [`mx_de`](https://hossainlab.github.io/metaXpress/reference/mx_de.md):
+- [`mx_de`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md):
 
   Run DE on a single `metaXpressStudy` using DESeq2, edgeR, or
   limma-voom.
 
-- [`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md):
+- [`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md):
 
   Apply
-  [`mx_de`](https://hossainlab.github.io/metaXpress/reference/mx_de.md)
+  [`mx_de`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md)
   to every study in a list, in parallel via BiocParallel.
 
-- [`mx_de_summary`](https://hossainlab.github.io/metaXpress/reference/mx_de_summary.md):
+- [`mx_de_summary`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_summary.md):
 
   Tabulate significant DEG counts across studies at user-specified
   thresholds.
 
 ## Module 4 — Meta-Analysis Statistics
 
-- [`mx_meta`](https://hossainlab.github.io/metaXpress/reference/mx_meta.md):
+- [`mx_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md):
 
   Combine per-study DE results using Fisher, Stouffer, inverse-normal,
   fixed-effects, random-effects (DerSimonian-Laird), or AWmeta adaptive
   weighting. Returns a
-  [`metaXpressResult`](https://hossainlab.github.io/metaXpress/reference/metaXpressResult-class.md).
+  [`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md).
 
-- [`mx_heterogeneity`](https://hossainlab.github.io/metaXpress/reference/mx_heterogeneity.md):
+- [`mx_heterogeneity`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity.md):
 
   Compute per-gene Cochran's Q, I\\^2\\, \\\tau^2\\, and heterogeneity
   p-values.
 
-- [`mx_sensitivity`](https://hossainlab.github.io/metaXpress/reference/mx_sensitivity.md):
+- [`mx_sensitivity`](https://mdjubayerhossain.com/metaXpress/reference/mx_sensitivity.md):
 
   Leave-one-out sensitivity analysis: rerun meta-analysis excluding each
   study in turn to assess result stability.
 
-- [`mx_study_overview`](https://hossainlab.github.io/metaXpress/reference/mx_study_overview.md):
+- [`mx_study_overview`](https://mdjubayerhossain.com/metaXpress/reference/mx_study_overview.md):
 
   Summarise each study's contribution to the meta-analysis.
 
 ## Module 5 — Missing Gene Handling
 
-- [`mx_missing_summary`](https://hossainlab.github.io/metaXpress/reference/mx_missing_summary.md):
+- [`mx_missing_summary`](https://mdjubayerhossain.com/metaXpress/reference/mx_missing_summary.md):
 
   Report gene-by-study coverage as a binary presence/absence matrix.
 
-- [`mx_filter_coverage`](https://hossainlab.github.io/metaXpress/reference/mx_filter_coverage.md):
+- [`mx_filter_coverage`](https://mdjubayerhossain.com/metaXpress/reference/mx_filter_coverage.md):
 
   Retain only genes detected in at least `min_studies` studies.
 
-- [`mx_impute`](https://hossainlab.github.io/metaXpress/reference/mx_impute.md):
+- [`mx_impute`](https://mdjubayerhossain.com/metaXpress/reference/mx_impute.md):
 
   Impute missing per-study statistics (zero, mean, median, or Bayesian
   shrinkage).
 
 ## Module 6 — Pathway Meta-Analysis
 
-- [`mx_pathway_meta`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_meta.md):
+- [`mx_pathway_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_meta.md):
 
   Run cross-study ORA or GSEA against MSigDB gene sets (Hallmarks, KEGG,
   Reactome, GO) using clusterProfiler.
 
-- [`mx_pathway_consensus`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_consensus.md):
+- [`mx_pathway_consensus`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_consensus.md):
 
   Identify pathways enriched across a majority of individual studies.
 
-- [`mx_pathway_dedup`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_dedup.md):
+- [`mx_pathway_dedup`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_dedup.md):
 
   Remove redundant pathways via kappa-coefficient overlap clustering.
 
-- [`mx_pathway_heatmap`](https://hossainlab.github.io/metaXpress/reference/mx_pathway_heatmap.md):
+- [`mx_pathway_heatmap`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_heatmap.md):
 
   Heatmap of enrichment scores or \\-\log\_{10}\\(padj) for top
   pathways.
 
 ## Module 7 — Visualisation
 
-- [`mx_volcano`](https://hossainlab.github.io/metaXpress/reference/mx_volcano.md):
+- [`mx_volcano`](https://mdjubayerhossain.com/metaXpress/reference/mx_volcano.md):
 
   Volcano plot of meta log2FC vs. combined \\-\log\_{10}\\(padj) with
   optional gene labels.
 
-- [`mx_forest`](https://hossainlab.github.io/metaXpress/reference/mx_forest.md):
+- [`mx_forest`](https://mdjubayerhossain.com/metaXpress/reference/mx_forest.md):
 
   Forest plot showing per-study log2FC ± 95% CI and the pooled
   meta-estimate for a single gene.
 
-- [`mx_heatmap`](https://hossainlab.github.io/metaXpress/reference/mx_heatmap.md):
+- [`mx_heatmap`](https://mdjubayerhossain.com/metaXpress/reference/mx_heatmap.md):
 
   Heatmap of log2FC values for the top *n* meta-significant genes across
   all studies.
 
-- [`mx_heterogeneity_plot`](https://hossainlab.github.io/metaXpress/reference/mx_heterogeneity_plot.md):
+- [`mx_heterogeneity_plot`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity_plot.md):
 
   Histogram of the I\\^2\\ distribution across all tested genes.
 
-- [`mx_upset`](https://hossainlab.github.io/metaXpress/reference/mx_upset.md):
+- [`mx_upset`](https://mdjubayerhossain.com/metaXpress/reference/mx_upset.md):
 
   UpSet plot of DEG overlap across studies.
 
-- [`mx_study_overview`](https://hossainlab.github.io/metaXpress/reference/mx_study_overview.md):
+- [`mx_study_overview`](https://mdjubayerhossain.com/metaXpress/reference/mx_study_overview.md):
 
   Multi-panel QC summary: scores, sample sizes, sequencing depths, and
   gene detection rates.
 
 ## Module 8 — Reporting and Export
 
-- [`mx_report`](https://hossainlab.github.io/metaXpress/reference/mx_report.md):
+- [`mx_report`](https://mdjubayerhossain.com/metaXpress/reference/mx_report.md):
 
   Render a fully reproducible HTML or PDF analysis report from a
   parameterised R Markdown template.
 
-- [`mx_export`](https://hossainlab.github.io/metaXpress/reference/mx_export.md):
+- [`mx_export`](https://mdjubayerhossain.com/metaXpress/reference/mx_export.md):
 
   Write the gene-level meta-analysis table to CSV, Excel, or RDS.
 
-- [`mx_session_info`](https://hossainlab.github.io/metaXpress/reference/mx_session_info.md):
+- [`mx_session_info`](https://mdjubayerhossain.com/metaXpress/reference/mx_session_info.md):
 
   Capture R session information, timestamp, and package version for
   reproducibility records.
@@ -215,9 +215,9 @@ step:
 ## Getting started
 
 The fastest way to explore the package is the quickstart vignette:
-[`vignette("quickstart", package = "metaXpress")`](https://hossainlab.github.io/metaXpress/articles/quickstart.md).
+[`vignette("quickstart", package = "metaXpress")`](https://mdjubayerhossain.com/metaXpress/articles/quickstart.md).
 For the complete GEO-to-report workflow see
-[`vignette("full_workflow", package = "metaXpress")`](https://hossainlab.github.io/metaXpress/articles/full_workflow.md).
+[`vignette("full_workflow", package = "metaXpress")`](https://mdjubayerhossain.com/metaXpress/articles/full_workflow.md).
 
 ## References
 
@@ -265,7 +265,7 @@ microarray expression data using empirical Bayes methods.
 
 Useful links:
 
-- <https://hossainlab.github.io/metaXpress/>
+- <https://mdjubayerhossain.com/metaXpress/>
 
 - <https://github.com/hossainlab/metaXpress>
 

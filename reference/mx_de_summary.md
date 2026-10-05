@@ -14,9 +14,9 @@ mx_de_summary(studies, padj_threshold = 0.05, lfc_threshold = 1)
 - studies:
 
   A named list of
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   objects after running
-  [`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md).
+  [`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md).
 
 - padj_threshold:
 
@@ -33,7 +33,7 @@ A `data.frame` with columns `study`, `n_total`, `n_up`, `n_down`,
 
 ## See also
 
-[`mx_de_all`](https://hossainlab.github.io/metaXpress/reference/mx_de_all.md)
+[`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md)
 
 ## Examples
 

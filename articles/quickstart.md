@@ -3,8 +3,42 @@
 ## Overview
 
 `metaXpress` provides an end-to-end pipeline for integrating multiple
-bulk RNA-seq studies into a single meta-analysis result. This vignette
-walks through a minimal example using the built-in simulated dataset.
+bulk RNA-seq studies into a unified meta-analysis. This guide walks
+through installation from GitHub and a minimal workflow for ingesting
+public data from NCBI GEO, performing quality control, differential
+expression analysis, meta-analysis, and visualization.
+
+## Installation from GitHub
+
+`metaXpress` is currently available on GitHub and targets future
+submission to Bioconductor.
+
+You can install the package directly from GitHub using `remotes` or
+`pak`:
+
+``` r
+
+# Ensure BiocManager is available for Bioconductor dependencies
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+# Install remotes if needed
+if (!requireNamespace("remotes", quietly = TRUE))
+    install.packages("remotes")
+
+# Install metaXpress with all dependencies
+remotes::install_github("hossainlab/metaXpress", dependencies = TRUE)
+```
+
+Alternatively, using `pak`:
+
+``` r
+
+# install.packages("pak")
+pak::pkg_install("hossainlab/metaXpress")
+```
+
+Once installed, load the library:
 
 ``` r
 
@@ -13,8 +47,8 @@ library(metaXpress)
 
 ## Ingest Public Data from GEO
 
-Users can fetch public RNA-seq count matrices and metadata directly from
-NCBI GEO using accession IDs:
+You can fetch public RNA-seq count matrices and curated metadata
+directly from NCBI GEO using accession numbers:
 
 ``` r
 
@@ -25,21 +59,19 @@ lapply(studies, show)
 
 ## Step 1 — QC Filtering
 
-Studies are already QC-scored in the example data. In a real workflow,
-QC scores are computed by
-[`mx_fetch_geo()`](https://hossainlab.github.io/metaXpress/reference/mx_fetch_geo.md)
-automatically, or manually via
-[`mx_qc_study()`](https://hossainlab.github.io/metaXpress/reference/mx_qc_study.md).
+Each study is evaluated against a 10-point quality control standard
+(replicate counts, depth, alignment rate, raw integer counts, etc.):
 
 ``` r
 
+# Filter studies passing QC threshold (score >= 7)
 studies <- mx_filter_studies(studies, qc_threshold = 7)
 message("Studies passing QC: ", length(studies))
 ```
 
-## Step 2 — Align Genes
+## Step 2 — Align Gene Spaces
 
-Find the common gene universe across all studies.
+Identify the common gene universe across all cohorts:
 
 ``` r
 
@@ -48,7 +80,8 @@ studies <- mx_align_genes(studies)
 
 ## Step 3 — Per-Study Differential Expression
 
-Run DESeq2 on each study independently.
+Run negative binomial GLMs on each study independently using DESeq2,
+edgeR, or limma-voom:
 
 ``` r
 
@@ -58,7 +91,8 @@ mx_de_summary(studies)
 
 ## Step 4 — Meta-Analysis
 
-Combine per-study DE results using the random effects model.
+Combine per-study effect sizes and standard errors using the
+DerSimonian-Laird Random Effects Model:
 
 ``` r
 
@@ -69,14 +103,17 @@ meta_result
 
 ## Step 5 — Visualise
 
+Generate publication-grade plots:
+
 ``` r
 
+# Volcano plot of meta-analysis results
 mx_volcano(meta_result, label_top = 10)
 ```
 
 ``` r
 
-# Forest plot for the top gene
+# Multi-study forest plot for the top gene
 top_gene <- meta_result@meta_table$gene_id[
   which.min(meta_result@meta_table$meta_padj)]
 mx_forest(top_gene, de_results, meta_result)
@@ -84,10 +121,25 @@ mx_forest(top_gene, de_results, meta_result)
 
 ``` r
 
+# Between-study heterogeneity distribution
 mx_heterogeneity_plot(meta_result)
 ```
 
-## Step 6 — Export Results
+## Step 6 — Interactive Shiny Explorer
+
+You can also explore your meta-analysis results interactively in your
+browser:
+
+``` r
+
+# Launch local Shiny dashboard
+metaXpress::mx_run_app()
+```
+
+Or test the online demo at
+<https://hossainlab.shinyapps.io/metaXpress-demo/>.
+
+## Step 7 — Export Results
 
 ``` r
 

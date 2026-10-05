@@ -1,7 +1,7 @@
 # Automatically cluster samples by metadata
 
 Uses text mining on metadata fields to assign samples to case/control
-groups, mimicking the \pkgsampleclusteR approach for automated group
+groups, mimicking the `sampleclusteR` approach for automated group
 assignment from GEO metadata. It computes string distances between
 sample descriptions and uses hierarchical clustering to partition them
 into two groups.
@@ -17,7 +17,7 @@ mx_cluster_samples(study)
 - study:
 
   A
-  [`metaXpressStudy`](https://hossainlab.github.io/metaXpress/reference/metaXpressStudy-class.md)
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   object.
 
 ## Value
