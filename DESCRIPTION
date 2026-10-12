@@ -63,6 +63,7 @@ Collate:
     '06_pathway.R'
     '07_visualize.R'
     '08_report.R'
+    '09_downstream.R'
     'AllGenerics.R'
     'metaXpress-package.R'
     'utils.R'

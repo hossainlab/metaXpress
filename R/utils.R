@@ -175,7 +175,8 @@ if (getRversion() >= "2.15.1") {
   utils::globalVariables(c(
     "pathway", "qc_score", "n_samples", "median_lib", "n_genes",
     "n_degs", "ci_lo", "ci_hi", "study", "sig", "neg_log10_padj",
-    "gene_id", "meta_log2FC", "i_squared", "is_pooled"
+    "gene_id", "meta_log2FC", "i_squared", "is_pooled",
+    "label", "score", "direction", "significant"
   ))
 }
 

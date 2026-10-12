@@ -75,6 +75,12 @@ GEO / SRA / Local files
          │
          ▼
 ┌──────────────────────┐
+│  Module 9: Downstream│  TF activity · cell composition
+│  Biology             │  co-expression modules · drug reversal
+└────────┬─────────────┘
+         │
+         ▼
+┌──────────────────────┐
 │  Module 8: Report    │  mx_report (HTML / PDF) · mx_export
 └──────────────────────┘
 ```
@@ -123,10 +129,13 @@ packageVersion("metaXpress")
 - **558 Shared Meta-DEGs** identified ($\text{FDR} < 0.05, |\log_2\text{FC}| \ge 1.0$) with 100% directional concordance and zero between-study heterogeneity ($I^2 = 0\%$).
 - **Statistical Power Amplification:** Rescued small-sample cohorts (e.g. GSE171485 with only 18 individual DEGs) into a well-powered pooled consensus.
 - **Biomarker Recovery:** Successfully recovered canonical oncogenes (**`MST1R`**, **`MUC4`**, **`IGF2BP3`**, **`CDCP1`**) and conserved tumor suppressors (**`FAM107A`**).
+- **Downstream Biology:** E2F and NF-κB transcription factor activation; `MST1R`/`CDCP1` as hubs of a co-expression module conserved in all cohorts; TGF-β receptor, CDK, MEK and MDM2 inhibitors ranked as top LINCS signature reversers.
 
 | Study Characteristics Overview | Pan-Cancer Meta-Volcano |
 |:---:|:---:|
 | <img src="man/figures/case_study_study_overview.png" width="480" alt="Study Overview"/> | <img src="man/figures/case_study_volcano_plot.png" width="480" alt="Volcano Plot"/> |
+
+<img src="man/figures/app_downstream_panel.png" width="100%" alt="Downstream biology applications"/>
 
 👉 **Read the complete scientific report:** [case_study_results/README.md](case_study_results/README.md) or online at [https://mdjubayerhossain.com/metaXpress/articles/case_study.html](https://mdjubayerhossain.com/metaXpress/articles/case_study.html).
 
@@ -141,7 +150,7 @@ Combining bulk RNA-seq studies is usually a patchwork: one package to download G
 - **Statistically sound by design.** DE is always run independently per study (DESeq2, edgeR or limma-voom) before combining — never pooled — avoiding batch-confounded inference.
 - **Choose the right meta-method.** Six methods (Fisher, Stouffer, inverse-normal, fixed effects, DerSimonian–Laird random effects, AWmeta) behind a single `method` argument, with I² heterogeneity reported for every gene.
 - **Missing genes are handled, not hidden.** Genes absent from some studies are reported and either imputed or filtered by coverage, instead of disappearing in an intersect.
-- **Biology, not just gene lists.** Cross-study ORA/GSEA with redundancy reduction turns meta-signatures into interpretable pathways.
+- **Biology, not just gene lists.** Cross-study ORA/GSEA, transcription factor activity, cell-composition meta-analysis, consensus co-expression modules and drug-reversal ranking turn meta-signatures into testable hypotheses.
 - **Publication-ready and reproducible.** Volcano, forest, heatmap, UpSet and heterogeneity plots, plus HTML/PDF reports and CSV/Excel export with captured session info.
 - **Scales with BiocParallel.** Per-study steps parallelize out of the box on laptops or clusters.
 
@@ -155,6 +164,7 @@ Combining bulk RNA-seq studies is usually a patchwork: one package to download G
 | 6 meta-analysis methods | ✅ | ✅ | ❌ | ❌ |
 | Missing gene imputation | ✅ | ✅ | ❌ | ❌ |
 | Pathway meta-analysis | ✅ | ❌ | ❌ | ❌ |
+| TF activity, co-expression & drug reversal | ✅ | ❌ | ❌ | ❌ |
 | Reproducible report export | ✅ | ❌ | ❌ | ❌ |
 
 ---
@@ -363,6 +373,20 @@ mx_fetch_geo() ──► metaXpressStudy ──► mx_de() ──► mx_meta() �
 
 </details>
 
+<details>
+<summary><strong>Module 9 — Downstream Biology</strong></summary>
+
+| Function | Description |
+|---|---|
+| `mx_tf_activity(meta_result, network)` | TF activity from target-gene changes (ULM; CollecTRI/DoRothEA) |
+| `mx_cell_composition(studies, markers)` | Cross-study meta-analysis of cell-type composition shifts |
+| `mx_coexpression_modules(studies)` | Consensus co-expression modules with pooled eigengene effects |
+| `mx_drug_connectivity(meta_result, signatures)` | Rank drugs that reverse the meta-signature (LINCS/CMap) |
+| `mx_read_signatures(path)` | Read up/down drug signatures from GMT / Enrichr libraries |
+| `mx_downstream_plot(x)` | Ranked bar plot for any downstream result |
+
+</details>
+
 ---
 
 ## Citation
@@ -392,6 +416,7 @@ If you use `metaXpress` in your research, academic applications, or benchmarking
 - [x] Module 6: Pathway meta-analysis (ORA + GSEA)
 - [x] Module 7: Visualization suite
 - [x] Module 8: Report generation & export
+- [x] Module 9: Downstream biology (TF activity, composition, co-expression, drug reversal)
 - [x] Live public data ingestion from NCBI GEO
 - [x] Full documentation website at [https://mdjubayerhossain.com/metaXpress/](https://mdjubayerhossain.com/metaXpress/)
 - [ ] Bioconductor submission
