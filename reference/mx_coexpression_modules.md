@@ -82,6 +82,13 @@ A list with
 
   List of per-study sample x module eigengene matrices.
 
+## Details
+
+Like
+[`mx_cell_composition`](https://mdjubayerhossain.com/metaXpress/reference/mx_cell_composition.md),
+a `lib_size` column in `colData` overrides the column sums used for
+log2-CPM.
+
 ## References
 
 Langfelder, P. and Horvath, S. (2007) Eigengene networks for studying

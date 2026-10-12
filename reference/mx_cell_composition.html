@@ -91,6 +91,12 @@ a study to be scored there. Default 3.</p></dd>
   in <code>attr(x, "scores")</code>.</p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Expression is log2-CPM. If a study's <code>colData</code> has a
+  <code>lib_size</code> column it is used as the library size, so studies that
+  carry only a subset of genes are still normalised to their true depth.</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Becht, E. et al. (2016) Estimating the population abundance of
 tissue-infiltrating immune and stromal cell populations using gene

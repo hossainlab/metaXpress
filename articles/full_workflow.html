@@ -294,12 +294,78 @@ Enrichment Analysis (GSEA) on Hallmark, KEGG, or GO sets:</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="report-generation">8. Report Generation<a class="anchor" aria-label="anchor" href="#report-generation"></a>
+<h2 id="downstream-biology">8. Downstream Biology<a class="anchor" aria-label="anchor" href="#downstream-biology"></a>
+</h2>
+<p>Module 9 turns the meta-signature into testable biology. Each
+function takes a public prior-knowledge resource as a plain R object, so
+any regulon, marker set or drug library can be used. The calls below
+match the pan-cancer case study.
+<code>scripts/fetch_case_study_data.R</code> shows how to download every
+resource, and the <a href="live_tutorial.html">live tutorial</a> runs
+them on bundled data.</p>
+<div class="section level3">
+<h3 id="a--load-prior-knowledge-resources">8a. Load Prior-Knowledge Resources<a class="anchor" aria-label="anchor" href="#a--load-prior-knowledge-resources"></a>
+</h3>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># CollecTRI TF-target regulons (OmniPath); OmniPath columns are read directly</span></span>
+<span><span class="va">collectri</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.delim</a></span><span class="op">(</span></span>
+<span>  <span class="st">"https://omnipathdb.org/interactions?datasets=collectri&amp;genesymbols=yes&amp;organisms=9606"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># MCP-counter cell-type markers: list or data.frame (gene, cell_type)</span></span>
+<span><span class="va">mcp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.delim</a></span><span class="op">(</span></span>
+<span>  <span class="st">"https://raw.githubusercontent.com/ebecht/MCPcounter/master/Signatures/genes.txt"</span>,</span>
+<span>  check.names <span class="op">=</span> <span class="cn">FALSE</span>, colClasses <span class="op">=</span> <span class="st">"character"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>gene <span class="op">=</span> <span class="va">mcp</span><span class="op">$</span><span class="va">ENTREZID</span>, cell_type <span class="op">=</span> <span class="va">mcp</span><span class="op">$</span><span class="va">`Cell population`</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># LINCS L1000 drug signatures from Enrichr, paired into up/down sets</span></span>
+<span><span class="va">lincs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_read_signatures.html">mx_read_signatures</a></span><span class="op">(</span><span class="st">"LINCS_L1000_Chem_Pert_Consensus_Sigs.txt"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="b--transcription-factor-activity">8b. Transcription Factor Activity<a class="anchor" aria-label="anchor" href="#b--transcription-factor-activity"></a>
+</h3>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Use id_col = "symbol" when gene_id holds Entrez/Ensembl IDs</span></span>
+<span><span class="va">tf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_tf_activity.html">mx_tf_activity</a></span><span class="op">(</span><span class="va">meta_result</span>, <span class="va">collectri</span>, id_col <span class="op">=</span> <span class="st">"symbol"</span>, min_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tf</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">tf</span>, top <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="c--cell-type-composition-shifts">8c. Cell-Type Composition Shifts<a class="anchor" aria-label="anchor" href="#c--cell-type-composition-shifts"></a>
+</h3>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_cell_composition.html">mx_cell_composition</a></span><span class="op">(</span><span class="va">studies</span>, <span class="va">markers</span><span class="op">)</span></span>
+<span><span class="va">comp</span></span>
+<span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">comp</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="d--consensus-co-expression-modules">8d. Consensus Co-Expression Modules<a class="anchor" aria-label="anchor" href="#d--consensus-co-expression-modules"></a>
+</h3>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">net</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_coexpression_modules.html">mx_coexpression_modules</a></span><span class="op">(</span><span class="va">studies</span>, n_genes <span class="op">=</span> <span class="fl">3000</span>, consensus <span class="op">=</span> <span class="st">"min"</span>,</span>
+<span>                               cut_height <span class="op">=</span> <span class="fl">0.3</span>, meta_result <span class="op">=</span> <span class="va">meta_result</span><span class="op">)</span></span>
+<span><span class="va">net</span><span class="op">$</span><span class="va">module_stats</span>      <span class="co"># pooled eigengene effect, hub genes, meta-DEG overlap</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">net</span><span class="op">$</span><span class="va">modules</span><span class="op">)</span>     <span class="co"># gene-to-module assignment with kME</span></span>
+<span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">net</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="e--drug-signature-reversal">8e. Drug Signature Reversal<a class="anchor" aria-label="anchor" href="#e--drug-signature-reversal"></a>
+</h3>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">drugs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_drug_connectivity.html">mx_drug_connectivity</a></span><span class="op">(</span><span class="va">meta_result</span>, <span class="va">lincs</span>, id_col <span class="op">=</span> <span class="st">"symbol"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">drugs</span>, <span class="fl">20</span><span class="op">)</span>       <span class="co"># negative reversal_score = reverses the disease signature</span></span>
+<span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">drugs</span>, top <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span></code></pre></div>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="report-generation">9. Report Generation<a class="anchor" aria-label="anchor" href="#report-generation"></a>
 </h2>
 <div class="section level3">
 <h3 id="generate-reproducible-reports-export">Generate Reproducible Reports &amp; Export<a class="anchor" aria-label="anchor" href="#generate-reproducible-reports-export"></a>
 </h3>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_report.html">mx_report</a></span><span class="op">(</span><span class="va">meta_result</span>, <span class="va">studies</span>, <span class="va">de_results</span>, format <span class="op">=</span> <span class="st">"html"</span>, output_dir <span class="op">=</span> <span class="st">"results/"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/mx_export.html">mx_export</a></span><span class="op">(</span><span class="va">meta_result</span>, format <span class="op">=</span> <span class="st">"csv"</span>, output_dir <span class="op">=</span> <span class="st">"results/"</span><span class="op">)</span></span></code></pre></div>
 <hr>
@@ -308,7 +374,7 @@ Enrichment Analysis (GSEA) on Hallmark, KEGG, or GO sets:</p>
 <div class="section level2">
 <h2 id="session-information">Session Information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_session_info.html">mx_session_info</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">session_info</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

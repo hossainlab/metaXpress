@@ -412,23 +412,216 @@ Multi-cohort forest plot for tumor suppressor FAM107A
 </div>
 </div>
 <div class="section level2">
-<h2 id="export-results">10. Export Results<a class="anchor" aria-label="anchor" href="#export-results"></a>
+<h2 id="downstream-biology-module-9">10. Downstream Biology (Module 9)<a class="anchor" aria-label="anchor" href="#downstream-biology-module-9"></a>
 </h2>
-<div class="section level3">
-<h3 id="export-tabular-results">Export Tabular Results<a class="anchor" aria-label="anchor" href="#export-tabular-results"></a>
-</h3>
+<p>A list of meta-DEGs is the starting point for biology, not the end.
+Module 9 turns the meta-signature into testable hypotheses using public
+prior knowledge. The 400-gene subset above is too small for this, so the
+package ships a second compact file with real inputs from the full case
+study:</p>
+<ul>
+<li>the <strong>genome-wide</strong> random-effects meta-analysis
+(29,560 genes)</li>
+<li>the three cohorts restricted to cell-type marker genes and the 1,500
+most variable genes (with their true library sizes)</li>
+<li>the <strong>CollecTRI</strong> TF-target network,
+<strong>MCP-counter</strong> cell-type markers, and a 200-compound
+subset of <strong>LINCS L1000</strong> drug signatures</li>
+</ul>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">out_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_export.html">mx_export</a></span><span class="op">(</span><span class="va">meta_result</span>, format <span class="op">=</span> <span class="st">"csv"</span>, output_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, prefix <span class="op">=</span> <span class="st">"pan_cancer_meta"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Results exported to: /tmp/Rtmp1zNpTM/pan_cancer_meta.csv</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Exported results table to:"</span>, <span class="va">out_file</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Exported results table to: /tmp/Rtmp1zNpTM/pan_cancer_meta.csv</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ds_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"case_study_downstream.rds"</span>, package <span class="op">=</span> <span class="st">"metaXpress"</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">ds_path</span><span class="op">)</span><span class="op">)</span> <span class="va">ds_path</span> <span class="op">&lt;-</span> <span class="st">"inst/extdata/case_study_downstream.rds"</span></span>
+<span><span class="va">ds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="va">ds_path</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ds</span><span class="op">$</span><span class="va">meta_result</span></span>
+<span><span class="co">#&gt; metaXpressResult</span></span>
+<span><span class="co">#&gt;   Method    : random_effects </span></span>
+<span><span class="co">#&gt;   Studies   : 3 </span></span>
+<span><span class="co">#&gt;   Genes     : 29560 </span></span>
+<span><span class="co">#&gt;   Sig genes : 803 (meta_padj &lt;= 0.05)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ds</span><span class="op">$</span><span class="va">collectri</span><span class="op">)</span>     <span class="co"># TF-target interactions</span></span>
+<span><span class="co">#&gt; [1] 62411</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">ds</span><span class="op">$</span><span class="va">lincs</span><span class="op">)</span>       <span class="co"># drug signatures in the demo subset</span></span>
+<span><span class="co">#&gt; [1] 200</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="transcription-factor-activity">10.1 Transcription factor activity<a class="anchor" aria-label="anchor" href="#transcription-factor-activity"></a>
+</h3>
+<p>Which upstream regulators explain the shared tumour program?
+<code><a href="../reference/mx_tf_activity.html">mx_tf_activity()</a></code> regresses the signed meta z-score of every
+gene on each TF’s target weights (decoupleR’s ULM method):</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_tf_activity.html">mx_tf_activity</a></span><span class="op">(</span><span class="va">ds</span><span class="op">$</span><span class="va">meta_result</span>, <span class="va">ds</span><span class="op">$</span><span class="va">collectri</span>, id_col <span class="op">=</span> <span class="st">"symbol"</span>,</span>
+<span>                     min_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tf</span>, <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         source    score       pvalue         padj n_targets</span></span>
+<span><span class="co">#&gt; 1         E2F1 6.876456 6.263580e-12 3.432442e-09       305</span></span>
+<span><span class="co">#&gt; 2         E2F2 5.990703 2.114601e-09 5.794006e-07        45</span></span>
+<span><span class="co">#&gt; 3         RELA 5.894908 3.791433e-09 6.925685e-07       875</span></span>
+<span><span class="co">#&gt; 4          JUN 5.729888 1.015173e-08 1.390787e-06       801</span></span>
+<span><span class="co">#&gt; 5         E2F4 5.676389 1.389140e-08 1.522497e-06       164</span></span>
+<span><span class="co">#&gt; 6          REL 5.576498 2.476503e-08 2.261873e-06       738</span></span>
+<span><span class="co">#&gt; 7         RELB 5.456353 4.900917e-08 3.662544e-06       737</span></span>
+<span><span class="co">#&gt; 8         E2F3 5.389894 7.106309e-08 3.662544e-06        64</span></span>
+<span><span class="co">#&gt; 9   NFKB1_RELA 5.313339 1.084491e-07 3.662544e-06       722</span></span>
+<span><span class="co">#&gt; 10 NFKB1_NFKB2 5.294394 1.203026e-07 3.662544e-06       722</span></span>
+<span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">tf</span>, top <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="live_tutorial_files/figure-html/tf-activity-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>These results come from the <strong>genome-wide</strong>
+meta-signature, so they are identical to the full case study. Of 548 TFs
+with at least 10 measured targets, 65 are significant (FDR &lt; 0.05): *
+the <strong>E2F family</strong> (E2F1–E2F4) drives cell-cycle genes, a
+proliferation program shared by all three carcinomas; *
+<strong>NF-κB</strong> (RELA, REL, RELB) and <strong>AP-1</strong> (JUN)
+indicate a common inflammatory-signalling component; * SNAI2, CEBPA and
+HDAC4 are the significantly repressed regulators.</p>
+</div>
+<div class="section level3">
+<h3 id="cell-type-composition">10.2 Cell-type composition<a class="anchor" aria-label="anchor" href="#cell-type-composition"></a>
+</h3>
+<p>Could the signal be caused by tumours simply containing more immune
+or stromal cells? <code><a href="../reference/mx_cell_composition.html">mx_cell_composition()</a></code> scores each sample
+for each cell type, computes Hedges’ g per cohort and pools them:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_cell_composition.html">mx_cell_composition</a></span><span class="op">(</span><span class="va">ds</span><span class="op">$</span><span class="va">studies</span>, <span class="va">ds</span><span class="op">$</span><span class="va">markers</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Dropping 1 cell_type(s) scored in fewer than two studies: CD8 T cells</span></span>
+<span><span class="va">comp</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cell_type"</span>, <span class="st">"meta_g"</span>, <span class="st">"padj"</span>, <span class="st">"i_squared"</span>,</span>
+<span>         <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"^g_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">comp</span><span class="op">)</span>, value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;                 cell_type    meta_g      padj i_squared g_GSE130688_CRC</span></span>
+<span><span class="co">#&gt; 1             Neutrophils 0.6519759 0.2092143  19.37111        1.042683</span></span>
+<span><span class="co">#&gt; 2       Monocytic lineage 0.7403390 0.2092143  42.72490        1.362890</span></span>
+<span><span class="co">#&gt; 3 Myeloid dendritic cells 0.8367320 0.2092143  54.46395        1.575953</span></span>
+<span><span class="co">#&gt; 4             Fibroblasts 0.5266471 0.3026767  28.80787        1.025066</span></span>
+<span><span class="co">#&gt; 5               B lineage 0.5939055 0.3026767  58.58101        1.351987</span></span>
+<span><span class="co">#&gt; 6   Cytotoxic lymphocytes 0.5600464 0.3026767  59.46033        1.338888</span></span>
+<span><span class="co">#&gt; 7                 T cells 0.5475315 0.3026767  59.53022        1.321310</span></span>
+<span><span class="co">#&gt; 8                NK cells 0.5175897 0.3026767  62.30398        1.332464</span></span>
+<span><span class="co">#&gt; 9       Endothelial cells 0.3990745 0.3026767  39.77929        0.962206</span></span>
+<span><span class="co">#&gt;   g_GSE136569_PDAC g_GSE171485_ccRCC</span></span>
+<span><span class="co">#&gt; 1       0.63849360       -0.05240872</span></span>
+<span><span class="co">#&gt; 2       0.24596432        0.27398019</span></span>
+<span><span class="co">#&gt; 3       0.41221790        0.25320191</span></span>
+<span><span class="co">#&gt; 4       0.20317053       -0.03786879</span></span>
+<span><span class="co">#&gt; 5      -0.12978158        0.26979252</span></span>
+<span><span class="co">#&gt; 6      -0.03987553        0.10219729</span></span>
+<span><span class="co">#&gt; 7      -0.12621684        0.16236601</span></span>
+<span><span class="co">#&gt; 8      -0.05681140        0.01211463</span></span>
+<span><span class="co">#&gt; 9      -0.24602668        0.08984541</span></span>
+<span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">comp</span><span class="op">)</span></span></code></pre></div>
+<p><img src="live_tutorial_files/figure-html/composition-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>No cell population changes significantly after FDR correction. The
+per-cohort columns show why the pooled effects are all positive: the
+colorectal cohort has large effects (g ≈ 1.0–1.6), while pancreatic and
+renal are near zero. A consistent immune or stromal shift therefore does
+<strong>not</strong> explain the shared meta-DEGs, which supports them
+as tumour-intrinsic. CD8 T cells are dropped because only one of their
+markers was measured.</p>
+</div>
+<div class="section level3">
+<h3 id="consensus-co-expression-modules">10.3 Consensus co-expression modules<a class="anchor" aria-label="anchor" href="#consensus-co-expression-modules"></a>
+</h3>
+<p><code><a href="../reference/mx_coexpression_modules.html">mx_coexpression_modules()</a></code> finds gene programs whose
+co-expression holds in <strong>every</strong> cohort (minimum
+correlation across studies), then tests each module’s eigengene between
+tumour and normal:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">net</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_coexpression_modules.html">mx_coexpression_modules</a></span><span class="op">(</span><span class="va">ds</span><span class="op">$</span><span class="va">studies</span>, n_genes <span class="op">=</span> <span class="fl">1500</span>, cut_height <span class="op">=</span> <span class="fl">0.3</span>,</span>
+<span>                               min_module_size <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>                               meta_result <span class="op">=</span> <span class="va">ds</span><span class="op">$</span><span class="va">meta_result</span><span class="op">)</span></span>
+<span><span class="va">ms</span> <span class="op">&lt;-</span> <span class="va">net</span><span class="op">$</span><span class="va">module_stats</span></span>
+<span><span class="co"># Hub genes are Entrez IDs; show symbols stored in rowData</span></span>
+<span><span class="va">sym</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">ds</span><span class="op">$</span><span class="va">studies</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">$</span><span class="va">symbol</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">ds</span><span class="op">$</span><span class="va">studies</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ms</span><span class="op">$</span><span class="va">hub_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">ms</span><span class="op">$</span><span class="va">hub_genes</span>, <span class="st">", "</span><span class="op">)</span>,</span>
+<span>                       <span class="kw">function</span><span class="op">(</span><span class="va">g</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">sym</span><span class="op">[</span><span class="va">g</span><span class="op">]</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ms</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"module"</span>, <span class="st">"n_genes"</span>, <span class="st">"meta_g"</span>, <span class="st">"padj"</span>, <span class="st">"pct_meta_up"</span>, <span class="st">"hub_genes"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;   module n_genes      meta_g      padj pct_meta_up</span></span>
+<span><span class="co">#&gt; 1     M2     279  1.49797599 0.1439509   36.200717</span></span>
+<span><span class="co">#&gt; 2     M4      59  1.00265162 0.3010922   10.169492</span></span>
+<span><span class="co">#&gt; 3     M1     825  0.76118836 0.3010922    4.242424</span></span>
+<span><span class="co">#&gt; 4     M3      93 -0.73148418 0.3163085    0.000000</span></span>
+<span><span class="co">#&gt; 5     M7      21 -0.48994399 0.3163085    0.000000</span></span>
+<span><span class="co">#&gt; 6     M6      21 -0.10138466 0.8275091    0.000000</span></span>
+<span><span class="co">#&gt; 7     M5      43 -0.07793411 0.8275091    0.000000</span></span>
+<span><span class="co">#&gt;                                    hub_genes</span></span>
+<span><span class="co">#&gt; 1        MST1R, TSPAN1, B3GNT3, ITGB4, PLEK2</span></span>
+<span><span class="co">#&gt; 2 IGKJ1, IGLJ2, IGKV3-15, IGKV3-20, IGKV2-28</span></span>
+<span><span class="co">#&gt; 3            TPM4, RFTN1, PXDN, ABCA1, LAMA4</span></span>
+<span><span class="co">#&gt; 4  PNLIPRP1, CELP, CUZD1, FAM24B-CUZD1, CPA2</span></span>
+<span><span class="co">#&gt; 5 RNA45SN5, RNA45SN1, RNA28SN3, NA, RNA45SN4</span></span>
+<span><span class="co">#&gt; 6         PCSK2, SLC30A8, ABCC8, GAD2, UNC80</span></span>
+<span><span class="co">#&gt; 7         ITGA7, CHRDL1, FHL1, TMTC1, SCARA5</span></span>
+<span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">net</span><span class="op">)</span></span></code></pre></div>
+<p><img src="live_tutorial_files/figure-html/coexpression-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>The leading module (M2) has <strong>MST1R</strong> as its top hub,
+alongside TSPAN1, B3GNT3 and ITGB4. MST1R was found gene-by-gene in
+Section 7, and here it emerges independently as the centre of an
+epithelial program co-expressed in all three cohorts; over a third of
+M2’s genes are significant meta-DEGs. In this reduced 1,500-gene demo M2
+does not reach FDR significance (FDR = 0.14). In the full case study
+(3,000 genes) the same MST1R/CDCP1 module is significant (FDR = 0.043).
+The other modules capture tissue-of-origin programs (immunoglobulin,
+islet/neuroendocrine, smooth muscle, ribosomal RNA) rather than tumour
+biology.</p>
+</div>
+<div class="section level3">
+<h3 id="drug-signature-reversal">10.4 Drug signature reversal<a class="anchor" aria-label="anchor" href="#drug-signature-reversal"></a>
+</h3>
+<p>Which compounds push expression in the opposite direction to the
+tumour state? <code><a href="../reference/mx_drug_connectivity.html">mx_drug_connectivity()</a></code> scores each drug’s
+up/down gene sets against the meta-ranking (negative = reverses the
+disease):</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">drugs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_drug_connectivity.html">mx_drug_connectivity</a></span><span class="op">(</span><span class="va">ds</span><span class="op">$</span><span class="va">meta_result</span>, <span class="va">ds</span><span class="op">$</span><span class="va">lincs</span>, id_col <span class="op">=</span> <span class="st">"symbol"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">drugs</span>, <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt;            drug reversal_score       pvalue         padj cmap_score n_up n_down</span></span>
+<span><span class="co">#&gt; 1        SD-208     -11.806186 3.626393e-32 2.417596e-30 -0.5031547  224    232</span></span>
+<span><span class="co">#&gt; 2         R-547     -10.943448 7.143019e-28 3.571509e-26  0.0000000  229    237</span></span>
+<span><span class="co">#&gt; 3     GW-788388      -9.777667 1.404101e-22 2.808201e-21 -0.4614748  233    227</span></span>
+<span><span class="co">#&gt; 4     Menadione      -9.174773 4.525279e-20 5.656599e-19 -0.3769343  234    239</span></span>
+<span><span class="co">#&gt; 5    LY-2109761      -9.037571 1.601920e-19 1.884611e-18 -0.4192908  228    234</span></span>
+<span><span class="co">#&gt; 6          C646      -8.974167 2.855048e-19 2.999688e-18  0.0000000  232    229</span></span>
+<span><span class="co">#&gt; 7         FQI-1      -8.968724 2.999688e-19 2.999688e-18 -0.3918467  217    235</span></span>
+<span><span class="co">#&gt; 8  Lestaurtinib      -8.954973 3.398177e-19 3.236359e-18 -0.3774545  225    232</span></span>
+<span><span class="co">#&gt; 9       TAK-733      -8.685320 3.776777e-18 2.905213e-17  0.0000000  226    236</span></span>
+<span><span class="co">#&gt; 10    SAR405838      -8.225509 1.943641e-16 9.718206e-16  0.0000000  222    239</span></span>
+<span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">drugs</span>, top <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="live_tutorial_files/figure-html/drugs-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>The ranking matches the full 5,425-compound analysis. <strong>Three
+of the top five compounds (SD-208, GW-788388, LY-2109761) inhibit the
+TGF-β type I receptor (ALK5).</strong> The other top hits target CDKs
+(R-547), MEK (TAK-733), p300/CBP (C646) and MDM2 (SAR405838), which fits
+the E2F-driven proliferation found in Section 10.1.</p>
+<blockquote>
+<p><strong>Caveats.</strong> This demo ships only 200 of the 5,425 LINCS
+signatures, chosen from the full ranking, so the adjusted p-values here
+are not meaningful. Even in the full analysis the p-values assume
+independent genes and are anti-conservative, so use the score for
+ranking only. LINCS signatures come from cancer cell lines, so these
+hits are hypotheses for experimental follow-up. The full analysis is
+reproduced by <code>scripts/run_case_study_applications.R</code> (see
+the case study article).</p>
+</blockquote>
 <hr>
 </div>
 </div>
 <div class="section level2">
-<h2 id="session-information">11. Session Information<a class="anchor" aria-label="anchor" href="#session-information"></a>
+<h2 id="export-results">11. Export Results<a class="anchor" aria-label="anchor" href="#export-results"></a>
 </h2>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="export-tabular-results">Export Tabular Results<a class="anchor" aria-label="anchor" href="#export-tabular-results"></a>
+</h3>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">out_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_export.html">mx_export</a></span><span class="op">(</span><span class="va">meta_result</span>, format <span class="op">=</span> <span class="st">"csv"</span>, output_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, prefix <span class="op">=</span> <span class="st">"pan_cancer_meta"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Results exported to: /tmp/RtmpkVsRdI/pan_cancer_meta.csv</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Exported results table to:"</span>, <span class="va">out_file</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Exported results table to: /tmp/RtmpkVsRdI/pan_cancer_meta.csv</span></span></code></pre></div>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="session-information">12. Session Information<a class="anchor" aria-label="anchor" href="#session-information"></a>
+</h2>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_session_info.html">mx_session_info</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">session_info</span></span>
 <span><span class="co">#&gt; R version 4.6.1 (2026-06-24)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>

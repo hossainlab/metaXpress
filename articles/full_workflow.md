@@ -238,7 +238,78 @@ mx_heterogeneity_plot(meta_result)
 
 ------------------------------------------------------------------------
 
-## 8. Report Generation
+## 8. Downstream Biology
+
+Module 9 turns the meta-signature into testable biology. Each function
+takes a public prior-knowledge resource as a plain R object, so any
+regulon, marker set or drug library can be used. The calls below match
+the pan-cancer case study. `scripts/fetch_case_study_data.R` shows how
+to download every resource, and the [live
+tutorial](https://mdjubayerhossain.com/metaXpress/articles/live_tutorial.md)
+runs them on bundled data.
+
+### 8a. Load Prior-Knowledge Resources
+
+``` r
+
+# CollecTRI TF-target regulons (OmniPath); OmniPath columns are read directly
+collectri <- read.delim(
+  "https://omnipathdb.org/interactions?datasets=collectri&genesymbols=yes&organisms=9606"
+)
+
+# MCP-counter cell-type markers: list or data.frame (gene, cell_type)
+mcp <- read.delim(
+  "https://raw.githubusercontent.com/ebecht/MCPcounter/master/Signatures/genes.txt",
+  check.names = FALSE, colClasses = "character"
+)
+markers <- data.frame(gene = mcp$ENTREZID, cell_type = mcp$`Cell population`)
+
+# LINCS L1000 drug signatures from Enrichr, paired into up/down sets
+lincs <- mx_read_signatures("LINCS_L1000_Chem_Pert_Consensus_Sigs.txt")
+```
+
+### 8b. Transcription Factor Activity
+
+``` r
+
+# Use id_col = "symbol" when gene_id holds Entrez/Ensembl IDs
+tf <- mx_tf_activity(meta_result, collectri, id_col = "symbol", min_size = 10)
+head(tf)
+mx_downstream_plot(tf, top = 30)
+```
+
+### 8c. Cell-Type Composition Shifts
+
+``` r
+
+comp <- mx_cell_composition(studies, markers)
+comp
+mx_downstream_plot(comp)
+```
+
+### 8d. Consensus Co-Expression Modules
+
+``` r
+
+net <- mx_coexpression_modules(studies, n_genes = 3000, consensus = "min",
+                               cut_height = 0.3, meta_result = meta_result)
+net$module_stats      # pooled eigengene effect, hub genes, meta-DEG overlap
+head(net$modules)     # gene-to-module assignment with kME
+mx_downstream_plot(net)
+```
+
+### 8e. Drug Signature Reversal
+
+``` r
+
+drugs <- mx_drug_connectivity(meta_result, lincs, id_col = "symbol")
+head(drugs, 20)       # negative reversal_score = reverses the disease signature
+mx_downstream_plot(drugs, top = 30)
+```
+
+------------------------------------------------------------------------
+
+## 9. Report Generation
 
 ### Generate Reproducible Reports & Export
 

@@ -360,21 +360,231 @@ Multi-cohort forest plot for tumor suppressor FAM107A
 
 ------------------------------------------------------------------------
 
-## 10. Export Results
+## 10. Downstream Biology (Module 9)
+
+A list of meta-DEGs is the starting point for biology, not the end.
+Module 9 turns the meta-signature into testable hypotheses using public
+prior knowledge. The 400-gene subset above is too small for this, so the
+package ships a second compact file with real inputs from the full case
+study:
+
+- the **genome-wide** random-effects meta-analysis (29,560 genes)
+- the three cohorts restricted to cell-type marker genes and the 1,500
+  most variable genes (with their true library sizes)
+- the **CollecTRI** TF-target network, **MCP-counter** cell-type
+  markers, and a 200-compound subset of **LINCS L1000** drug signatures
+
+``` r
+
+ds_path <- system.file("extdata", "case_study_downstream.rds", package = "metaXpress")
+if (!file.exists(ds_path)) ds_path <- "inst/extdata/case_study_downstream.rds"
+ds <- readRDS(ds_path)
+
+ds$meta_result
+#> metaXpressResult
+#>   Method    : random_effects 
+#>   Studies   : 3 
+#>   Genes     : 29560 
+#>   Sig genes : 803 (meta_padj <= 0.05)
+nrow(ds$collectri)     # TF-target interactions
+#> [1] 62411
+length(ds$lincs)       # drug signatures in the demo subset
+#> [1] 200
+```
+
+### 10.1 Transcription factor activity
+
+Which upstream regulators explain the shared tumour program?
+[`mx_tf_activity()`](https://mdjubayerhossain.com/metaXpress/reference/mx_tf_activity.md)
+regresses the signed meta z-score of every gene on each TF’s target
+weights (decoupleR’s ULM method):
+
+``` r
+
+tf <- mx_tf_activity(ds$meta_result, ds$collectri, id_col = "symbol",
+                     min_size = 10)
+head(tf, 10)
+#>         source    score       pvalue         padj n_targets
+#> 1         E2F1 6.876456 6.263580e-12 3.432442e-09       305
+#> 2         E2F2 5.990703 2.114601e-09 5.794006e-07        45
+#> 3         RELA 5.894908 3.791433e-09 6.925685e-07       875
+#> 4          JUN 5.729888 1.015173e-08 1.390787e-06       801
+#> 5         E2F4 5.676389 1.389140e-08 1.522497e-06       164
+#> 6          REL 5.576498 2.476503e-08 2.261873e-06       738
+#> 7         RELB 5.456353 4.900917e-08 3.662544e-06       737
+#> 8         E2F3 5.389894 7.106309e-08 3.662544e-06        64
+#> 9   NFKB1_RELA 5.313339 1.084491e-07 3.662544e-06       722
+#> 10 NFKB1_NFKB2 5.294394 1.203026e-07 3.662544e-06       722
+mx_downstream_plot(tf, top = 20)
+```
+
+![](live_tutorial_files/figure-html/tf-activity-1.png)
+
+These results come from the **genome-wide** meta-signature, so they are
+identical to the full case study. Of 548 TFs with at least 10 measured
+targets, 65 are significant (FDR \< 0.05): \* the **E2F family**
+(E2F1–E2F4) drives cell-cycle genes, a proliferation program shared by
+all three carcinomas; \* **NF-κB** (RELA, REL, RELB) and **AP-1** (JUN)
+indicate a common inflammatory-signalling component; \* SNAI2, CEBPA and
+HDAC4 are the significantly repressed regulators.
+
+### 10.2 Cell-type composition
+
+Could the signal be caused by tumours simply containing more immune or
+stromal cells?
+[`mx_cell_composition()`](https://mdjubayerhossain.com/metaXpress/reference/mx_cell_composition.md)
+scores each sample for each cell type, computes Hedges’ g per cohort and
+pools them:
+
+``` r
+
+comp <- mx_cell_composition(ds$studies, ds$markers)
+#> Dropping 1 cell_type(s) scored in fewer than two studies: CD8 T cells
+comp[, c("cell_type", "meta_g", "padj", "i_squared",
+         grep("^g_", names(comp), value = TRUE))]
+#>                 cell_type    meta_g      padj i_squared g_GSE130688_CRC
+#> 1             Neutrophils 0.6519759 0.2092143  19.37111        1.042683
+#> 2       Monocytic lineage 0.7403390 0.2092143  42.72490        1.362890
+#> 3 Myeloid dendritic cells 0.8367320 0.2092143  54.46395        1.575953
+#> 4             Fibroblasts 0.5266471 0.3026767  28.80787        1.025066
+#> 5               B lineage 0.5939055 0.3026767  58.58101        1.351987
+#> 6   Cytotoxic lymphocytes 0.5600464 0.3026767  59.46033        1.338888
+#> 7                 T cells 0.5475315 0.3026767  59.53022        1.321310
+#> 8                NK cells 0.5175897 0.3026767  62.30398        1.332464
+#> 9       Endothelial cells 0.3990745 0.3026767  39.77929        0.962206
+#>   g_GSE136569_PDAC g_GSE171485_ccRCC
+#> 1       0.63849360       -0.05240872
+#> 2       0.24596432        0.27398019
+#> 3       0.41221790        0.25320191
+#> 4       0.20317053       -0.03786879
+#> 5      -0.12978158        0.26979252
+#> 6      -0.03987553        0.10219729
+#> 7      -0.12621684        0.16236601
+#> 8      -0.05681140        0.01211463
+#> 9      -0.24602668        0.08984541
+mx_downstream_plot(comp)
+```
+
+![](live_tutorial_files/figure-html/composition-1.png)
+
+No cell population changes significantly after FDR correction. The
+per-cohort columns show why the pooled effects are all positive: the
+colorectal cohort has large effects (g ≈ 1.0–1.6), while pancreatic and
+renal are near zero. A consistent immune or stromal shift therefore does
+**not** explain the shared meta-DEGs, which supports them as
+tumour-intrinsic. CD8 T cells are dropped because only one of their
+markers was measured.
+
+### 10.3 Consensus co-expression modules
+
+[`mx_coexpression_modules()`](https://mdjubayerhossain.com/metaXpress/reference/mx_coexpression_modules.md)
+finds gene programs whose co-expression holds in **every** cohort
+(minimum correlation across studies), then tests each module’s eigengene
+between tumour and normal:
+
+``` r
+
+net <- mx_coexpression_modules(ds$studies, n_genes = 1500, cut_height = 0.3,
+                               min_module_size = 20,
+                               meta_result = ds$meta_result)
+ms <- net$module_stats
+# Hub genes are Entrez IDs; show symbols stored in rowData
+sym <- setNames(SummarizedExperiment::rowData(ds$studies[[1]])$symbol,
+                rownames(ds$studies[[1]]))
+ms$hub_genes <- vapply(strsplit(ms$hub_genes, ", "),
+                       function(g) paste(sym[g], collapse = ", "), character(1))
+ms[, c("module", "n_genes", "meta_g", "padj", "pct_meta_up", "hub_genes")]
+#>   module n_genes      meta_g      padj pct_meta_up
+#> 1     M2     279  1.49797599 0.1439509   36.200717
+#> 2     M4      59  1.00265162 0.3010922   10.169492
+#> 3     M1     825  0.76118836 0.3010922    4.242424
+#> 4     M3      93 -0.73148418 0.3163085    0.000000
+#> 5     M7      21 -0.48994399 0.3163085    0.000000
+#> 6     M6      21 -0.10138466 0.8275091    0.000000
+#> 7     M5      43 -0.07793411 0.8275091    0.000000
+#>                                    hub_genes
+#> 1        MST1R, TSPAN1, B3GNT3, ITGB4, PLEK2
+#> 2 IGKJ1, IGLJ2, IGKV3-15, IGKV3-20, IGKV2-28
+#> 3            TPM4, RFTN1, PXDN, ABCA1, LAMA4
+#> 4  PNLIPRP1, CELP, CUZD1, FAM24B-CUZD1, CPA2
+#> 5 RNA45SN5, RNA45SN1, RNA28SN3, NA, RNA45SN4
+#> 6         PCSK2, SLC30A8, ABCC8, GAD2, UNC80
+#> 7         ITGA7, CHRDL1, FHL1, TMTC1, SCARA5
+mx_downstream_plot(net)
+```
+
+![](live_tutorial_files/figure-html/coexpression-1.png)
+
+The leading module (M2) has **MST1R** as its top hub, alongside TSPAN1,
+B3GNT3 and ITGB4. MST1R was found gene-by-gene in Section 7, and here it
+emerges independently as the centre of an epithelial program
+co-expressed in all three cohorts; over a third of M2’s genes are
+significant meta-DEGs. In this reduced 1,500-gene demo M2 does not reach
+FDR significance (FDR = 0.14). In the full case study (3,000 genes) the
+same MST1R/CDCP1 module is significant (FDR = 0.043). The other modules
+capture tissue-of-origin programs (immunoglobulin, islet/neuroendocrine,
+smooth muscle, ribosomal RNA) rather than tumour biology.
+
+### 10.4 Drug signature reversal
+
+Which compounds push expression in the opposite direction to the tumour
+state?
+[`mx_drug_connectivity()`](https://mdjubayerhossain.com/metaXpress/reference/mx_drug_connectivity.md)
+scores each drug’s up/down gene sets against the meta-ranking (negative
+= reverses the disease):
+
+``` r
+
+drugs <- mx_drug_connectivity(ds$meta_result, ds$lincs, id_col = "symbol")
+head(drugs, 10)
+#>            drug reversal_score       pvalue         padj cmap_score n_up n_down
+#> 1        SD-208     -11.806186 3.626393e-32 2.417596e-30 -0.5031547  224    232
+#> 2         R-547     -10.943448 7.143019e-28 3.571509e-26  0.0000000  229    237
+#> 3     GW-788388      -9.777667 1.404101e-22 2.808201e-21 -0.4614748  233    227
+#> 4     Menadione      -9.174773 4.525279e-20 5.656599e-19 -0.3769343  234    239
+#> 5    LY-2109761      -9.037571 1.601920e-19 1.884611e-18 -0.4192908  228    234
+#> 6          C646      -8.974167 2.855048e-19 2.999688e-18  0.0000000  232    229
+#> 7         FQI-1      -8.968724 2.999688e-19 2.999688e-18 -0.3918467  217    235
+#> 8  Lestaurtinib      -8.954973 3.398177e-19 3.236359e-18 -0.3774545  225    232
+#> 9       TAK-733      -8.685320 3.776777e-18 2.905213e-17  0.0000000  226    236
+#> 10    SAR405838      -8.225509 1.943641e-16 9.718206e-16  0.0000000  222    239
+mx_downstream_plot(drugs, top = 20)
+```
+
+![](live_tutorial_files/figure-html/drugs-1.png)
+
+The ranking matches the full 5,425-compound analysis. **Three of the top
+five compounds (SD-208, GW-788388, LY-2109761) inhibit the TGF-β type I
+receptor (ALK5).** The other top hits target CDKs (R-547), MEK
+(TAK-733), p300/CBP (C646) and MDM2 (SAR405838), which fits the
+E2F-driven proliferation found in Section 10.1.
+
+> **Caveats.** This demo ships only 200 of the 5,425 LINCS signatures,
+> chosen from the full ranking, so the adjusted p-values here are not
+> meaningful. Even in the full analysis the p-values assume independent
+> genes and are anti-conservative, so use the score for ranking only.
+> LINCS signatures come from cancer cell lines, so these hits are
+> hypotheses for experimental follow-up. The full analysis is reproduced
+> by `scripts/run_case_study_applications.R` (see the case study
+> article).
+
+------------------------------------------------------------------------
+
+## 11. Export Results
 
 ### Export Tabular Results
 
 ``` r
 
 out_file <- mx_export(meta_result, format = "csv", output_dir = tempdir(), prefix = "pan_cancer_meta")
-#> Results exported to: /tmp/Rtmp1zNpTM/pan_cancer_meta.csv
+#> Results exported to: /tmp/RtmpkVsRdI/pan_cancer_meta.csv
 cat("Exported results table to:", out_file, "\n")
-#> Exported results table to: /tmp/Rtmp1zNpTM/pan_cancer_meta.csv
+#> Exported results table to: /tmp/RtmpkVsRdI/pan_cancer_meta.csv
 ```
 
 ------------------------------------------------------------------------
 
-## 11. Session Information
+## 12. Session Information
 
 ``` r
 

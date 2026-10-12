@@ -40,6 +40,12 @@ A `data.frame` sorted by p-value with columns `cell_type`, `meta_g`
 `i_squared`, `n_studies`, and one `g_<study>` column per study.
 Per-sample scores are stored in `attr(x, "scores")`.
 
+## Details
+
+Expression is log2-CPM. If a study's `colData` has a `lib_size` column
+it is used as the library size, so studies that carry only a subset of
+genes are still normalised to their true depth.
+
 ## References
 
 Becht, E. et al. (2016) Estimating the population abundance of
