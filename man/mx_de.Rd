@@ -18,7 +18,7 @@ mx_de(
 (default), \code{"edgeR"}, or \code{"limma-voom"}.}
 
 \item{formula}{A formula specifying the design. Default: \code{~ condition}.
-The \code{condition} column in \code{study@metadata} is used as the
+The \code{condition} column in \code{colData(study)} is used as the
 contrast variable; the last level is the reference.}
 
 \item{...}{Additional arguments passed to the underlying DE function.}

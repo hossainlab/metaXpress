@@ -23,3 +23,5 @@
 ^scripts$
 ^preprint$
 ^data$
+^pkgdown$
+^.*\.code-workspace$

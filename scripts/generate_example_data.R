@@ -28,7 +28,7 @@ meta1 <- data.frame(
 )
 attr(counts1, "gene_length") <- sample(500:5000, 500, replace=TRUE)
 
-studies$study1 <- new("metaXpressStudy", counts = counts1, metadata = meta1,
+studies$study1 <- metaXpressStudy(counts = counts1, metadata = meta1,
                       accession = "SIM001", organism = "human", qc_score = 8.5,
                       de_result = data.frame())
 
@@ -48,7 +48,7 @@ meta2 <- data.frame(
 )
 attr(counts2, "gene_length") <- sample(500:5000, 500, replace=TRUE)
 
-studies$study2 <- new("metaXpressStudy", counts = counts2, metadata = meta2,
+studies$study2 <- metaXpressStudy(counts = counts2, metadata = meta2,
                       accession = "SIM002", organism = "human", qc_score = 9.0,
                       de_result = data.frame())
 
@@ -70,7 +70,7 @@ meta3 <- data.frame(
 )
 attr(counts3, "gene_length") <- sample(500:5000, 480, replace=TRUE)
 
-studies$study3 <- new("metaXpressStudy", counts = counts3, metadata = meta3,
+studies$study3 <- metaXpressStudy(counts = counts3, metadata = meta3,
                       accession = "SIM003", organism = "human", qc_score = 7.8,
                       de_result = data.frame())
 

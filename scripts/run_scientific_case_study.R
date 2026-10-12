@@ -41,9 +41,9 @@ names(studies) <- c("GSE130688_CRC", "GSE136569_PDAC", "GSE171485_ccRCC")
 for (s_name in names(studies)) {
   s <- studies[[s_name]]
   message(sprintf("  [%s] Samples: %d (%s), Genes: %d, QC Score: %d/10",
-                  s_name, ncol(s@counts),
-                  paste(table(s@metadata$condition), collapse = " vs "),
-                  nrow(s@counts), s@qc_score))
+                  s_name, ncol(s),
+                  paste(table(s$condition), collapse = " vs "),
+                  nrow(s), s@qc_score))
 }
 
 # Generate study overview plot
@@ -65,7 +65,7 @@ message("🧬 STEP 2: Harmonization & Gene Space Alignment")
 message("==================================================================")
 
 studies <- mx_align_genes(studies)
-common_genes_n <- nrow(studies[[1]]@counts)
+common_genes_n <- nrow(studies[[1]])
 message(sprintf("  Common genes across all 3 independent cohorts: %d", common_genes_n))
 
 message("\n==================================================================")
@@ -91,7 +91,7 @@ message("\n==================================================================")
 message("🧮 STEP 5: Multi-Study Meta-Analysis (Random Effects DerSimonian-Laird)")
 message("==================================================================")
 
-n_samples <- vapply(studies, function(s) ncol(s@counts), integer(1))
+n_samples <- vapply(studies, function(s) ncol(s), integer(1))
 
 meta_res <- mx_meta(
   de_results = de_results,

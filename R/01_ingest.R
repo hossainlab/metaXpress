@@ -86,14 +86,14 @@ mx_fetch_geo <- function(accessions, count_type = "raw",
 
   # Run QC on studies that have non-empty counts
   studies <- lapply(studies, function(s) {
-    if (nrow(s@counts) > 0 && ncol(s@counts) > 0 &&
-        nrow(s@metadata) > 0 && "condition" %in% colnames(s@metadata) &&
-        !all(is.na(s@metadata$condition))) {
+    if (nrow(s) > 0 && ncol(s) > 0 &&
+        "condition" %in% colnames(SummarizedExperiment::colData(s)) &&
+        !all(is.na(s$condition))) {
       mx_qc_study(s)
     } else {
       warning("Study ", s@accession, " has empty counts or missing condition ",
               "labels. QC skipped. Assign conditions manually: ",
-              "study@metadata$condition <- c(...)")
+              "study$condition <- c(...)")
       s
     }
   })
@@ -170,7 +170,7 @@ mx_fetch_sra <- function(srp_ids, cache_dir = tempdir(), organism = "human") {
         warning("Could not auto-detect condition for SRA project ", srp, ". Assign manually.")
       }
       
-      study <- new("metaXpressStudy",
+      study <- metaXpressStudy(
                    counts    = round(counts),
                    metadata  = meta,
                    accession = srp,
@@ -268,7 +268,7 @@ mx_load_local <- function(count_paths, metadata_paths,
               "inference. Consider obtaining raw counts or excluding this study.")
     }
 
-    new("metaXpressStudy",
+    metaXpressStudy(
         counts    = counts,
         metadata  = metadata,
         accession = acc,
@@ -346,8 +346,8 @@ mx_qc_study <- function(study) {
   if (!is(study, "metaXpressStudy"))
     stop("'study' must be a metaXpressStudy object")
 
-  counts   <- study@counts
-  metadata <- study@metadata
+  counts   <- .counts(study)
+  metadata <- .samples(study)
   score    <- integer(10)
   details  <- character(10)
 
@@ -485,7 +485,7 @@ mx_cluster_samples <- function(study) {
     
   .require_package("stringdist", "string distance calculation for clustering")
   
-  meta <- study@metadata
+  meta <- .samples(study)
   
   # Concatenate all character/factor columns for each sample into a single text document
   text_cols <- vapply(meta, function(x) is.character(x) || is.factor(x), logical(1))
@@ -506,7 +506,7 @@ mx_cluster_samples <- function(study) {
   groups <- cutree(hc, k = 2)
   
   # Assign the groups as "group1" and "group2"
-  study@metadata$condition <- paste0("group", groups)
+  study$condition <- paste0("group", groups)
   
   message("Auto-clustered ", nrow(meta), " samples into 2 groups based on metadata text.")
   study
@@ -615,7 +615,7 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
     empty_meta <- data.frame(sample_id = character(0),
                              condition = character(0),
                              stringsAsFactors = FALSE)
-    return(new("metaXpressStudy",
+    return(metaXpressStudy(
                counts    = matrix(0L, nrow = 0, ncol = 0),
                metadata  = empty_meta,
                accession = accession,
@@ -637,7 +637,7 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
             "DESeq2/edgeR require raw integer counts for valid inference.")
   }
 
-  new("metaXpressStudy",
+  metaXpressStudy(
       counts    = counts,
       metadata  = metadata,
       accession = accession,
@@ -889,7 +889,7 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
     } else {
       meta$condition <- NA_character_
       warning("Could not auto-detect condition column for study. ",
-              "Assign manually: study@metadata$condition <- ...")
+              "Assign manually: study$condition <- ...")
     }
   }
 

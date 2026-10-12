@@ -2,8 +2,8 @@ test_that("make_test_study produces a valid metaXpressStudy", {
   s <- make_test_study()
   expect_s4_class(s, "metaXpressStudy")
   expect_equal(s@accession, "TEST001")
-  expect_true(nrow(s@counts) == 200)
-  expect_true(ncol(s@counts) == 6)
+  expect_true(nrow(s) == 200)
+  expect_true(ncol(s) == 6)
 })
 
 test_that("mx_qc_study fills qc_score slot", {
@@ -31,7 +31,7 @@ test_that("mx_qc_study scores criterion 1 correctly", {
 
   # 2 samples per group — should fail
   s2 <- make_test_study(n_samples = 4)
-  s2@metadata$condition <- c("control", "control", "case", "case")
+  s2$condition <- c("control", "control", "case", "case")
   s2_qc <- mx_qc_study(s2)
   expect_equal(attr(s2_qc, "qc_details")$score[1], 0L)
 })
@@ -43,7 +43,7 @@ test_that("mx_qc_study scores criterion 8 correctly (exactly 2 condition levels)
 
   # 3 levels — should fail
   s3 <- make_test_study(n_samples = 6)
-  s3@metadata$condition <- c("A", "B", "C", "A", "B", "C")
+  s3$condition <- c("A", "B", "C", "A", "B", "C")
   s3_qc <- mx_qc_study(s3)
   expect_equal(attr(s3_qc, "qc_details")$score[8], 0L)
 })

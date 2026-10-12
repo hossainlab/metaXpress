@@ -21,7 +21,7 @@ test_that("mx_de padj values are in [0, 1]", {
 
 test_that("mx_de errors without condition column", {
   s <- make_test_study()
-  s@metadata$condition <- NULL
+  s$condition <- NULL
   expect_error(mx_de(s, method = "DESeq2"), "condition")
 })
 

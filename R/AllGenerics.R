@@ -15,8 +15,8 @@ setMethod("show", "metaXpressStudy", function(object) {
   cat("metaXpressStudy\n")
   cat("  Accession :", object@accession, "\n")
   cat("  Organism  :", object@organism, "\n")
-  cat("  Genes     :", nrow(object@counts), "\n")
-  cat("  Samples   :", ncol(object@counts), "\n")
+  cat("  Genes     :", nrow(object), "\n")
+  cat("  Samples   :", ncol(object), "\n")
   qc <- if (is.na(object@qc_score)) "not run" else
     paste0(object@qc_score, " / 10")
   cat("  QC score  :", qc, "\n")

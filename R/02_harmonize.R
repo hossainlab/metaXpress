@@ -132,8 +132,7 @@ mx_normalize <- function(study,
     quantile = .normalize_quantile(study)
   )
 
-  study@counts <- normalized
-  study
+  .set_counts(study, normalized)
 }
 
 #' Correct for library type bias (polyA vs rRNA-depleted)
@@ -164,8 +163,8 @@ mx_correct_library_type <- function(studies) {
     stop("'studies' must be a list of metaXpressStudy objects")
 
   lib_types <- vapply(studies, function(s) {
-    if ("library_type" %in% colnames(s@metadata))
-      unique(s@metadata$library_type)[1]
+    if ("library_type" %in% colnames(SummarizedExperiment::colData(s)))
+      unique(s$library_type)[1]
     else
       NA_character_
   }, character(1))
@@ -197,12 +196,12 @@ mx_correct_library_type <- function(studies) {
 
   # Compute mean CPM per gene per library type
   polya_cpm <- Reduce("+", lapply(aligned[polya_idx], function(s) {
-    dge <- edgeR::DGEList(counts = s@counts)
+    dge <- edgeR::DGEList(counts = .counts(s))
     edgeR::cpm(dge, log = FALSE)
   })) / length(polya_idx)
 
   rrna_cpm <- Reduce("+", lapply(aligned[rrna_idx], function(s) {
-    dge <- edgeR::DGEList(counts = s@counts)
+    dge <- edgeR::DGEList(counts = .counts(s))
     edgeR::cpm(dge, log = FALSE)
   })) / length(rrna_idx)
 
@@ -213,9 +212,9 @@ mx_correct_library_type <- function(studies) {
 
   # Apply ratio to rRNA-depleted studies
   for (i in rrna_idx) {
-    dge <- edgeR::DGEList(counts = aligned[[i]]@counts)
+    dge <- edgeR::DGEList(counts = .counts(aligned[[i]]))
     cpm_vals <- edgeR::cpm(dge, log = FALSE)
-    aligned[[i]]@counts <- round(sweep(cpm_vals, 1, ratio, "*"))
+    aligned[[i]] <- .set_counts(aligned[[i]], round(sweep(cpm_vals, 1, ratio, "*")))
   }
 
   message(sprintf("Library type correction applied to %d rRNA-depleted studies.",
@@ -273,9 +272,9 @@ mx_remove_batch <- function(studies,
   message("Removing batch effects using ", method, "...")
 
   aligned <- mx_align_genes(studies)
-  combined_counts <- do.call(cbind, lapply(aligned, function(s) s@counts))
+  combined_counts <- do.call(cbind, lapply(aligned, .counts))
   batch <- rep(seq_along(aligned),
-               times = vapply(aligned, function(s) ncol(s@counts), integer(1)))
+               times = vapply(aligned, ncol, integer(1)))
 
   corrected_combined <- switch(method,
     `ComBat-seq` = {
@@ -319,9 +318,11 @@ mx_remove_batch <- function(studies,
 
   col_idx <- 0
   for (i in seq_along(aligned)) {
-    n <- ncol(aligned[[i]]@counts)
-    aligned[[i]]@counts <- corrected_combined[, (col_idx + 1):(col_idx + n),
-                                               drop = FALSE]
+    n <- ncol(aligned[[i]])
+    aligned[[i]] <- .set_counts(
+      aligned[[i]],
+      corrected_combined[, (col_idx + 1):(col_idx + n), drop = FALSE]
+    )
     col_idx <- col_idx + n
   }
 
@@ -351,7 +352,7 @@ mx_align_genes <- function(studies) {
   if (!is.list(studies) || length(studies) == 0)
     stop("'studies' must be a non-empty list of metaXpressStudy objects")
 
-  gene_sets <- lapply(studies, function(s) rownames(s@counts))
+  gene_sets <- lapply(studies, rownames)
   common_genes <- Reduce(intersect, gene_sets)
 
   if (length(common_genes) == 0)
@@ -362,10 +363,7 @@ mx_align_genes <- function(studies) {
   message(sprintf("Aligning to %d common genes (%.1f%% of first study).",
                    length(common_genes), pct))
 
-  lapply(studies, function(s) {
-    s@counts <- s@counts[common_genes, , drop = FALSE]
-    s
-  })
+  lapply(studies, function(s) s[common_genes, ])
 }
 
 # ============================================================================
@@ -385,7 +383,7 @@ mx_align_genes <- function(studies) {
 }
 
 .reannotate_study <- function(study, org_db, target_id) {
-  current_ids  <- rownames(study@counts)
+  current_ids  <- rownames(study)
   keytype      <- .detect_id_type(current_ids)
 
   if (keytype == target_id)
@@ -406,8 +404,8 @@ mx_align_genes <- function(studies) {
                     study@accession, n_lost,
                     n_lost / length(valid) * 100, target_id))
 
-  study@counts <- study@counts[valid, , drop = FALSE]
-  rownames(study@counts) <- mapped[valid]
+  study <- study[valid, ]
+  rownames(study) <- mapped[valid]
   study
 }
 
@@ -419,42 +417,40 @@ mx_align_genes <- function(studies) {
 }
 
 .normalize_tmm <- function(study) {
-  dge <- edgeR::DGEList(counts = study@counts)
+  dge <- edgeR::DGEList(counts = .counts(study))
   dge <- edgeR::calcNormFactors(dge, method = "TMM")
   edgeR::cpm(dge, log = FALSE)
 }
 
 .normalize_vst <- function(study) {
-  cond <- factor(study@metadata$condition)
   dds  <- DESeq2::DESeqDataSetFromMatrix(
-    countData = round(study@counts),
-    colData   = study@metadata,
+    countData = round(.counts(study)),
+    colData   = .samples(study),
     design    = ~ condition
   )
   as.matrix(SummarizedExperiment::assay(DESeq2::vst(dds, blind = TRUE)))
 }
 
 .normalize_cpm <- function(study) {
-  dge <- edgeR::DGEList(counts = study@counts)
+  dge <- edgeR::DGEList(counts = .counts(study))
   edgeR::cpm(dge, log = FALSE)
 }
 
 .normalize_tpm <- function(study) {
-  if (!"gene_length" %in% colnames(study@metadata))
-    stop("TPM normalization requires a 'gene_length' column in metadata")
+  gene_info <- SummarizedExperiment::rowData(study)
+  if (!"gene_length" %in% colnames(gene_info))
+    stop("TPM normalization requires a 'gene_length' column in rowData(study)")
 
-  gene_lengths <- study@metadata$gene_length
-  if (length(gene_lengths) != nrow(study@counts))
-    stop("Length of 'gene_length' must equal the number of genes in counts")
+  gene_lengths <- gene_info$gene_length
 
   # RPK: reads per kilobase
-  rpk <- sweep(study@counts, 1, gene_lengths / 1000, "/")
+  rpk <- sweep(.counts(study), 1, gene_lengths / 1000, "/")
   # Scale each sample to per-million
   col_sums <- colSums(rpk) / 1e6
   sweep(rpk, 2, col_sums, "/")
 }
 
 .normalize_quantile <- function(study) {
-  log_counts <- log1p(study@counts)
+  log_counts <- log1p(.counts(study))
   limma::normalizeBetweenArrays(log_counts, method = "quantile")
 }
