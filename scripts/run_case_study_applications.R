@@ -73,6 +73,10 @@ mt <- meta_res@meta_table
 mt$symbol <- unname(symbol_of[mt$gene_id])
 meta_res@meta_table <- mt
 
+# Cache pipeline objects for scripts/make_downstream_extdata.R
+saveRDS(list(studies = studies, meta_res = meta_res),
+        file.path(in_dir, "pipeline_objects.rds"))
+
 sig <- !is.na(mt$meta_padj) & mt$meta_padj <= 0.05 & abs(mt$meta_log2FC) >= 1
 message(sprintf("  %d genes tested, %d meta-DEGs (%d up, %d down)",
                 nrow(mt), sum(sig), sum(sig & mt$meta_log2FC > 0),

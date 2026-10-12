@@ -117,6 +117,10 @@ mx_tf_activity <- function(meta_result, network, id_col = "gene_id",
 #' @param min_markers Minimum number of expressed markers a cell type needs in
 #'   a study to be scored there. Default 3.
 #'
+#' @details Expression is log2-CPM. If a study's \code{colData} has a
+#'   \code{lib_size} column it is used as the library size, so studies that
+#'   carry only a subset of genes are still normalised to their true depth.
+#'
 #' @return A \code{data.frame} sorted by p-value with columns
 #'   \code{cell_type}, \code{meta_g} (pooled Hedges' g; positive = higher in
 #'   cases), \code{pvalue}, \code{padj}, \code{i_squared}, \code{n_studies},
@@ -148,7 +152,7 @@ mx_cell_composition <- function(studies, markers, min_markers = 3) {
   markers <- .standardize_markers(markers)
 
   scores <- lapply(studies, function(s) {
-    z <- .row_z(.log_cpm(.counts(s)))
+    z <- .row_z(.log_cpm(s))
     sc <- vapply(markers, function(g) {
       g <- intersect(g, rownames(z))
       if (length(g) < min_markers) return(rep(NA_real_, ncol(z)))
@@ -196,6 +200,9 @@ mx_cell_composition <- function(studies, markers, min_markers = 3) {
 #'   about 0.5.
 #' @param min_module_size Modules smaller than this are merged into module
 #'   \code{"M0"} (unassigned). Default 20.
+#'
+#' @details Like \code{\link{mx_cell_composition}}, a \code{lib_size}
+#'   column in \code{colData} overrides the column sums used for log2-CPM.
 #' @param meta_result Optional \code{\linkS4class{metaXpressResult}}. If
 #'   given, each module reports the fraction of its genes that are significant
 #'   meta-DEGs (\code{meta_padj <= 0.05}) up or down.
@@ -239,7 +246,7 @@ mx_coexpression_modules <- function(studies, genes = NULL, n_genes = 2000,
   studies   <- .named_study_list(studies)
   consensus <- match.arg(consensus)
 
-  expr   <- lapply(studies, function(s) .log_cpm(.counts(s)))
+  expr   <- lapply(studies, .log_cpm)
   shared <- Reduce(intersect, lapply(expr, rownames))
 
   if (is.null(genes)) {
@@ -621,8 +628,12 @@ mx_downstream_plot <- function(x, top = 20, padj_threshold = 0.05,
   studies
 }
 
-.log_cpm <- function(counts) {
-  lib <- colSums(counts)
+# log2-CPM of a study. A 'lib_size' colData column, if present, overrides the
+# column sums so that gene-subset studies are normalised to their true depth.
+.log_cpm <- function(study) {
+  counts <- .counts(study)
+  lib <- if ("lib_size" %in% colnames(SummarizedExperiment::colData(study)))
+    study$lib_size else colSums(counts)
   log2(t(t(counts) / lib * 1e6) + 1)
 }
 
