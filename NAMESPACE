@@ -2,11 +2,15 @@
 
 export(metaXpressStudy)
 export(mx_align_genes)
+export(mx_cell_composition)
 export(mx_cluster_samples)
+export(mx_coexpression_modules)
 export(mx_correct_library_type)
 export(mx_de)
 export(mx_de_all)
 export(mx_de_summary)
+export(mx_downstream_plot)
+export(mx_drug_connectivity)
 export(mx_export)
 export(mx_fetch_geo)
 export(mx_fetch_sra)
@@ -27,12 +31,14 @@ export(mx_pathway_dedup)
 export(mx_pathway_heatmap)
 export(mx_pathway_meta)
 export(mx_qc_study)
+export(mx_read_signatures)
 export(mx_reannotate)
 export(mx_remove_batch)
 export(mx_report)
 export(mx_sensitivity)
 export(mx_session_info)
 export(mx_study_overview)
+export(mx_tf_activity)
 export(mx_upset)
 export(mx_volcano)
 exportClasses(metaXpressResult)
@@ -47,7 +53,9 @@ importFrom(BiocParallel,
 importFrom(ggplot2,
   aes,
   annotate,
+  coord_flip,
   element_text,
+  geom_col,
   geom_errorbarh,
   geom_histogram,
   geom_hline,
@@ -56,7 +64,9 @@ importFrom(ggplot2,
   geom_vline,
   ggplot,
   labs,
+  scale_alpha_manual,
   scale_colour_manual,
+  scale_fill_manual,
   scale_y_discrete,
   theme,
   theme_bw

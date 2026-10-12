@@ -36,7 +36,7 @@ usethis::create_package(".")
 
 ## Architecture
 
-The package is organized into 8 numbered modules in `R/`, each with a corresponding test file in `tests/testthat/`:
+The package is organized into 9 numbered modules in `R/`, each with a corresponding test file in `tests/testthat/`:
 
 | File | Module | Purpose |
 |---|---|---|
@@ -48,6 +48,7 @@ The package is organized into 8 numbered modules in `R/`, each with a correspond
 | `R/06_pathway.R` | Pathway Meta-Analysis | Cross-study ORA/GSEA, redundancy reduction |
 | `R/07_visualize.R` | Visualization | Volcano, forest, heatmap, UpSet plots |
 | `R/08_report.R` | Report Generation | HTML/PDF rendering, CSV/Excel export |
+| `R/09_downstream.R` | Downstream Biology | TF activity, cell composition, consensus co-expression, drug reversal |
 | `R/utils.R` | Shared Utilities | Helpers used across modules |
 
 ## S4 Data Structures

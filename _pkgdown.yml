@@ -45,6 +45,8 @@ reference:
     desc: "Core container classes for studies and meta-analysis results."
     contents:
       - metaXpressStudy-class
+      - metaXpressStudy
+      - mx_from_se
       - metaXpressResult-class
       - 'show,metaXpressStudy-method'
       - 'show,metaXpressResult-method'
@@ -113,6 +115,16 @@ reference:
       - mx_report
       - mx_export
       - mx_session_info
+
+  - title: "Module 9: Downstream Biology"
+    desc: "Turn the meta-signature into biology: TF activity, cell composition, co-expression modules and drug reversal."
+    contents:
+      - mx_tf_activity
+      - mx_cell_composition
+      - mx_coexpression_modules
+      - mx_drug_connectivity
+      - mx_read_signatures
+      - mx_downstream_plot
 
 footer:
   left: "Developed by [Md. Jubayer Hossain](https://mdjubayerhossain.com) | [Hossain Lab](https://github.com/hossainlab)"
