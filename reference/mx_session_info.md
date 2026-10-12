@@ -21,5 +21,5 @@ A list with elements `session_info` (from
 ``` r
 info <- mx_session_info()
 info$timestamp
-#> [1] "2026-10-12 11:18:06 UTC"
+#> [1] "2026-10-12 14:21:09 UTC"
 ```

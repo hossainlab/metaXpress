@@ -43,7 +43,7 @@ usethis::create_package(".")
 
 ## Architecture
 
-The package is organized into 8 numbered modules in `R/`, each with a
+The package is organized into 9 numbered modules in `R/`, each with a
 corresponding test file in `tests/testthat/`:
 
 | File | Module | Purpose |
@@ -56,15 +56,25 @@ corresponding test file in `tests/testthat/`:
 | `R/06_pathway.R` | Pathway Meta-Analysis | Cross-study ORA/GSEA, redundancy reduction |
 | `R/07_visualize.R` | Visualization | Volcano, forest, heatmap, UpSet plots |
 | `R/08_report.R` | Report Generation | HTML/PDF rendering, CSV/Excel export |
+| `R/09_downstream.R` | Downstream Biology | TF activity, cell composition, consensus co-expression, drug reversal |
 | `R/utils.R` | Shared Utilities | Helpers used across modules |
 
 ## S4 Data Structures
 
 Two core S4 classes flow through the pipeline:
 
-**`metaXpressStudy`** — output of Module 1, input to Modules 2–3: -
-`counts`: raw count matrix (genes × samples) - `metadata`: sample
-data.frame - `accession`, `organism`, `qc_score`, `de_result`
+**`metaXpressStudy`** — output of Module 1, input to Modules 2–3.
+Extends `SummarizedExperiment`: - `assay(study, "counts")`: raw count
+matrix (genes × samples) - `colData(study)`: sample metadata (must
+contain `condition`); `study$condition` works - `rowData(study)`:
+optional gene annotation (e.g. `gene_length` for TPM) - extra slots:
+`accession`, `organism`, `qc_score`, `de_result` - Build with
+[`metaXpressStudy()`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy.md);
+convert any SE/DESeqDataSet with
+[`mx_from_se()`](https://mdjubayerhossain.com/metaXpress/reference/mx_from_se.md)
+or `as(se, "metaXpressStudy")` - Never use `study@metadata` — on SE that
+is the free-form list, not sample data. Internally use `.counts()`,
+`.samples()`, `.set_counts()` (`R/utils.R`)
 
 **`metaXpressResult`** — output of Module 4, input to Modules 5–8: -
 `meta_table`: gene-level results (meta-p, meta-FDR, meta-effect size,

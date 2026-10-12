@@ -74,7 +74,7 @@
 </div>
 <div class="section level2">
 <h2 id="architecture">Architecture<a class="anchor" aria-label="anchor" href="#architecture"></a></h2>
-<p>The package is organized into 8 numbered modules in <code>R/</code>, each with a corresponding test file in <code>tests/testthat/</code>:</p>
+<p>The package is organized into 9 numbered modules in <code>R/</code>, each with a corresponding test file in <code>tests/testthat/</code>:</p>
 <table class="table"><colgroup><col width="33%"><col width="33%"><col width="33%"></colgroup><thead><tr><th>File</th>
 <th>Module</th>
 <th>Purpose</th>
@@ -102,6 +102,9 @@
 </tr><tr><td><code>R/08_report.R</code></td>
 <td>Report Generation</td>
 <td>HTML/PDF rendering, CSV/Excel export</td>
+</tr><tr><td><code>R/09_downstream.R</code></td>
+<td>Downstream Biology</td>
+<td>TF activity, cell composition, consensus co-expression, drug reversal</td>
 </tr><tr><td><code>R/utils.R</code></td>
 <td>Shared Utilities</td>
 <td>Helpers used across modules</td>
@@ -109,7 +112,7 @@
 <div class="section level2">
 <h2 id="s4-data-structures">S4 Data Structures<a class="anchor" aria-label="anchor" href="#s4-data-structures"></a></h2>
 <p>Two core S4 classes flow through the pipeline:</p>
-<p><strong><code>metaXpressStudy</code></strong> — output of Module 1, input to Modules 2–3: - <code>counts</code>: raw count matrix (genes × samples) - <code>metadata</code>: sample data.frame - <code>accession</code>, <code>organism</code>, <code>qc_score</code>, <code>de_result</code></p>
+<p><strong><code>metaXpressStudy</code></strong> — output of Module 1, input to Modules 2–3. Extends <code>SummarizedExperiment</code>: - <code>assay(study, "counts")</code>: raw count matrix (genes × samples) - <code>colData(study)</code>: sample metadata (must contain <code>condition</code>); <code>study$condition</code> works - <code>rowData(study)</code>: optional gene annotation (e.g. <code>gene_length</code> for TPM) - extra slots: <code>accession</code>, <code>organism</code>, <code>qc_score</code>, <code>de_result</code> - Build with <code><a href="reference/metaXpressStudy.html">metaXpressStudy()</a></code>; convert any SE/DESeqDataSet with <code><a href="reference/mx_from_se.html">mx_from_se()</a></code> or <code>as(se, "metaXpressStudy")</code> - Never use <code>study@metadata</code> — on SE that is the free-form list, not sample data. Internally use <code>.counts()</code>, <code>.samples()</code>, <code>.set_counts()</code> (<code>R/utils.R</code>)</p>
 <p><strong><code>metaXpressResult</code></strong> — output of Module 4, input to Modules 5–8: - <code>meta_table</code>: gene-level results (meta-p, meta-FDR, meta-effect size, I²) - <code>method</code>, <code>n_studies</code>, <code>heterogeneity</code>, <code>pathway_result</code></p>
 </div>
 <div class="section level2">

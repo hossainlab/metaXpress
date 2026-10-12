@@ -1,23 +1,23 @@
 # The metaXpressStudy class
 
-Represents a single bulk RNA-seq study, holding raw counts, sample
-metadata, accession information, and QC results. Populated by
+Represents a single bulk RNA-seq study. `metaXpressStudy` extends
+[`SummarizedExperiment`](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html),
+so raw counts live in the `"counts"` assay, sample metadata in
+`colData()`, and optional gene annotation in `rowData()`. All standard
+SummarizedExperiment accessors and subsetting (`study[genes, samples]`,
+`study$condition`) work directly. Populated by
 [`mx_fetch_geo`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_geo.md),
 [`mx_fetch_sra`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_sra.md),
+[`mx_load_local`](https://mdjubayerhossain.com/metaXpress/reference/mx_load_local.md),
 or
-[`mx_load_local`](https://mdjubayerhossain.com/metaXpress/reference/mx_load_local.md).
+[`mx_from_se`](https://mdjubayerhossain.com/metaXpress/reference/mx_from_se.md).
+
+## Details
+
+The `colData` must contain a `condition` column (case/control labels)
+once an accession is set.
 
 ## Slots
-
-- `counts`:
-
-  A numeric matrix of raw counts (genes x samples). Rownames must be
-  gene identifiers; colnames must be sample identifiers.
-
-- `metadata`:
-
-  A `data.frame` of sample metadata. Must contain columns `condition`
-  (case/control labels) and `sample_id`.
 
 - `accession`:
 
@@ -44,6 +44,8 @@ or
 
 ## See also
 
+[`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy.md),
+[`mx_from_se`](https://mdjubayerhossain.com/metaXpress/reference/mx_from_se.md),
 [`mx_fetch_geo`](https://mdjubayerhossain.com/metaXpress/reference/mx_fetch_geo.md),
 [`mx_qc_study`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md),
 [`mx_de`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md)

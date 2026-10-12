@@ -110,6 +110,13 @@ Canonical cancer drivers identified include
 <strong><code>IGF2BP3</code></strong>, and
 <strong><code>CDCP1</code></strong>, alongside conserved tumor
 suppressors such as <strong><code>FAM107A</code></strong>.</p>
+<p>Downstream analyses (Module 9) go further. They show coordinated
+<strong>E2F and NF-κB transcription factor activation</strong>, find
+that <strong>MST1R and CDCP1 are hubs of a 398-gene co-expression
+module</strong> conserved in all three cohorts, find no consistent
+immune/stromal composition shift, and rank <strong>TGF-β receptor, CDK,
+MEK and MDM2 inhibitors</strong> as the top LINCS compounds that reverse
+the shared tumour signature.</p>
 <hr>
 </div>
 <div class="section level2">
@@ -446,10 +453,251 @@ summary DerSimonian-Laird Random Effects pooled diamond:</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="downstream-biology-applications">Downstream Biology Applications<a class="anchor" aria-label="anchor" href="#downstream-biology-applications"></a>
+</h2>
+<p>The meta-signature (29,560 genes, 558 meta-DEGs) is a starting point,
+not an endpoint. Module 9 of <code>metaXpress</code> turns it into
+testable biology with four analyses. Each takes a public prior-knowledge
+resource as a plain R object, so the same code works with any regulon,
+marker set or drug library.</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Analysis</th>
+<th>Function</th>
+<th>Resource</th>
+<th>Question answered</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>A. TF activity</td>
+<td><code><a href="../reference/mx_tf_activity.html">mx_tf_activity()</a></code></td>
+<td>CollecTRI regulons (OmniPath)</td>
+<td>Which upstream regulators drive the shared tumour program?</td>
+</tr>
+<tr class="even">
+<td>B. Cell composition</td>
+<td><code><a href="../reference/mx_cell_composition.html">mx_cell_composition()</a></code></td>
+<td>MCP-counter markers</td>
+<td>Is the signal explained by shifts in immune/stromal content?</td>
+</tr>
+<tr class="odd">
+<td>C. Co-expression</td>
+<td><code><a href="../reference/mx_coexpression_modules.html">mx_coexpression_modules()</a></code></td>
+<td>none (data-driven)</td>
+<td>Which gene programs are co-regulated in <em>every</em> cohort?</td>
+</tr>
+<tr class="even">
+<td>D. Drug reversal</td>
+<td><code><a href="../reference/mx_drug_connectivity.html">mx_drug_connectivity()</a></code></td>
+<td>LINCS L1000 consensus signatures</td>
+<td>Which compounds push expression opposite to the tumour state?</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tf</span>    <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_tf_activity.html">mx_tf_activity</a></span><span class="op">(</span><span class="va">meta_res</span>, <span class="va">collectri</span>, id_col <span class="op">=</span> <span class="st">"symbol"</span>, min_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">comp</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_cell_composition.html">mx_cell_composition</a></span><span class="op">(</span><span class="va">studies</span>, <span class="va">mcp_markers</span><span class="op">)</span></span>
+<span><span class="va">net</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_coexpression_modules.html">mx_coexpression_modules</a></span><span class="op">(</span><span class="va">studies</span>, n_genes <span class="op">=</span> <span class="fl">3000</span>, cut_height <span class="op">=</span> <span class="fl">0.3</span>,</span>
+<span>                                 meta_result <span class="op">=</span> <span class="va">meta_res</span><span class="op">)</span></span>
+<span><span class="va">sigs</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_read_signatures.html">mx_read_signatures</a></span><span class="op">(</span><span class="st">"LINCS_L1000_Chem_Pert_Consensus_Sigs.txt"</span><span class="op">)</span></span>
+<span><span class="va">drugs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_drug_connectivity.html">mx_drug_connectivity</a></span><span class="op">(</span><span class="va">meta_res</span>, <span class="va">sigs</span>, id_col <span class="op">=</span> <span class="st">"symbol"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">tf</span><span class="op">)</span></span></code></pre></div>
+<p><img src="figures/app_downstream_panel.png" alt="Downstream biology applications" width="100%"></p>
+<div class="section level3">
+<h3 id="a--transcription-factor-activity">A. Transcription factor activity<a class="anchor" aria-label="anchor" href="#a--transcription-factor-activity"></a>
+</h3>
+<p>Of 548 TFs with at least 10 measured CollecTRI targets, <strong>65
+were significantly altered</strong> (FDR &lt; 0.05): 62 activated and 3
+repressed in tumours.</p>
+<ul>
+<li>
+<strong>Proliferation:</strong> the E2F family dominates (E2F1 t =
+6.9, FDR = 3.4 × 10⁻⁹, plus E2F2, E2F3 and E2F4). This is consistent
+with cell-cycle deregulation shared by all three carcinomas.</li>
+<li>
+<strong>Inflammation:</strong> NF-κB (RELA, REL, RELB and the
+NFKB1–RELA complex) and AP-1 (JUN) are activated. This points to a
+shared inflammatory-signalling component.</li>
+<li>
+<strong>Repressed:</strong> SNAI2 (t = −4.7, FDR = 3.6 × 10⁻⁵),
+CEBPA and HDAC4 are the significantly repressed regulators. MYC (FDR =
+0.18) and TP53 (FDR = 0.57) were <em>not</em> consistently altered
+across cohorts.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="b--cell-type-composition">B. Cell-type composition<a class="anchor" aria-label="anchor" href="#b--cell-type-composition"></a>
+</h3>
+<p>None of the nine MCP-counter populations shifted significantly after
+FDR correction. (CD8 T cells were dropped because only one marker was
+measured.) Pooled effects were positive for all populations, but the
+per-study effects show that this comes from the CRC cohort alone
+(Hedges’ g ≈ 1.0–1.6). PDAC and ccRCC are close to zero, and
+heterogeneity is moderate (I² up to 62%). So <strong>the shared
+meta-DEGs are unlikely to be an artefact of a consistent immune or
+stromal infiltration change</strong>, which supports them as
+tumour-intrinsic.</p>
+</div>
+<div class="section level3">
+<h3 id="c--consensus-co-expression-modules">C. Consensus co-expression modules<a class="anchor" aria-label="anchor" href="#c--consensus-co-expression-modules"></a>
+</h3>
+<p>Using the 3,000 most variable genes and a conservative
+minimum-correlation consensus (a link must hold in all three cohorts),
+we found 9 modules. Two have significantly higher eigengenes in
+tumours:</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="14%">
+<col width="14%">
+<col width="14%">
+<col width="14%">
+<col width="14%">
+<col width="14%">
+<col width="14%">
+</colgroup>
+<thead><tr class="header">
+<th>Module</th>
+<th>Genes</th>
+<th>Pooled g</th>
+<th>FDR</th>
+<th>I²</th>
+<th>% meta-DEGs up</th>
+<th>Hub genes</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>M2</strong></td>
+<td>398</td>
+<td><strong>+1.50</strong></td>
+<td>0.043</td>
+<td>66%</td>
+<td><strong>29.1%</strong></td>
+<td>
+<strong>MST1R</strong>, PLEK2, TSPAN1, B3GNT3,
+<strong>CDCP1</strong>
+</td>
+</tr>
+<tr class="even">
+<td><strong>M7</strong></td>
+<td>27</td>
+<td><strong>+1.07</strong></td>
+<td>0.003</td>
+<td>0%</td>
+<td>14.8%</td>
+<td>USH1C, ONECUT2, HSD17B2, SLC5A1, PRR15L</td>
+</tr>
+</tbody>
+</table>
+<p><strong>M2 independently recovers the top meta-analysis
+drivers.</strong> MST1R and CDCP1 were found gene-by-gene in
+<em>Meta-Analysis Findings</em>, and here they emerge as the most
+connected hubs of a 398-gene invasive-epithelial program that is
+co-regulated in every cohort. The remaining modules mostly capture
+tissue-of-origin programs and do not differ consistently between tumour
+and normal: pancreatic acinar (M3: CELP, PNLIPRP1), islet/neuroendocrine
+(M6: NEUROD1, PCSK2), lymphoid (M8: CCL19, CD79B) and endothelial/smooth
+muscle (M9: CD34, ITGA7).</p>
+</div>
+<div class="section level3">
+<h3 id="d--drug-signature-reversal">D. Drug signature reversal<a class="anchor" aria-label="anchor" href="#d--drug-signature-reversal"></a>
+</h3>
+<p>We scored 5,425 LINCS L1000 consensus chemical signatures for their
+ability to reverse the meta-signature (negative score: the drug lowers
+tumour-up genes and raises tumour-down genes). The top of the ranking
+converges on a small number of mechanisms:</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Rank</th>
+<th>Compound</th>
+<th>Reversal score</th>
+<th>Mechanism</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>SD-208</td>
+<td>−11.8</td>
+<td>TGF-β receptor I (ALK5) inhibitor</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>R-547</td>
+<td>−10.9</td>
+<td>CDK1/2/4 inhibitor</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>GW-788388</td>
+<td>−9.8</td>
+<td>TGF-β receptor I (ALK5) inhibitor</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>LY-2109761</td>
+<td>−9.0</td>
+<td>TGF-β receptor I/II inhibitor</td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>C646</td>
+<td>−9.0</td>
+<td>p300/CBP acetyltransferase inhibitor</td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td>TAK-733</td>
+<td>−8.7</td>
+<td>MEK inhibitor</td>
+</tr>
+<tr class="odd">
+<td>10, 12</td>
+<td>SAR405838, RG7112</td>
+<td>−8.2, −8.0</td>
+<td>MDM2 inhibitors (p53 reactivation)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Three of the top five compounds are TGF-β receptor
+inhibitors.</strong> The other top hits act on CDK-driven proliferation
+and on MEK and MDM2–p53 signalling. These match the E2F activity (A) and
+the invasive M2 module (C), so the drug ranking agrees with the
+regulator-level evidence.</p>
+<blockquote>
+<p><strong>Interpretation note.</strong> Reversal p-values assume
+independent genes and are strongly anti-conservative: 1,035 compounds
+reach FDR &lt; 0.05. Use the score as a <em>ranking</em> for
+prioritisation. L1000 signatures come from cancer cell lines, so the
+hits are hypotheses that need experimental validation.</p>
+</blockquote>
+<p>Full tables: <code>app_tf_activity.csv</code>,
+<code>app_cell_composition.csv</code>,
+<code>app_coexpression_modules.csv</code>,
+<code>app_coexpression_module_stats.csv</code>,
+<code>app_drug_connectivity.csv</code>.</p>
+<hr>
+</div>
+</div>
+<div class="section level2">
 <h2 id="reproducibility">Reproducibility<a class="anchor" aria-label="anchor" href="#reproducibility"></a>
 </h2>
 <p>The complete case study can be reproduced end-to-end using:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="ex">Rscript</span> scripts/run_scientific_case_study.R</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="ex">Rscript</span> scripts/run_scientific_case_study.R</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co"># Downstream biology applications</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="ex">Rscript</span> scripts/fetch_case_study_data.R</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="ex">Rscript</span> scripts/run_case_study_applications.R</span></code></pre></div>
 <p>The resulting gene-level dataset is exported as CSV:
 <code>case_study_results/pan_cancer_meta_results.csv</code> (3.4 MB,
 29,560 genes).</p>

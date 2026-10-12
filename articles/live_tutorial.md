@@ -82,7 +82,7 @@ print(names(studies))
 #> [1] "GSE130688" "GSE136569" "GSE171485"
 
 # Sample size breakdown per cohort
-vapply(studies, function(s) ncol(s@counts), integer(1))
+vapply(studies, ncol, integer(1))
 #> GSE130688 GSE136569 GSE171485 
 #>        30        10        12
 ```
@@ -367,9 +367,9 @@ Multi-cohort forest plot for tumor suppressor FAM107A
 ``` r
 
 out_file <- mx_export(meta_result, format = "csv", output_dir = tempdir(), prefix = "pan_cancer_meta")
-#> Results exported to: /tmp/RtmpjUnRcM/pan_cancer_meta.csv
+#> Results exported to: /tmp/Rtmp1zNpTM/pan_cancer_meta.csv
 cat("Exported results table to:", out_file, "\n")
-#> Exported results table to: /tmp/RtmpjUnRcM/pan_cancer_meta.csv
+#> Exported results table to: /tmp/Rtmp1zNpTM/pan_cancer_meta.csv
 ```
 
 ------------------------------------------------------------------------

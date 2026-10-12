@@ -31,7 +31,7 @@ mx_de(
 - formula:
 
   A formula specifying the design. Default: `~ condition`. The
-  `condition` column in `study@metadata` is used as the contrast
+  `condition` column in `colData(study)` is used as the contrast
   variable; the last level is the reference.
 
 - ...:

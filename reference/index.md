@@ -14,6 +14,10 @@ Core container classes for studies and meta-analysis results.
 
 - [`metaXpressStudy-class`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
   : The metaXpressStudy class
+- [`metaXpressStudy()`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy.md)
+  : Construct a metaXpressStudy
+- [`mx_from_se()`](https://mdjubayerhossain.com/metaXpress/reference/mx_from_se.md)
+  : Convert a SummarizedExperiment to a metaXpressStudy
 - [`metaXpressResult-class`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md)
   : The metaXpressResult class
 - [`show(`*`<metaXpressStudy>`*`)`](https://mdjubayerhossain.com/metaXpress/reference/show-metaXpressStudy-method.md)
@@ -133,3 +137,21 @@ Generate reproducible HTML/PDF reports and export meta-analysis results.
   : Export meta-analysis results to file
 - [`mx_session_info()`](https://mdjubayerhossain.com/metaXpress/reference/mx_session_info.md)
   : Capture session information for reproducibility
+
+## Module 9: Downstream Biology
+
+Turn the meta-signature into biology: TF activity, cell composition,
+co-expression modules and drug reversal.
+
+- [`mx_tf_activity()`](https://mdjubayerhossain.com/metaXpress/reference/mx_tf_activity.md)
+  : Infer transcription factor activity from the meta-signature
+- [`mx_cell_composition()`](https://mdjubayerhossain.com/metaXpress/reference/mx_cell_composition.md)
+  : Meta-analyse cell-type composition shifts across studies
+- [`mx_coexpression_modules()`](https://mdjubayerhossain.com/metaXpress/reference/mx_coexpression_modules.md)
+  : Find consensus co-expression modules across studies
+- [`mx_drug_connectivity()`](https://mdjubayerhossain.com/metaXpress/reference/mx_drug_connectivity.md)
+  : Rank drugs by how strongly they reverse the meta-signature
+- [`mx_read_signatures()`](https://mdjubayerhossain.com/metaXpress/reference/mx_read_signatures.md)
+  : Read up/down drug signatures from a gene set library
+- [`mx_downstream_plot()`](https://mdjubayerhossain.com/metaXpress/reference/mx_downstream_plot.md)
+  : Plot downstream biology results

@@ -131,6 +131,12 @@
          │
          ▼
 ┌──────────────────────┐
+│  Module 9: Downstream│  TF activity · cell composition
+│  Biology             │  co-expression modules · drug reversal
+└────────┬─────────────┘
+         │
+         ▼
+┌──────────────────────┐
 │  Module 8: Report    │  mx_report (HTML / PDF) · mx_export
 └──────────────────────┘</code></pre>
 <hr>
@@ -179,6 +185,8 @@
 <strong>Statistical Power Amplification:</strong> Rescued small-sample cohorts (e.g. GSE171485 with only 18 individual DEGs) into a well-powered pooled consensus.</li>
 <li>
 <strong>Biomarker Recovery:</strong> Successfully recovered canonical oncogenes (<strong><code>MST1R</code></strong>, <strong><code>MUC4</code></strong>, <strong><code>IGF2BP3</code></strong>, <strong><code>CDCP1</code></strong>) and conserved tumor suppressors (<strong><code>FAM107A</code></strong>).</li>
+<li>
+<strong>Downstream Biology:</strong> E2F and NF-κB transcription factor activation; <code>MST1R</code>/<code>CDCP1</code> as hubs of a co-expression module conserved in all cohorts; TGF-β receptor, CDK, MEK and MDM2 inhibitors ranked as top LINCS signature reversers.</li>
 </ul>
 <table class="table">
 <colgroup>
@@ -194,6 +202,7 @@
 <td align="center"><img src="reference/figures/case_study_volcano_plot.png" width="480" alt="Volcano Plot"></td>
 </tr></tbody>
 </table>
+<p><img src="reference/figures/app_downstream_panel.png" width="100%" alt="Downstream biology applications"></p>
 <p>👉 <strong>Read the complete scientific report:</strong> <a href="case_study_results/README.html">case_study_results/README.md</a> or online at <a href="https://mdjubayerhossain.com/metaXpress/articles/case_study.html">https://mdjubayerhossain.com/metaXpress/articles/case_study.html</a>.</p>
 <hr>
 </div>
@@ -214,7 +223,7 @@
 <li>
 <strong>Missing genes are handled, not hidden.</strong> Genes absent from some studies are reported and either imputed or filtered by coverage, instead of disappearing in an intersect.</li>
 <li>
-<strong>Biology, not just gene lists.</strong> Cross-study ORA/GSEA with redundancy reduction turns meta-signatures into interpretable pathways.</li>
+<strong>Biology, not just gene lists.</strong> Cross-study ORA/GSEA, transcription factor activity, cell-composition meta-analysis, consensus co-expression modules and drug-reversal ranking turn meta-signatures into testable hypotheses.</li>
 <li>
 <strong>Publication-ready and reproducible.</strong> Volcano, forest, heatmap, UpSet and heterogeneity plots, plus HTML/PDF reports and CSV/Excel export with captured session info.</li>
 <li>
@@ -280,6 +289,13 @@
 </tr>
 <tr>
 <td>Pathway meta-analysis</td>
+<td align="center">✅</td>
+<td align="center">❌</td>
+<td align="center">❌</td>
+<td align="center">❌</td>
+</tr>
+<tr>
+<td>TF activity, co-expression &amp; drug reversal</td>
 <td align="center">✅</td>
 <td align="center">❌</td>
 <td align="center">❌</td>
@@ -730,6 +746,42 @@
 <td>Capture session info for reproducibility</td>
 </tr>
 </tbody>
+</table></details><details><summary><strong>Module 9 — Downstream Biology</strong>
+</summary><table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th>Function</th>
+<th>Description</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>mx_tf_activity(meta_result, network)</code></td>
+<td>TF activity from target-gene changes (ULM; CollecTRI/DoRothEA)</td>
+</tr>
+<tr>
+<td><code>mx_cell_composition(studies, markers)</code></td>
+<td>Cross-study meta-analysis of cell-type composition shifts</td>
+</tr>
+<tr>
+<td><code>mx_coexpression_modules(studies)</code></td>
+<td>Consensus co-expression modules with pooled eigengene effects</td>
+</tr>
+<tr>
+<td><code>mx_drug_connectivity(meta_result, signatures)</code></td>
+<td>Rank drugs that reverse the meta-signature (LINCS/CMap)</td>
+</tr>
+<tr>
+<td><code>mx_read_signatures(path)</code></td>
+<td>Read up/down drug signatures from GMT / Enrichr libraries</td>
+</tr>
+<tr>
+<td><code>mx_downstream_plot(x)</code></td>
+<td>Ranked bar plot for any downstream result</td>
+</tr>
+</tbody>
 </table></details><hr>
 </div>
 <div class="section level2">
@@ -758,6 +810,7 @@
 <li><label><input type="checkbox" checked>Module 6: Pathway meta-analysis (ORA + GSEA)</label></li>
 <li><label><input type="checkbox" checked>Module 7: Visualization suite</label></li>
 <li><label><input type="checkbox" checked>Module 8: Report generation &amp; export</label></li>
+<li><label><input type="checkbox" checked>Module 9: Downstream biology (TF activity, composition, co-expression, drug reversal)</label></li>
 <li><label><input type="checkbox" checked>Live public data ingestion from NCBI GEO</label></li>
 <li><label><input type="checkbox" checked>Full documentation website at <a href="https://mdjubayerhossain.com/metaXpress/">https://mdjubayerhossain.com/metaXpress/</a></label></li>
 <li><label><input type="checkbox">Bioconductor submission</label></li>

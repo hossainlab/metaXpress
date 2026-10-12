@@ -89,6 +89,12 @@ It provides a single, opinionated, end-to-end pipeline:
              │
              ▼
     ┌──────────────────────┐
+    │  Module 9: Downstream│  TF activity · cell composition
+    │  Biology             │  co-expression modules · drug reversal
+    └────────┬─────────────┘
+             │
+             ▼
+    ┌──────────────────────┐
     │  Module 8: Report    │  mx_report (HTML / PDF) · mx_export
     └──────────────────────┘
 
@@ -155,10 +161,17 @@ Adenocarcinoma (CRC):**
 - **Biomarker Recovery:** Successfully recovered canonical oncogenes
   (**`MST1R`**, **`MUC4`**, **`IGF2BP3`**, **`CDCP1`**) and conserved
   tumor suppressors (**`FAM107A`**).
+- **Downstream Biology:** E2F and NF-κB transcription factor activation;
+  `MST1R`/`CDCP1` as hubs of a co-expression module conserved in all
+  cohorts; TGF-β receptor, CDK, MEK and MDM2 inhibitors ranked as top
+  LINCS signature reversers.
 
 | Study Characteristics Overview | Pan-Cancer Meta-Volcano |
 |:--:|:--:|
 | ![Study Overview](reference/figures/case_study_study_overview.png) | ![Volcano Plot](reference/figures/case_study_volcano_plot.png) |
+
+![Downstream biology
+applications](reference/figures/app_downstream_panel.png)
 
 👉 **Read the complete scientific report:**
 [case_study_results/README.md](https://mdjubayerhossain.com/metaXpress/case_study_results/README.md)
@@ -193,25 +206,28 @@ built on two S4 objects that pass cleanly from step to step.
 - **Missing genes are handled, not hidden.** Genes absent from some
   studies are reported and either imputed or filtered by coverage,
   instead of disappearing in an intersect.
-- **Biology, not just gene lists.** Cross-study ORA/GSEA with redundancy
-  reduction turns meta-signatures into interpretable pathways.
+- **Biology, not just gene lists.** Cross-study ORA/GSEA, transcription
+  factor activity, cell-composition meta-analysis, consensus
+  co-expression modules and drug-reversal ranking turn meta-signatures
+  into testable hypotheses.
 - **Publication-ready and reproducible.** Volcano, forest, heatmap,
   UpSet and heterogeneity plots, plus HTML/PDF reports and CSV/Excel
   export with captured session info.
 - **Scales with BiocParallel.** Per-study steps parallelize out of the
   box on laptops or clusters.
 
-| Feature                      | metaXpress | DExMA | GEDI | limma |
-|------------------------------|:----------:|:-----:|:----:|:-----:|
-| GEO public data ingestion    |     ✅     |  ❌   |  ❌  |  ❌   |
-| 10-point study QC checklist  |     ✅     |  ❌   |  ❌  |  ❌   |
-| Cross-platform harmonization |     ✅     |  ❌   |  ✅  |  ❌   |
-| Library-type bias correction |     ✅     |  ❌   |  ✅  |  ❌   |
-| Per-study DE (3 engines)     |     ✅     |  ❌   |  ❌  |  ✅   |
-| 6 meta-analysis methods      |     ✅     |  ✅   |  ❌  |  ❌   |
-| Missing gene imputation      |     ✅     |  ✅   |  ❌  |  ❌   |
-| Pathway meta-analysis        |     ✅     |  ❌   |  ❌  |  ❌   |
-| Reproducible report export   |     ✅     |  ❌   |  ❌  |  ❌   |
+| Feature                                    | metaXpress | DExMA | GEDI | limma |
+|--------------------------------------------|:----------:|:-----:|:----:|:-----:|
+| GEO public data ingestion                  |     ✅     |  ❌   |  ❌  |  ❌   |
+| 10-point study QC checklist                |     ✅     |  ❌   |  ❌  |  ❌   |
+| Cross-platform harmonization               |     ✅     |  ❌   |  ✅  |  ❌   |
+| Library-type bias correction               |     ✅     |  ❌   |  ✅  |  ❌   |
+| Per-study DE (3 engines)                   |     ✅     |  ❌   |  ❌  |  ✅   |
+| 6 meta-analysis methods                    |     ✅     |  ✅   |  ❌  |  ❌   |
+| Missing gene imputation                    |     ✅     |  ✅   |  ❌  |  ❌   |
+| Pathway meta-analysis                      |     ✅     |  ❌   |  ❌  |  ❌   |
+| TF activity, co-expression & drug reversal |     ✅     |  ❌   |  ❌  |  ❌   |
+| Reproducible report export                 |     ✅     |  ❌   |  ❌  |  ❌   |
 
 ------------------------------------------------------------------------
 
@@ -397,6 +413,17 @@ al. 2025):
 | `mx_export(meta_result, format)` | Export CSV / Excel / RDS |
 | [`mx_session_info()`](https://mdjubayerhossain.com/metaXpress/reference/mx_session_info.md) | Capture session info for reproducibility |
 
+**Module 9 — Downstream Biology**
+
+| Function | Description |
+|----|----|
+| `mx_tf_activity(meta_result, network)` | TF activity from target-gene changes (ULM; CollecTRI/DoRothEA) |
+| `mx_cell_composition(studies, markers)` | Cross-study meta-analysis of cell-type composition shifts |
+| `mx_coexpression_modules(studies)` | Consensus co-expression modules with pooled eigengene effects |
+| `mx_drug_connectivity(meta_result, signatures)` | Rank drugs that reverse the meta-signature (LINCS/CMap) |
+| `mx_read_signatures(path)` | Read up/down drug signatures from GMT / Enrichr libraries |
+| `mx_downstream_plot(x)` | Ranked bar plot for any downstream result |
+
 ------------------------------------------------------------------------
 
 ## Citation
@@ -435,6 +462,9 @@ Module 6: Pathway meta-analysis (ORA + GSEA)
 Module 7: Visualization suite
 
 Module 8: Report generation & export
+
+Module 9: Downstream biology (TF activity, composition, co-expression,
+drug reversal)
 
 Live public data ingestion from NCBI GEO
 
