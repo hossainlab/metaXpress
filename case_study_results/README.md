@@ -94,24 +94,52 @@ Higgins $I^2$ distribution across all 29,560 evaluated genes, demonstrating low 
 ### 5.3 Multi-Cohort Forest Plots
 Forest plots show per-study $\log_2\text{FC}$ estimates with 95% Confidence Intervals alongside the summary DerSimonian-Laird Random Effects pooled diamond:
 
-#### Top Up-regulated Marker (`C12orf36` / `MST1R`)
-![Forest Plot Top Up-regulated](case_study_forest_top_up.png)
+#### Combined Canonical Markers (`MST1R` and `FAM107A`)
+![Combined Forest Plot](case_study_forest_combined.png)
 
-#### Top Down-regulated Marker (`C8orf34` / `FAM107A`)
-![Forest Plot Top Down-regulated](case_study_forest_top_down.png)
+* **Top Up-regulated Marker (`MST1R` / RON):** [`case_study_forest_top_up.png`](case_study_forest_top_up.png) | Vector: [`case_study_forest_top_up.pdf`](case_study_forest_top_up.pdf)
+* **Top Down-regulated Marker (`FAM107A` / DRR1):** [`case_study_forest_top_down.png`](case_study_forest_top_down.png) | Vector: [`case_study_forest_top_down.pdf`](case_study_forest_top_down.pdf)
 
 ---
 
-## 6. Full Data Export
+### 5.4 End-to-End Pipeline Architecture Schematic
+High-level computational workflow diagram of `metaXpress`:
+
+![Pipeline Architecture](case_study_architecture_workflow.png)
+
+---
+
+## 6. Scientific Preprint
+
+A full academic preprint describing the `metaXpress` framework and this multi-cohort pan-cancer case study is formatted in single-column TeX and rendered in high quality at:
+* 📄 **[`preprint/main.pdf`](../preprint/main.pdf)** (15 pages, single-column publication format)
+* 📝 **[`preprint/main.tex`](../preprint/main.tex)** (LaTeX source)
+
+**Title:** *metaXpress: A Unified Framework for Multi-Cohort Bulk RNA-seq Quality Control, Differential Expression, and Pan-Cancer Meta-Analysis*  
+**Author:** Md. Jubayer Hossain$^{1,2,*}$  
+$^1$Center for Health Innovation, Research, Action, and Learning - Bangladesh  
+$^2$DeepBio  
+$^*$Corresponding author: `hossainmj.me@gmail.com`
+
+---
+
+## 7. Full Data Export
 
 The complete gene-level results table containing all 29,560 evaluated genes with combined effect sizes, $p$-values, FDRs, and $I^2$ statistics is available at:
 * 📄 **[`pan_cancer_meta_results.csv`](pan_cancer_meta_results.csv)** (3.4 MB)
 
 ---
 
-## 7. How to Reproduce
+## 8. How to Reproduce
 
-This entire case study was executed using the automated script:
+Generate publication-ready figures and run the entire case study:
 ```bash
+# 1. Run full case study analysis
 Rscript scripts/run_scientific_case_study.R
+
+# 2. Render publication-ready 600 DPI PNG and vector PDF figures
+Rscript scripts/make_publication_figures.R
+
+# 3. Compile preprint to PDF
+cd preprint && pdflatex main.tex && bibtex main && pdflatex main.tex && pdflatex main.tex
 ```

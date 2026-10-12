@@ -1,0 +1,207 @@
+\documentclass[border=4mm]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc, fit, backgrounds}
+
+% Curated Modern Academic Palette
+\definecolor{stage1border}{HTML}{2563EB} % Blue
+\definecolor{stage1header}{HTML}{1D4ED8}
+\definecolor{stage1bg}{HTML}{F8FAFC}
+
+\definecolor{stage2border}{HTML}{059669} % Emerald
+\definecolor{stage2header}{HTML}{047857}
+\definecolor{stage2bg}{HTML}{F8FAFC}
+
+\definecolor{stage3border}{HTML}{D97706} % Amber
+\definecolor{stage3header}{HTML}{B45309}
+\definecolor{stage3bg}{HTML}{F8FAFC}
+
+\definecolor{stage4border}{HTML}{7C3AED} % Purple
+\definecolor{stage4header}{HTML}{6D28D9}
+\definecolor{stage4bg}{HTML}{F8FAFC}
+
+\definecolor{cardborder}{HTML}{CBD5E1}
+\definecolor{textdark}{HTML}{0F172A}
+\definecolor{textgray}{HTML}{334155}
+\definecolor{codecol}{HTML}{0284C7}
+\definecolor{arrowcol}{HTML}{64748B}
+
+\begin{document}
+\begin{tikzpicture}[
+    font=\sffamily,
+    >=Stealth,
+    headerbar/.style={
+        rectangle,
+        rounded corners=3pt,
+        text=white,
+        font=\small\bfseries,
+        inner sep=4pt,
+        text width=14.4cm,
+        align=center
+    },
+    innercard/.style={
+        rectangle,
+        fill=white,
+        draw=cardborder,
+        line width=0.5pt,
+        rounded corners=4pt,
+        inner sep=6pt,
+        align=left
+    },
+    flowarrow/.style={
+        ->,
+        line width=1.5pt,
+        draw=arrowcol,
+        shorten >=2pt,
+        shorten <=2pt
+    }
+]
+
+% ==============================================================================
+% STAGE 1: INGESTION & 10-POINT QC
+% ==============================================================================
+\node[headerbar, fill=stage1header] (h1) {
+    \textbf{STAGE 1: Cohort Ingestion \& Standardized QC Filtering}
+};
+
+\node[innercard, text width=6.9cm, minimum height=2.3cm, below=0.25cm of h1.south west, anchor=north west] (c1a) {
+    {\small\bfseries\textcolor{textdark}{Multi-Cohort Ingestion \& Parsing}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Direct access from NCBI GEO accessions}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Standardized ingestion via \texttt{recount3}}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Delimited local counts + sample metadata}}\\[3pt]
+    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_read\_counts()} \quad\&\quad \texttt{mx\_read\_metadata()}}}
+};
+
+\node[innercard, text width=6.9cm, minimum height=2.3cm, below=0.25cm of h1.south east, anchor=north east] (c1b) {
+    {\small\bfseries\textcolor{textdark}{Standardized 10-Point QC Scoring}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Library Depth ($\ge 10$M, $\ge 20$M target) [2 pts]}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Detection Breadth ($\ge 10$k, $\ge 15$k unique genes) [2 pts]}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Replicate Balance ($n \ge 3, 5$) \& Integrity [6 pts]}}\\[3pt]
+    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_qc\_score()} \quad $\longrightarrow$ \quad \texttt{mx\_filter\_studies($\ge 7$)}}}
+};
+
+\begin{scope}[on background layer]
+    \node[rectangle, rounded corners=5pt, fill=stage1header!4, draw=stage1border, line width=0.8pt,
+          fit=(h1)(c1a)(c1b), inner sep=6pt] (box1) {};
+\end{scope}
+
+% ==============================================================================
+% STAGE 2: HARMONIZATION & DIFFERENTIAL EXPRESSION
+% ==============================================================================
+\node[headerbar, fill=stage2header, below=0.7cm of box1.south] (h2) {
+    \textbf{STAGE 2: Identifier Alignment \& Per-Cohort Differential Expression Modeling}
+};
+
+\node[innercard, text width=4.4cm, minimum height=2.3cm, below=0.25cm of h2.south west, anchor=north west] (c2a) {
+    {\small\bfseries\textcolor{textdark}{Gene Harmonization}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Entrez Gene ID mapping}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Ensembl Stable ID sync}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• HGNC Symbol aliases}}\\[3pt]
+    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_align\_genes()}}}
+};
+
+\node[innercard, text width=4.4cm, minimum height=2.3cm, below=0.25cm of h2.south east, anchor=north east] (c2c) {
+    {\small\bfseries\textcolor{textdark}{Missingness Auditing}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Cross-cohort coverage}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Completeness matrix ($k/K$)}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Strict vs partial filters}}\\[3pt]
+    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_missing\_summary()}}}
+};
+
+\node[innercard, text width=4.6cm, minimum height=2.3cm] at ($(c2a.east)!0.5!(c2c.west)$) (c2b) {
+    {\small\bfseries\textcolor{textdark}{Per-Study GLMs}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• \textbf{DESeq2} dispersion shrink}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• \textbf{edgeR} QL / TMM norm}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• \textbf{limma-voom} weights}}\\[3pt]
+    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_de\_all()}}}
+};
+
+\begin{scope}[on background layer]
+    \node[rectangle, rounded corners=5pt, fill=stage2header!4, draw=stage2border, line width=0.8pt,
+          fit=(h2)(c2a)(c2b)(c2c), inner sep=6pt] (box2) {};
+\end{scope}
+
+% ==============================================================================
+% STAGE 3: META-ANALYSIS POOLING ENGINES
+% ==============================================================================
+\node[headerbar, fill=stage3header, below=0.7cm of box2.south] (h3) {
+    \textbf{STAGE 3: Statistical Meta-Analysis Pooling Engines (\texttt{mx\_meta()})}
+};
+
+\node[innercard, draw=stage3border!60, text width=3.2cm, minimum height=2.3cm, below=0.25cm of h3.south west, anchor=north west] (e1) {
+    {\small\bfseries\textcolor{textdark}{Random Effects}}\\[2pt]
+    {\scriptsize\textbf{DerSimonian--Laird}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Between-study $\tau^2$}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• $w_i^* = 1/(s_i^2 + \tau^2)$}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Conservative CIs}}
+};
+
+\node[innercard, draw=stage3border!60, text width=3.2cm, minimum height=2.3cm, below=0.25cm of h3.south east, anchor=north east] (e4) {
+    {\small\bfseries\textcolor{textdark}{Rank Product}}\\[2pt]
+    {\scriptsize\textbf{Non-Parametric}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Geometric mean rank}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Permutation testing}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Robust to outliers}}
+};
+
+\node[innercard, draw=stage3border!60, text width=3.2cm, minimum height=2.3cm, right=0.35cm of e1] (e2) {
+    {\small\bfseries\textcolor{textdark}{Fixed Effects}}\\[2pt]
+    {\scriptsize\textbf{Inverse-Variance}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Assumes $\tau^2 = 0$}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Weight $w_i = 1/s_i^2$}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Homogeneous sets}}
+};
+
+\node[innercard, draw=stage3border!60, text width=3.4cm, minimum height=2.3cm, left=0.35cm of e4] (e3) {
+    {\small\bfseries\textcolor{textdark}{P-Value Pooling}}\\[2pt]
+    {\scriptsize\textbf{Fisher \& Stouffer}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Fisher: $-2\sum \ln(p_i)$}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Stouffer: $\sqrt{N}$-weighted}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Directional $Z$ score}}
+};
+
+\begin{scope}[on background layer]
+    \node[rectangle, rounded corners=5pt, fill=stage3header!4, draw=stage3border, line width=0.8pt,
+          fit=(h3)(e1)(e2)(e3)(e4), inner sep=6pt] (box3) {};
+\end{scope}
+
+% ==============================================================================
+% STAGE 4: DIAGNOSTICS & BIOCONDUCTOR EXPORT
+% ==============================================================================
+\node[headerbar, fill=stage4header, below=0.7cm of box3.south] (h4) {
+    \textbf{STAGE 4: Heterogeneity Diagnostics, Visualizations \& Bioconductor Export}
+};
+
+\node[innercard, text width=6.9cm, minimum height=2.45cm, below=0.25cm of h4.south west, anchor=north west] (c4a) {
+    {\small\bfseries\textcolor{textdark}{Publication-Grade Visualizations}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• \textbf{Volcano plots} with callout labels (\texttt{mx\_volcano()})}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• \textbf{Forest plots} with pooled summary diamonds (\texttt{mx\_forest()})}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• \textbf{Heterogeneity profiles} ($I^2$, Cochran's $Q$) (\texttt{mx\_heterogeneity\_plot()})}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• \textbf{QC dashboards} across sample cohorts (\texttt{mx\_study\_overview()})}}
+};
+
+\node[innercard, text width=6.9cm, minimum height=2.45cm, below=0.25cm of h4.south east, anchor=north east] (c4b) {
+    {\small\bfseries\textcolor{textdark}{Bioconductor S4 Interoperability}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Native S4 classes: \texttt{metaXpressStudy} \& \texttt{metaXpressResult}}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Direct conversion to \texttt{SummarizedExperiment} objects}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Full audit provenance tracking \& reproducible reporting}}\\[4pt]
+    {\scriptsize\bfseries\textcolor{codecol}{\texttt{as(meta\_result, "SummarizedExperiment")}}}
+};
+
+\begin{scope}[on background layer]
+    \node[rectangle, rounded corners=5pt, fill=stage4header!4, draw=stage4border, line width=0.8pt,
+          fit=(h4)(c4a)(c4b), inner sep=6pt] (box4) {};
+\end{scope}
+
+% ==============================================================================
+% CLEAN VERTICAL CONNECTING ARROWS BETWEEN STAGES
+% ==============================================================================
+\draw[flowarrow] (box1.south) -- (box2.north);
+\draw[flowarrow] (box2.south) -- (box3.north);
+\draw[flowarrow] (box3.south) -- (box4.north);
+
+\end{tikzpicture}
+\end{document}

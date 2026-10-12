@@ -21,3 +21,5 @@
 ^CITATION\.cff$
 ^case_study_results$
 ^scripts$
+^preprint$
+^data$
