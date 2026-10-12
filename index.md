@@ -7,8 +7,6 @@
 [![R CMD
 Check](https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml/badge.svg)](https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml)
 [![Documentation](https://img.shields.io/badge/docs-pkgdown-blue.svg)](https://mdjubayerhossain.com/metaXpress/)
-[![Live
-Demo](https://img.shields.io/badge/Shiny-Interactive%20Demo-brightgreen?logo=r)](https://hossainlab.shinyapps.io/metaXpress-demo/)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License:
@@ -32,19 +30,12 @@ Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://gith
   Tutorial](https://mdjubayerhossain.com/metaXpress/articles/live_tutorial.html)**
   — Step-by-step hands-on tutorial from GitHub installation to
   multi-study meta-analysis with live rendered outputs and plots.
-- 🚀 **[Live Interactive Web
-  Demo](https://hossainlab.shinyapps.io/metaXpress-demo/)** — Test the
-  multi-study RNA-seq meta-analysis pipeline, volcano plots, and gene
-  forest plots directly in your browser without installing R.
 - 🔬 **[Public GEO Pan-Cancer Case Study
   Report](https://mdjubayerhossain.com/metaXpress/case_study_results/README.md)**
   (or view the [Online
   Vignette](https://mdjubayerhossain.com/metaXpress/articles/case_study.html))
   — Multi-cohort validation on 52 patient samples across colorectal,
   pancreatic, and renal cancers with embedded publication-grade figures.
-- 💻 **Local Interactive Explorer:** Run
-  [`metaXpress::mx_run_app()`](https://mdjubayerhossain.com/metaXpress/reference/mx_run_app.md)
-  to launch the full-featured Shiny application locally.
 
 ------------------------------------------------------------------------
 
@@ -178,6 +169,38 @@ or online at
 
 ## Why metaXpress?
 
+Combining bulk RNA-seq studies is usually a patchwork: one package to
+download GEO data, ad-hoc scripts for QC and gene ID mapping, a separate
+DE run per study, another package for the meta-statistics, and yet
+another for pathways and plots. Each hand-off is a chance to silently
+drop genes, mix identifiers, or lose track of which study failed QC.
+**metaXpress** replaces that patchwork with one reproducible pipeline
+built on two S4 objects that pass cleanly from step to step.
+
+- **One workflow, end to end.** GEO ingestion → QC → harmonization →
+  per-study DE → meta-analysis → pathways → figures → report, all
+  through `mx_*` functions that chain directly.
+- **Study quality is explicit.** A 10-point QC checklist (derived from
+  Heberle et al., 2025) scores every study, so weak cohorts are filtered
+  on documented criteria rather than intuition.
+- **Statistically sound by design.** DE is always run independently per
+  study (DESeq2, edgeR or limma-voom) before combining — never pooled —
+  avoiding batch-confounded inference.
+- **Choose the right meta-method.** Six methods (Fisher, Stouffer,
+  inverse-normal, fixed effects, DerSimonian–Laird random effects,
+  AWmeta) behind a single `method` argument, with I² heterogeneity
+  reported for every gene.
+- **Missing genes are handled, not hidden.** Genes absent from some
+  studies are reported and either imputed or filtered by coverage,
+  instead of disappearing in an intersect.
+- **Biology, not just gene lists.** Cross-study ORA/GSEA with redundancy
+  reduction turns meta-signatures into interpretable pathways.
+- **Publication-ready and reproducible.** Volcano, forest, heatmap,
+  UpSet and heterogeneity plots, plus HTML/PDF reports and CSV/Excel
+  export with captured session info.
+- **Scales with BiocParallel.** Per-study steps parallelize out of the
+  box on laptops or clusters.
+
 | Feature                      | metaXpress | DExMA | GEDI | limma |
 |------------------------------|:----------:|:-----:|:----:|:-----:|
 | GEO public data ingestion    |     ✅     |  ❌   |  ❌  |  ❌   |
@@ -188,7 +211,6 @@ or online at
 | 6 meta-analysis methods      |     ✅     |  ✅   |  ❌  |  ❌   |
 | Missing gene imputation      |     ✅     |  ✅   |  ❌  |  ❌   |
 | Pathway meta-analysis        |     ✅     |  ❌   |  ❌  |  ❌   |
-| Interactive Shiny Explorer   |     ✅     |  ❌   |  ❌  |  ❌   |
 | Reproducible report export   |     ✅     |  ❌   |  ❌  |  ❌   |
 
 ------------------------------------------------------------------------
@@ -238,10 +260,7 @@ mx_heterogeneity_plot(meta_result)   # Higgins I² distribution
 top_gene <- meta_result@meta_table$gene_id[which.min(meta_result@meta_table$meta_padj)]
 mx_forest(top_gene, de_results, meta_result)
 
-# ── 8. Interactive Explorer & Export ──────────────────────────────────────
-# Launch interactive dashboard locally
-mx_run_app()
-
+# ── 8. Export ─────────────────────────────────────────────────────────────
 # Export results table
 mx_export(meta_result, format = "csv", output_dir = "results/")
 ```
@@ -377,7 +396,6 @@ al. 2025):
 | `mx_report(meta_result, ..., format)` | Render HTML / PDF report |
 | `mx_export(meta_result, format)` | Export CSV / Excel / RDS |
 | [`mx_session_info()`](https://mdjubayerhossain.com/metaXpress/reference/mx_session_info.md) | Capture session info for reproducibility |
-| [`mx_run_app()`](https://mdjubayerhossain.com/metaXpress/reference/mx_run_app.md) | Launch interactive Shiny web explorer |
 
 ------------------------------------------------------------------------
 
@@ -417,9 +435,6 @@ Module 6: Pathway meta-analysis (ORA + GSEA)
 Module 7: Visualization suite
 
 Module 8: Report generation & export
-
-Interactive Shiny live demo explorer
-([`mx_run_app()`](https://mdjubayerhossain.com/metaXpress/reference/mx_run_app.md))
 
 Live public data ingestion from NCBI GEO
 

@@ -133,5 +133,3 @@ Generate reproducible HTML/PDF reports and export meta-analysis results.
   : Export meta-analysis results to file
 - [`mx_session_info()`](https://mdjubayerhossain.com/metaXpress/reference/mx_session_info.md)
   : Capture session information for reproducibility
-- [`mx_run_app()`](https://mdjubayerhossain.com/metaXpress/reference/mx_run_app.md)
-  : Launch the metaXpress Interactive Explorer Shiny Application

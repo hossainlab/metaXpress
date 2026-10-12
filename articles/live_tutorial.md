@@ -360,30 +360,16 @@ Multi-cohort forest plot for tumor suppressor FAM107A
 
 ------------------------------------------------------------------------
 
-## 10. Interactive Explorer & Export
-
-### Launch Interactive Shiny Dashboard
-
-Launch the GUI locally to explore volcano plots, adjust FDR thresholds,
-and inspect forest plots interactively:
-
-``` r
-
-# Launch local Shiny dashboard
-metaXpress::mx_run_app()
-```
-
-Or test the deployed cloud explorer at
-<https://hossainlab.shinyapps.io/metaXpress-demo/>.
+## 10. Export Results
 
 ### Export Tabular Results
 
 ``` r
 
 out_file <- mx_export(meta_result, format = "csv", output_dir = tempdir(), prefix = "pan_cancer_meta")
-#> Results exported to: /tmp/RtmpDGX0ih/pan_cancer_meta.csv
+#> Results exported to: /tmp/RtmpjUnRcM/pan_cancer_meta.csv
 cat("Exported results table to:", out_file, "\n")
-#> Exported results table to: /tmp/RtmpDGX0ih/pan_cancer_meta.csv
+#> Exported results table to: /tmp/RtmpjUnRcM/pan_cancer_meta.csv
 ```
 
 ------------------------------------------------------------------------

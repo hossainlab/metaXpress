@@ -71,7 +71,7 @@
 </h1>
 </div>
 <p><strong>An end-to-end R package for bulk RNA-seq multi-study meta-analysis</strong></p>
-<p><a href="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml" class="external-link"><img src="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml/badge.svg" alt="R CMD Check"></a> <a href="https://mdjubayerhossain.com/metaXpress/"><img src="https://img.shields.io/badge/docs-pkgdown-blue.svg" alt="Documentation"></a> <a href="https://hossainlab.shinyapps.io/metaXpress-demo/" class="external-link"><img src="https://img.shields.io/badge/Shiny-Interactive%20Demo-brightgreen?logo=r" alt="Live Demo"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://github.com/hossainlab/metaXpress" class="external-link"><img src="https://img.shields.io/badge/version-0.99.0-276DC3?logo=github" alt="Version"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%E2%89%A54.3.0-276DC3?logo=r" alt="R version"></a> <a href="https://github.com/hossainlab/metaXpress/issues" class="external-link"><img src="https://img.shields.io/github/issues/hossainlab/metaXpress?color=red" alt="GitHub issues"></a> <a href="https://github.com/hossainlab/metaXpress/pulls" class="external-link"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a></p>
+<p><a href="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml" class="external-link"><img src="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml/badge.svg" alt="R CMD Check"></a> <a href="https://mdjubayerhossain.com/metaXpress/"><img src="https://img.shields.io/badge/docs-pkgdown-blue.svg" alt="Documentation"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://github.com/hossainlab/metaXpress" class="external-link"><img src="https://img.shields.io/badge/version-0.99.0-276DC3?logo=github" alt="Version"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%E2%89%A54.3.0-276DC3?logo=r" alt="R version"></a> <a href="https://github.com/hossainlab/metaXpress/issues" class="external-link"><img src="https://img.shields.io/github/issues/hossainlab/metaXpress?color=red" alt="GitHub issues"></a> <a href="https://github.com/hossainlab/metaXpress/pulls" class="external-link"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a></p>
 </div>
 </div>
 <hr>
@@ -81,9 +81,7 @@
 <ul>
 <li>📖 <strong><a href="https://mdjubayerhossain.com/metaXpress/">Interactive Documentation Website</a></strong> — Complete function references, guides, and tutorials.</li>
 <li>⚡ <strong><a href="https://mdjubayerhossain.com/metaXpress/articles/live_tutorial.html">Live Demonstration Tutorial</a></strong> — Step-by-step hands-on tutorial from GitHub installation to multi-study meta-analysis with live rendered outputs and plots.</li>
-<li>🚀 <strong><a href="https://hossainlab.shinyapps.io/metaXpress-demo/" class="external-link">Live Interactive Web Demo</a></strong> — Test the multi-study RNA-seq meta-analysis pipeline, volcano plots, and gene forest plots directly in your browser without installing R.</li>
 <li>🔬 <strong><a href="case_study_results/README.html">Public GEO Pan-Cancer Case Study Report</a></strong> (or view the <a href="https://mdjubayerhossain.com/metaXpress/articles/case_study.html">Online Vignette</a>) — Multi-cohort validation on 52 patient samples across colorectal, pancreatic, and renal cancers with embedded publication-grade figures.</li>
-<li>💻 <strong>Local Interactive Explorer:</strong> Run <code><a href="reference/mx_run_app.html">metaXpress::mx_run_app()</a></code> to launch the full-featured Shiny application locally.</li>
 </ul>
 <hr>
 </div>
@@ -203,6 +201,25 @@
 <div class="section level2">
 <h2 id="why-metaxpress">Why metaXpress?<a class="anchor" aria-label="anchor" href="#why-metaxpress"></a>
 </h2>
+<p>Combining bulk RNA-seq studies is usually a patchwork: one package to download GEO data, ad-hoc scripts for QC and gene ID mapping, a separate DE run per study, another package for the meta-statistics, and yet another for pathways and plots. Each hand-off is a chance to silently drop genes, mix identifiers, or lose track of which study failed QC. <strong>metaXpress</strong> replaces that patchwork with one reproducible pipeline built on two S4 objects that pass cleanly from step to step.</p>
+<ul>
+<li>
+<strong>One workflow, end to end.</strong> GEO ingestion → QC → harmonization → per-study DE → meta-analysis → pathways → figures → report, all through <code>mx_*</code> functions that chain directly.</li>
+<li>
+<strong>Study quality is explicit.</strong> A 10-point QC checklist (derived from Heberle et al., 2025) scores every study, so weak cohorts are filtered on documented criteria rather than intuition.</li>
+<li>
+<strong>Statistically sound by design.</strong> DE is always run independently per study (DESeq2, edgeR or limma-voom) before combining — never pooled — avoiding batch-confounded inference.</li>
+<li>
+<strong>Choose the right meta-method.</strong> Six methods (Fisher, Stouffer, inverse-normal, fixed effects, DerSimonian–Laird random effects, AWmeta) behind a single <code>method</code> argument, with I² heterogeneity reported for every gene.</li>
+<li>
+<strong>Missing genes are handled, not hidden.</strong> Genes absent from some studies are reported and either imputed or filtered by coverage, instead of disappearing in an intersect.</li>
+<li>
+<strong>Biology, not just gene lists.</strong> Cross-study ORA/GSEA with redundancy reduction turns meta-signatures into interpretable pathways.</li>
+<li>
+<strong>Publication-ready and reproducible.</strong> Volcano, forest, heatmap, UpSet and heterogeneity plots, plus HTML/PDF reports and CSV/Excel export with captured session info.</li>
+<li>
+<strong>Scales with BiocParallel.</strong> Per-study steps parallelize out of the box on laptops or clusters.</li>
+</ul>
 <table class="table">
 <thead><tr>
 <th>Feature</th>
@@ -269,13 +286,6 @@
 <td align="center">❌</td>
 </tr>
 <tr>
-<td>Interactive Shiny Explorer</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-</tr>
-<tr>
 <td>Reproducible report export</td>
 <td align="center">✅</td>
 <td align="center">❌</td>
@@ -331,10 +341,7 @@
 <span><span class="va">top_gene</span> <span class="op">&lt;-</span> <span class="va">meta_result</span><span class="op">@</span><span class="va">meta_table</span><span class="op">$</span><span class="va">gene_id</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.min</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">@</span><span class="va">meta_table</span><span class="op">$</span><span class="va">meta_padj</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="reference/mx_forest.html">mx_forest</a></span><span class="op">(</span><span class="va">top_gene</span>, <span class="va">de_results</span>, <span class="va">meta_result</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ── 8. Interactive Explorer &amp; Export ──────────────────────────────────────</span></span>
-<span><span class="co"># Launch interactive dashboard locally</span></span>
-<span><span class="fu"><a href="reference/mx_run_app.html">mx_run_app</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
+<span><span class="co"># ── 8. Export ─────────────────────────────────────────────────────────────</span></span>
 <span><span class="co"># Export results table</span></span>
 <span><span class="fu"><a href="reference/mx_export.html">mx_export</a></span><span class="op">(</span><span class="va">meta_result</span>, format <span class="op">=</span> <span class="st">"csv"</span>, output_dir <span class="op">=</span> <span class="st">"results/"</span><span class="op">)</span></span></code></pre></div>
 <hr>
@@ -722,10 +729,6 @@
 <td><code><a href="reference/mx_session_info.html">mx_session_info()</a></code></td>
 <td>Capture session info for reproducibility</td>
 </tr>
-<tr>
-<td><code><a href="reference/mx_run_app.html">mx_run_app()</a></code></td>
-<td>Launch interactive Shiny web explorer</td>
-</tr>
 </tbody>
 </table></details><hr>
 </div>
@@ -755,7 +758,6 @@
 <li><label><input type="checkbox" checked>Module 6: Pathway meta-analysis (ORA + GSEA)</label></li>
 <li><label><input type="checkbox" checked>Module 7: Visualization suite</label></li>
 <li><label><input type="checkbox" checked>Module 8: Report generation &amp; export</label></li>
-<li><label><input type="checkbox" checked>Interactive Shiny live demo explorer (<code><a href="reference/mx_run_app.html">mx_run_app()</a></code>)</label></li>
 <li><label><input type="checkbox" checked>Live public data ingestion from NCBI GEO</label></li>
 <li><label><input type="checkbox" checked>Full documentation website at <a href="https://mdjubayerhossain.com/metaXpress/">https://mdjubayerhossain.com/metaXpress/</a></label></li>
 <li><label><input type="checkbox">Bioconductor submission</label></li>

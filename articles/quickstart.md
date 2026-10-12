@@ -121,21 +121,7 @@ mx_forest(top_gene, de_results, meta_result)
 mx_heterogeneity_plot(meta_result)
 ```
 
-## Step 6 — Interactive Shiny Explorer
-
-You can also explore your meta-analysis results interactively in your
-browser:
-
-``` r
-
-# Launch local Shiny dashboard
-metaXpress::mx_run_app()
-```
-
-Or test the online demo at
-<https://hossainlab.shinyapps.io/metaXpress-demo/>.
-
-## Step 7 — Export Results
+## Step 6 — Export Results
 
 ``` r
 
