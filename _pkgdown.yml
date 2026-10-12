@@ -113,7 +113,6 @@ reference:
       - mx_report
       - mx_export
       - mx_session_info
-      - mx_run_app
 
 footer:
   left: "Developed by [Md. Jubayer Hossain](https://mdjubayerhossain.com) | [Hossain Lab](https://github.com/hossainlab)"

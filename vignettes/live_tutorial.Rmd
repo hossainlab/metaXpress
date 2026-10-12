@@ -251,18 +251,7 @@ mx_forest("11170", de_results, meta_result)
 
 ---
 
-# 10. Interactive Explorer & Export
-
-## Launch Interactive Shiny Dashboard
-
-Launch the GUI locally to explore volcano plots, adjust FDR thresholds, and inspect forest plots interactively:
-
-```{r run-app, eval=FALSE}
-# Launch local Shiny dashboard
-metaXpress::mx_run_app()
-```
-
-Or test the deployed cloud explorer at [https://hossainlab.shinyapps.io/metaXpress-demo/](https://hossainlab.shinyapps.io/metaXpress-demo/).
+# 10. Export Results
 
 ## Export Tabular Results
 

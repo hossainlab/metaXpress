@@ -39,3 +39,17 @@ vignettes/figure/
 .cache_test/
 /.quarto/
 **/*.quarto_ipynb
+
+# OS / editor
+.DS_Store
+*.code-workspace
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.bbl
+*.blg
+*.out
+
+# Local symlink to external data
+/data

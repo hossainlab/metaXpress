@@ -26,7 +26,6 @@ Suggests:
     openxlsx,
     harmony,
     covr,
-    shiny,
     S4Vectors,
     tximport,
     GEOquery,
@@ -66,6 +65,5 @@ Collate:
     '08_report.R'
     'AllGenerics.R'
     'metaXpress-package.R'
-    'mx_run_app.R'
     'utils.R'
 Config/roxygen2/version: 8.1.0

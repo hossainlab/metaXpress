@@ -222,15 +222,7 @@ mx_heterogeneity_plot(meta_result)
 
 ---
 
-# 8. Interactive Explorer & Report Generation
-
-## Launch Interactive Shiny App
-
-Explore results dynamically in your browser:
-
-```{r run-app, eval=FALSE}
-metaXpress::mx_run_app()
-```
+# 8. Report Generation
 
 ## Generate Reproducible Reports & Export
 
