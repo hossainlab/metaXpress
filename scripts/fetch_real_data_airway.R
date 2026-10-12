@@ -25,8 +25,7 @@ df1 <- data.frame(
 )
 attr(counts1, "gene_length") <- rep(2000, 500)
 
-study1 <- new("metaXpressStudy",
-              counts = counts1,
+study1 <- metaXpressStudy(counts = counts1,
               metadata = df1,
               accession = "GSE52778_Part1",
               organism = "human",
@@ -46,8 +45,7 @@ df2 <- data.frame(
 )
 attr(counts2, "gene_length") <- rep(2000, 500)
 
-study2 <- new("metaXpressStudy",
-              counts = counts2,
+study2 <- metaXpressStudy(counts = counts2,
               metadata = df2,
               accession = "GSE52778_Part2",
               organism = "human",
@@ -64,8 +62,7 @@ df3 <- df2
 
 attr(counts3, "gene_length") <- rep(2000, 500)
 
-study3 <- new("metaXpressStudy",
-              counts = counts3,
+study3 <- metaXpressStudy(counts = counts3,
               metadata = df3,
               accession = "GSE52778_Part3",
               organism = "human",

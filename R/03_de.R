@@ -16,7 +16,7 @@ NULL
 #' @param method Character scalar. DE method. One of \code{"DESeq2"}
 #'   (default), \code{"edgeR"}, or \code{"limma-voom"}.
 #' @param formula A formula specifying the design. Default: \code{~ condition}.
-#'   The \code{condition} column in \code{study@metadata} is used as the
+#'   The \code{condition} column in \code{colData(study)} is used as the
 #'   contrast variable; the last level is the reference.
 #' @param ... Additional arguments passed to the underlying DE function.
 #'
@@ -65,8 +65,8 @@ mx_de <- function(study,
     stop("'study' must be a metaXpressStudy object")
   method <- match.arg(method)
 
-  if (!("condition" %in% colnames(study@metadata)))
-    stop("study@metadata must contain a 'condition' column")
+  if (!("condition" %in% colnames(SummarizedExperiment::colData(study))))
+    stop("colData(study) must contain a 'condition' column")
 
   message("  Running ", method, " on study: ", study@accession)
 
@@ -176,8 +176,8 @@ mx_de_summary <- function(studies, padj_threshold = 0.05, lfc_threshold = 1) {
 # ============================================================================
 
 .de_deseq2 <- function(study, formula, ...) {
-  counts   <- round(study@counts)
-  metadata <- study@metadata
+  counts   <- round(.counts(study))
+  metadata <- .samples(study)
 
   # Set reference level to control/normal group for consistent fold-change
   metadata$condition <- .make_condition_factor(metadata$condition)
@@ -210,8 +210,8 @@ mx_de_summary <- function(studies, padj_threshold = 0.05, lfc_threshold = 1) {
 }
 
 .de_edger <- function(study, formula, ...) {
-  counts   <- round(study@counts)
-  metadata <- study@metadata
+  counts   <- round(.counts(study))
+  metadata <- .samples(study)
   cond     <- .make_condition_factor(metadata$condition)
 
   design <- stats::model.matrix(~ cond)
@@ -248,8 +248,8 @@ mx_de_summary <- function(studies, padj_threshold = 0.05, lfc_threshold = 1) {
 }
 
 .de_limma_voom <- function(study, formula, ...) {
-  counts   <- study@counts
-  metadata <- study@metadata
+  counts   <- .counts(study)
+  metadata <- .samples(study)
   cond     <- .make_condition_factor(metadata$condition)
 
   design <- stats::model.matrix(~ cond)

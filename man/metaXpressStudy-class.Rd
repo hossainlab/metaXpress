@@ -5,19 +5,22 @@
 \alias{metaXpressStudy-class}
 \title{The metaXpressStudy class}
 \description{
-Represents a single bulk RNA-seq study, holding raw counts, sample metadata,
-accession information, and QC results. Populated by \code{\link{mx_fetch_geo}},
-\code{\link{mx_fetch_sra}}, or \code{\link{mx_load_local}}.
+Represents a single bulk RNA-seq study. \code{metaXpressStudy} extends
+\code{\link[SummarizedExperiment]{SummarizedExperiment}}, so raw counts live
+in the \code{"counts"} assay, sample metadata in \code{colData()}, and
+optional gene annotation in \code{rowData()}. All standard
+SummarizedExperiment accessors and subsetting (\code{study[genes, samples]},
+\code{study$condition}) work directly. Populated by
+\code{\link{mx_fetch_geo}}, \code{\link{mx_fetch_sra}},
+\code{\link{mx_load_local}}, or \code{\link{mx_from_se}}.
+}
+\details{
+The \code{colData} must contain a \code{condition} column (case/control
+labels) once an accession is set.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{counts}}{A numeric matrix of raw counts (genes x samples). Rownames must
-be gene identifiers; colnames must be sample identifiers.}
-
-\item{\code{metadata}}{A \code{data.frame} of sample metadata. Must contain columns
-\code{condition} (case/control labels) and \code{sample_id}.}
-
 \item{\code{accession}}{A length-1 character giving the GEO/SRA accession ID
 (e.g., \code{"GSE12345"}) or \code{"local"} for user-supplied data.}
 
@@ -34,6 +37,6 @@ populated: \code{gene_id}, \code{log2FC}, \code{pvalue}, \code{padj},
 }}
 
 \seealso{
-\code{\link{mx_fetch_geo}}, \code{\link{mx_qc_study}},
-  \code{\link{mx_de}}
+\code{\link{metaXpressStudy}}, \code{\link{mx_from_se}},
+  \code{\link{mx_fetch_geo}}, \code{\link{mx_qc_study}}, \code{\link{mx_de}}
 }

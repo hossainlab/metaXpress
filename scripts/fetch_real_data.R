@@ -23,8 +23,7 @@ for (srp in srp_ids) {
   meta$condition <- c(rep("case", ceiling(nrow(meta)/2)), rep("control", floor(nrow(meta)/2)))
   meta$library_type <- "polyA"
   
-  study <- new("metaXpressStudy",
-               counts = round(counts),
+  study <- metaXpressStudy(counts = round(counts),
                metadata = meta,
                accession = srp,
                organism = "human",
@@ -35,22 +34,19 @@ for (srp in srp_ids) {
 }
 
 # Subset to top 500 genes to make it small (< 5MB)
-counts1 <- studies[[1]]@counts
+counts1 <- SummarizedExperiment::assay(studies[[1]], "counts")
 vars <- apply(counts1, 1, var)
 top_genes <- names(sort(vars, decreasing=TRUE))[1:500]
 
 for (i in seq_along(studies)) {
-  common <- intersect(rownames(studies[[i]]@counts), top_genes)
-  studies[[i]]@counts <- studies[[i]]@counts[common, , drop=FALSE]
-  
+  common <- intersect(rownames(studies[[i]]), top_genes)
+
   # Keep 6 samples max
-  keep_idx <- c(head(which(studies[[i]]@metadata$condition == "case"), 3),
-                head(which(studies[[i]]@metadata$condition == "control"), 3))
-  
-  studies[[i]]@counts <- studies[[i]]@counts[, keep_idx, drop=FALSE]
-  studies[[i]]@metadata <- studies[[i]]@metadata[keep_idx, , drop=FALSE]
-  
-  attr(studies[[i]]@counts, "gene_length") <- rep(2000, nrow(studies[[i]]@counts))
+  keep_idx <- c(head(which(studies[[i]]$condition == "case"), 3),
+                head(which(studies[[i]]$condition == "control"), 3))
+
+  studies[[i]] <- studies[[i]][common, keep_idx]
+  SummarizedExperiment::rowData(studies[[i]])$gene_length <- 2000
 }
 
 metaXpress_example <- studies

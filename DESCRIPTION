@@ -17,7 +17,9 @@ Imports:
     methods,
     BiocParallel,
     ggplot2,
-    ggrepel
+    ggrepel,
+    S4Vectors,
+    SummarizedExperiment
 Suggests:
     testthat (>= 3.0.0),
     knitr,
@@ -26,7 +28,6 @@ Suggests:
     openxlsx,
     harmony,
     covr,
-    S4Vectors,
     tximport,
     GEOquery,
     DESeq2,
@@ -39,7 +40,6 @@ Suggests:
     AnnotationDbi,
     org.Hs.eg.db,
     Biobase,
-    SummarizedExperiment,
     circlize,
     grid,
     recount3,

@@ -87,7 +87,7 @@ studies <- readRDS(data_path)
 print(names(studies))
 
 # Sample size breakdown per cohort
-vapply(studies, function(s) ncol(s@counts), integer(1))
+vapply(studies, ncol, integer(1))
 ```
 
 Let's inspect the S4 container for the first cohort ([GSE130688](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE130688)):

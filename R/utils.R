@@ -154,6 +154,22 @@
        all_genes = all_genes)
 }
 
+# Raw count matrix of a metaXpressStudy
+.counts <- function(study) {
+  SummarizedExperiment::assay(study, "counts", withDimnames = TRUE)
+}
+
+# Sample metadata of a metaXpressStudy as a plain data.frame
+.samples <- function(study) {
+  as.data.frame(SummarizedExperiment::colData(study), optional = TRUE)
+}
+
+# Replace the count matrix of a metaXpressStudy (dimensions must match)
+.set_counts <- function(study, value) {
+  SummarizedExperiment::assay(study, "counts", withDimnames = FALSE) <- value
+  study
+}
+
 # Silence R CMD check notes for ggplot2 non-standard evaluation variables
 if (getRversion() >= "2.15.1") {
   utils::globalVariables(c(

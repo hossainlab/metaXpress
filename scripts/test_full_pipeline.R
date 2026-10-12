@@ -25,7 +25,7 @@ attr(studies$GSE136569_raw_counts, "qc_details")
 for (nm in names(studies)) {
   s <- studies[[nm]]
   message(sprintf("  %s: QC score = %d/10, samples = %d, genes = %d",
-                  nm, s@qc_score, ncol(s@counts), nrow(s@counts)))
+                  nm, s@qc_score, ncol(s), nrow(s)))
 }
 
 # Filter to high-quality studies (score >= 5)
@@ -38,7 +38,7 @@ message("\n=== Step 3: Aligning genes ===")
 
 studies <- mx_align_genes(studies)
 
-message(sprintf("  Common genes: %d", nrow(studies[[1]]@counts)))
+message(sprintf("  Common genes: %d", nrow(studies[[1]])))
 
 # ── 4. Per-study Differential Expression ──────────────────────────────────────
 message("\n=== Step 4: Per-study DE (DESeq2) ===")
@@ -62,7 +62,7 @@ message(sprintf("  Genes in all studies: %d / %d (%.1f%%)",
 # ── 6. Meta-analysis ──────────────────────────────────────────────────────────
 message("\n=== Step 6: Meta-analysis (random effects) ===")
 
-n_samples <- vapply(studies, function(s) ncol(s@counts), integer(1))
+n_samples <- vapply(studies, function(s) ncol(s), integer(1))
 
 meta_result <- mx_meta(
   de_results,

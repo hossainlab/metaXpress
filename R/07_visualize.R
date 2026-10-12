@@ -358,13 +358,13 @@ mx_study_overview <- function(studies) {
   # Collect study-level metrics
   df <- data.frame(
     study      = study_names,
-    n_samples  = vapply(studies, function(s) ncol(s@counts), integer(1)),
-    n_genes    = vapply(studies, function(s) nrow(s@counts), integer(1)),
+    n_samples  = vapply(studies, ncol, integer(1)),
+    n_genes    = vapply(studies, nrow, integer(1)),
     qc_score   = vapply(studies, function(s) {
       if (is.na(s@qc_score)) NA_real_ else s@qc_score
     }, numeric(1)),
     median_lib = vapply(studies, function(s) {
-      median(colSums(s@counts)) / 1e6
+      median(colSums(.counts(s))) / 1e6
     }, numeric(1)),
     stringsAsFactors = FALSE
   )

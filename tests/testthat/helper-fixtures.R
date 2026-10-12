@@ -24,7 +24,7 @@ make_test_study <- function(n_genes = 200, n_samples = 6,
     stringsAsFactors = FALSE
   )
 
-  methods::new("metaXpressStudy",
+  metaXpressStudy(
                counts    = counts,
                metadata  = metadata,
                accession = accession,

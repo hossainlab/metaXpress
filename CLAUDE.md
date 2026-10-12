@@ -54,10 +54,13 @@ The package is organized into 8 numbered modules in `R/`, each with a correspond
 
 Two core S4 classes flow through the pipeline:
 
-**`metaXpressStudy`** — output of Module 1, input to Modules 2–3:
-- `counts`: raw count matrix (genes × samples)
-- `metadata`: sample data.frame
-- `accession`, `organism`, `qc_score`, `de_result`
+**`metaXpressStudy`** — output of Module 1, input to Modules 2–3. Extends `SummarizedExperiment`:
+- `assay(study, "counts")`: raw count matrix (genes × samples)
+- `colData(study)`: sample metadata (must contain `condition`); `study$condition` works
+- `rowData(study)`: optional gene annotation (e.g. `gene_length` for TPM)
+- extra slots: `accession`, `organism`, `qc_score`, `de_result`
+- Build with `metaXpressStudy()`; convert any SE/DESeqDataSet with `mx_from_se()` or `as(se, "metaXpressStudy")`
+- Never use `study@metadata` — on SE that is the free-form list, not sample data. Internally use `.counts()`, `.samples()`, `.set_counts()` (`R/utils.R`)
 
 **`metaXpressResult`** — output of Module 4, input to Modules 5–8:
 - `meta_table`: gene-level results (meta-p, meta-FDR, meta-effect size, I²)
