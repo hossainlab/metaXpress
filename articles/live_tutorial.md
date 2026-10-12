@@ -381,9 +381,9 @@ Or test the deployed cloud explorer at
 ``` r
 
 out_file <- mx_export(meta_result, format = "csv", output_dir = tempdir(), prefix = "pan_cancer_meta")
-#> Results exported to: /tmp/RtmpGK28l4/pan_cancer_meta.csv
+#> Results exported to: /tmp/RtmpDGX0ih/pan_cancer_meta.csv
 cat("Exported results table to:", out_file, "\n")
-#> Exported results table to: /tmp/RtmpGK28l4/pan_cancer_meta.csv
+#> Exported results table to: /tmp/RtmpDGX0ih/pan_cancer_meta.csv
 ```
 
 ------------------------------------------------------------------------
