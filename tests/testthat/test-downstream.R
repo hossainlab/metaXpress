@@ -126,3 +126,14 @@ test_that("mx_downstream_plot returns ggplots for every result type", {
   expect_s3_class(mx_downstream_plot(net), "ggplot")
   expect_error(mx_downstream_plot(data.frame(a = 1)), "downstream")
 })
+
+test_that("lib_size in colData overrides column sums for gene subsets", {
+  studies <- make_shift_studies()
+  full  <- mx_cell_composition(studies, list(a = paste0("G", 1:25)))
+  subset <- lapply(studies, function(s) {
+    s$lib_size <- colSums(SummarizedExperiment::assay(s, "counts"))
+    s[c(paste0("G", 1:25), paste0("G", 26:60)), ]
+  })
+  sub <- mx_cell_composition(subset, list(a = paste0("G", 1:25)))
+  expect_equal(sub$meta_g, full$meta_g, tolerance = 0.05)
+})

@@ -62,6 +62,10 @@ Each module is summarised by its eigengene (first principal component) in
 every study; eigengene differences between cases and controls are pooled
 across studies with a random-effects model.
 }
+\details{
+Like \code{\link{mx_cell_composition}}, a \code{lib_size}
+  column in \code{colData} overrides the column sums used for log2-CPM.
+}
 \examples{
 \dontrun{
   net <- mx_coexpression_modules(studies, n_genes = 1500,

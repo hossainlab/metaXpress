@@ -31,6 +31,11 @@ study, and combines the per-study effects with a DerSimonian-Laird
 random-effects model. A significant shift indicates that part of the
 bulk differential expression may reflect changes in tissue composition.
 }
+\details{
+Expression is log2-CPM. If a study's \code{colData} has a
+  \code{lib_size} column it is used as the library size, so studies that
+  carry only a subset of genes are still normalised to their true depth.
+}
 \examples{
 \dontrun{
   markers <- list(T_cells = c("CD3D", "CD3E", "CD2"),
