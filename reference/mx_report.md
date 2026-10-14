@@ -77,6 +77,6 @@ if (rmarkdown::pandoc_available()) {
   mx_report(res, ad$de_results, output_dir = tempdir())
 }
 #> Running meta-analysis (random_effects) on 4 studies...
-#> Report written to: /tmp/RtmpWUozeJ/metaXpress_report.html
+#> Report written to: /tmp/RtmpCvQhZS/metaXpress_report.html
 # }
 ```
