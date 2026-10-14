@@ -7,73 +7,89 @@ NULL
 
 #' Generate a reproducible analysis report
 #'
-#' Renders a full HTML or PDF report summarising the meta-analysis pipeline,
-#' including QC metrics, per-study DE summaries, meta-analysis results, and
-#' pathway enrichment results.
+#' Renders an HTML (or PDF) report with methods text, study table,
+#' fold-change concordance, volcano plot, top-gene table with confidence and
+#' prediction intervals, heterogeneity, forest plots, leave-one-out
+#' robustness, pathway results (if present) and session information.
 #'
 #' @param meta_result A \code{\linkS4class{metaXpressResult}} object from
 #'   \code{\link{mx_meta}}.
-#' @param studies A named list of \code{\linkS4class{metaXpressStudy}} objects.
-#' @param de_results A named list of per-study DE \code{data.frame}s from
-#'   \code{\link{mx_de_all}}.
-#' @param format Character scalar. Output format. One of \code{"html"}
-#'   (default) or \code{"pdf"}.
-#' @param output_dir Character scalar. Directory for the output report.
-#'   Default: current working directory (\code{"."}).
-#' @param output_file Character scalar. Filename (without extension).
-#'   Default: \code{"metaXpress_report"}.
+#' @param de_results The named list of per-study DE \code{data.frame}s (or
+#'   \code{\linkS4class{metaXpressStudy}} objects) used for the meta-analysis.
+#' @param studies Optional list of \code{\linkS4class{metaXpressStudy}}
+#'   objects (currently unused; kept for API compatibility).
+#' @param format \code{"html"} (default) or \code{"pdf"} (requires LaTeX).
+#' @param output_dir Output directory. Default: \code{"."}.
+#' @param output_file File name without extension. Default:
+#'   \code{"metaXpress_report"}.
+#' @param padj_threshold,lfc_threshold Significance thresholds used in the
+#'   report. Defaults: \code{0.05} and \code{0}.
 #'
-#' @return The path to the generated report file (invisibly).
+#' @return The path to the generated report (invisibly).
 #'
 #' @examples
-#' \dontrun{
-#'   mx_report(meta_result, studies, de_results,
-#'             format = "html", output_dir = "results/")
+#' \donttest{
+#' if (rmarkdown::pandoc_available()) {
+#'   ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+#'                             package = "metaXpress"))
+#'   res <- mx_meta(ad$de_results)
+#'   mx_report(res, ad$de_results, output_dir = tempdir())
+#' }
 #' }
 #'
 #' @seealso \code{\link{mx_export}}, \code{\link{mx_session_info}}
 #'
 #' @importFrom methods is
 #' @export
-mx_report <- function(meta_result, studies, de_results,
-                       format      = c("html", "pdf"),
-                       output_dir  = ".",
-                       output_file = "metaXpress_report") {
+mx_report <- function(meta_result, de_results, studies = NULL,
+                      format         = c("html", "pdf"),
+                      output_dir     = ".",
+                      output_file    = "metaXpress_report",
+                      padj_threshold = 0.05,
+                      lfc_threshold  = 0) {
   if (!is(meta_result, "metaXpressResult"))
     stop("'meta_result' must be a metaXpressResult object")
+  if (is.list(de_results) && length(de_results) > 0 &&
+      is(de_results[[1]], "metaXpressStudy")) {
+    if (is.null(studies)) studies <- de_results
+    de_results <- .extract_de_results(de_results)
+  }
+  .validate_de_list(de_results)
+  if (is.null(names(de_results)))
+    names(de_results) <- paste0("study_", seq_along(de_results))
   format <- match.arg(format)
+  .require_package("rmarkdown", "report generation")
 
-  if (!requireNamespace("rmarkdown", quietly = TRUE))
-    stop("Package 'rmarkdown' is required for report generation. ",
-         "Install with: install.packages('rmarkdown')")
-
-  template <- system.file("rmarkdown", "templates", "report.Rmd",
-                           package = "metaXpress")
-  if (!file.exists(template))
-    stop("Report template not found. Package may not be fully installed.")
+  template <- system.file("report", "metaXpress_report.Rmd",
+                          package = "metaXpress")
+  if (!nzchar(template))
+    stop("Report template not found. Reinstall metaXpress.")
 
   if (!dir.exists(output_dir))
     dir.create(output_dir, recursive = TRUE)
+  output_dir <- normalizePath(output_dir)
+
+  work <- tempfile("mx_report_")
+  dir.create(work)
+  file.copy(template, work)
 
   output_format <- if (format == "html")
-    rmarkdown::html_document(toc = TRUE, toc_float = TRUE,
-                              code_folding = "hide")
+    rmarkdown::html_document(toc = TRUE, toc_float = TRUE)
   else
     rmarkdown::pdf_document(toc = TRUE)
 
-  out_path <- file.path(output_dir,
-                         paste0(output_file, ".", format))
-
-  rmarkdown::render(
-    input         = template,
+  out_path <- rmarkdown::render(
+    input         = file.path(work, basename(template)),
     output_format = output_format,
-    output_file   = out_path,
-    params        = list(
-      meta_result = meta_result,
-      studies     = studies,
-      de_results  = de_results
-    ),
-    envir = new.env(parent = globalenv())
+    output_file   = paste0(output_file, ".", format),
+    output_dir    = output_dir,
+    params        = list(meta_result = meta_result,
+                         de_results = de_results,
+                         studies = studies,
+                         padj_threshold = padj_threshold,
+                         lfc_threshold = lfc_threshold),
+    envir = new.env(parent = globalenv()),
+    quiet = TRUE
   )
 
   message("Report written to: ", out_path)

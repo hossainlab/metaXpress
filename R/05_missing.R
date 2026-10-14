@@ -64,18 +64,27 @@ mx_missing_summary <- function(de_results) {
 #'       (most conservative; default).}
 #'     \item{\code{"mean"}}{Impute missing log2FC with the mean across
 #'       available studies; impute p-values as 1.}
-#'     \item{\code{"knn"}}{K-nearest neighbours imputation based on
-#'       gene expression profiles.}
-#'     \item{\code{"weighted"}}{Weighted imputation proportional to study
-#'       sample size.}
+#'     \item{\code{"knn"}}{K-nearest-neighbour imputation of log2FC across
+#'       genes with similar cross-study fold-change profiles.}
+#'     \item{\code{"weighted"}}{Mean log2FC weighted by gene coverage.}
 #'   }
 #'
 #' @return The input list with missing values filled according to the chosen
 #'   strategy.
 #'
+#' @section Caution:
+#' The \code{"mean"}, \code{"knn"} and \code{"weighted"} strategies fill a
+#' study's missing fold change with values derived from the \emph{other}
+#' studies. This is circular: it inflates the apparent number of studies per
+#' gene, shrinks heterogeneity (I-squared) and has no standard error, so
+#' imputed rows are ignored by effect-size methods. For inference, prefer
+#' \code{\link{mx_meta}} with \code{min_studies}, which pools each gene
+#' over the studies that measured it, or \code{\link{mx_filter_coverage}}.
+#' Imputation is mainly useful for visualising complete matrices.
+#'
 #' @references
-#' Villatoro-García, J.A. et al. (2022) Missing gene expression data
-#' imputation for gene-study meta-analysis. \emph{Mathematics},
+#' Villatoro-García, J.A. et al. (2022) DExMA: an R package for performing
+#' gene expression meta-analysis with missing genes. \emph{Mathematics},
 #' \strong{10}(18), 3376. \doi{10.3390/math10183376}
 #'
 #' @examples

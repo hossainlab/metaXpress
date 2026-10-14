@@ -1,12 +1,12 @@
 ---
-title: "metaXpress Full Workflow: GEO to Report"
+title: "Full workflow: from GEO accessions to report"
 author: "Md. Jubayer Hossain"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{metaXpress Full Workflow: GEO to Report}
+  %\VignetteIndexEntry{Full workflow: from GEO accessions to report}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -24,207 +24,221 @@ knitr::opts_chunk$set(
 
 # Overview
 
-`metaXpress` is an end-to-end R package designed for multi-study transcriptomic meta-analysis. It provides a standardized pipeline covering data ingestion from NCBI GEO and SRA, 10-point quality control scoring, cross-platform harmonization, per-study differential expression, six statistical meta-analysis models, missing gene handling, pathway enrichment, interactive visualization, and reproducible reporting.
+This vignette shows the full metaXpress pipeline from GEO accessions to a
+report. Each step needs internet access or takes minutes on full data, so
+the chunks are not evaluated when the package is built. For executed
+analyses of real data, see:
 
-For full documentation and online tutorials, visit the official website at [https://mdjubayerhossain.com/metaXpress/](https://mdjubayerhossain.com/metaXpress/).
+- `vignette("quickstart")`: a five-minute tour.
+- `vignette("case_study")`: a complete Alzheimer's disease meta-analysis.
 
-# Installation from GitHub
+The steps below reproduce that case study from scratch.
 
-`metaXpress` is currently available on GitHub and targets future submission to Bioconductor.
-
-```{r install-github, eval=FALSE}
-# Install remotes if needed
+```{r install-github}
 if (!requireNamespace("remotes", quietly = TRUE))
-    install.packages("remotes")
-
-# Install metaXpress directly from GitHub
+  install.packages("remotes")
 remotes::install_github("hossainlab/metaXpress")
-```
-
-Load the package:
-
-```{r load-package, purl=FALSE}
 library(metaXpress)
 ```
 
 ---
 
-# 1. Data Ingestion & Quality Control
+# 1. Data ingestion and quality control
 
-## 1a. Fetch Public Data from GEO
+## 1a. Uniformly processed counts from GEO
 
-You can ingest multiple public RNA-seq datasets directly using their NCBI GEO accessions:
+By default, `mx_fetch_geo()` downloads the **NCBI GEO-generated raw
+counts**. NCBI aligns the SRA reads of every eligible human and mouse
+series with HISAT2 and counts them with featureCounts against RefSeq. All
+studies therefore share one alignment, annotation and count definition,
+which removes a major source of technical heterogeneity. Genes are Entrez
+IDs, and symbols and gene types are added to `rowData`.
 
-```{r fetch-geo, purl=FALSE}
-# Fetch three bulk RNA-seq cohorts from GEO
-accessions <- c("GSE130688", "GSE136569", "GSE171485")
-studies    <- mx_fetch_geo(accessions, count_type = "raw", cache_dir = "geo_cache/")
+Always name the phenotype column that holds the case/control labels.
+Automatic detection is only a fallback.
+
+```{r fetch-geo}
+accessions <- c("GSE125583", "GSE104704", "GSE53697", "GSE173955")
+studies <- mx_fetch_geo(
+  accessions,
+  condition_col = c(GSE125583 = "diagnosis:ch1",
+                    GSE104704 = "study group:ch1",
+                    GSE53697  = "disease status:ch1",
+                    GSE173955 = "title"),
+  cache_dir = "geo_cache")
+lapply(studies, function(s) table(s$condition))
+S4Vectors::metadata(studies[[1]])$count_source
 ```
 
-Alternatively, load local count matrices and metadata with `mx_load_local()`.
+Series without NCBI counts fall back to the author's supplementary files
+(`source = "supplementary"`). Local matrices load with `mx_load_local()`,
+and any `SummarizedExperiment` (e.g. from recount3 or tximeta) converts
+with `mx_from_se()`.
 
-## 1b. Inspect 10-Point QC Scoring
+## 1b. Study selection is a scientific step
 
-`mx_qc_study()` benchmarks each study against 10 criteria (sample size, depth, alignment rate, duplicate rate, case/control completeness, integer counts, etc.):
+Before the analysis, record for every study:
 
-```{r qc-summary, purl=FALSE}
-qc_scores <- vapply(studies, function(s) s@qc_score, numeric(1))
-print(qc_scores)
+- tissue or region;
+- disease definition and control type;
+- library type;
+- **donor independence**. Two GEO series from the same lab or brain bank
+  often share donors (GSE95587 and GSE125583 share 89 cases), and pooling
+  them violates the independence assumption.
 
-# Inspect detailed metrics for study 1
-attr(studies[[1]], "qc_details")
+## 1c. Data-level QC
+
+```{r qc}
+studies <- lapply(studies, mx_qc_study, min_genes = 15000)
+studies[[1]]                          # "x / 10 passed (y failed, z not evaluable)"
+S4Vectors::metadata(studies[[1]])$qc  # per-criterion status and details
+studies <- mx_filter_studies(studies) # drop studies failing required criteria
 ```
 
-## 1c. Filter Low-Quality Cohorts
-
-```{r filter-studies, purl=FALSE}
-# Filter out cohorts failing the QC threshold (minimum score: 7/10)
-studies <- mx_filter_studies(studies, qc_threshold = 7)
-```
+Each criterion is recorded as pass, fail or not evaluable. Alignment rate,
+for example, is usually missing from GEO. `qc_score` counts the criteria
+passed and is never rescaled. By default, `mx_filter_studies()` removes
+studies that fail a criterion required for valid DE: at least 3 replicates
+per group, complete condition labels and raw counts. Criterion 8 (exactly
+two groups) fails for series with extra groups until they are subset in
+step 2.
 
 ---
 
-# 2. Cross-Study Harmonization
+# 2. Preparing each study
 
-## 2a. Reannotate Gene Identifiers
+Restrict each study to the two groups being compared, choose a gene
+namespace and filter out low-count genes:
 
-Convert diverse gene identifiers (Ensembl, Entrez, RefSeq) to a uniform namespace:
-
-```{r reannotate, purl=FALSE}
-studies <- mx_reannotate(studies, org = "Homo sapiens", target_id = "SYMBOL")
+```{r prepare}
+prep <- function(s, keep_levels) {
+  s <- s[, s$condition %in% keep_levels]
+  rd <- SummarizedExperiment::rowData(s)
+  s <- s[!is.na(rd$symbol) & rd$gene_type == "protein-coding" &
+           !duplicated(rd$symbol), ]
+  rownames(s) <- SummarizedExperiment::rowData(s)$symbol
+  s[rowSums(SummarizedExperiment::assay(s) >= 10) >=
+      min(table(s$condition)), ]
+}
+contrasts <- list(GSE125583 = c("Alzheimer's disease", "control"),
+                  GSE104704 = c("Aged, diseased", "Old"),
+                  GSE53697  = c("advanced Alzheimer's Disease", "control"),
+                  GSE173955 = c("Alzheimer's Disease",
+                                "non-Alzheimer's Disease"))
+studies$GSE173955$condition <- sub("_Biological.*$", "",
+                                   studies$GSE173955$condition)
+studies <- Map(prep, studies, contrasts)
 ```
 
-## 2b. Correct Library Type Bias
+For author-supplied count tables with mixed identifiers,
+`mx_reannotate()` converts Ensembl, Entrez and symbols to one namespace.
 
-If cohorts mix poly(A)-selected and rRNA-depleted protocols, adjust for library type biases:
-
-```{r library-correction, purl=FALSE}
-studies <- mx_correct_library_type(studies)
-```
-
-## 2c. Remove Batch Effects
-
-```{r batch-correction, purl=FALSE}
-studies <- mx_remove_batch(studies, method = "ComBat-seq")
-```
-
-## 2d. Align Common Gene Space
-
-```{r align-genes, purl=FALSE}
-studies <- mx_align_genes(studies)
-```
+**No batch correction before DE.** Each study is analysed separately, so
+between-study batch effects never enter the per-study fold changes.
+`mx_normalize()` and `mx_remove_batch()` (which preserves `condition`)
+write new assays for pooled PCA, heatmaps or co-expression. They never
+overwrite the raw counts.
 
 ---
 
-# 3. Per-Study Differential Expression
+# 3. Per-study differential expression
 
-Run independent statistical tests on each cohort using DESeq2, edgeR, or limma-voom:
+Covariates enter the per-study design formula. The contrast is set
+explicitly per study, so every fold change means case / control:
 
-```{r de-analysis, purl=FALSE}
+```{r de}
 studies <- mx_de_all(
   studies,
-  method  = "DESeq2",
-  formula = ~ condition,
-  BPPARAM = BiocParallel::MulticoreParam(4)
-)
-```
-
-Inspect significant gene counts:
-
-```{r de-summary, purl=FALSE}
-mx_de_summary(studies, padj_threshold = 0.05, lfc_threshold = 1.0)
-```
-
----
-
-# 4. Handle Missing Genes
-
-When cohorts have varying gene detection rates:
-
-```{r missing-genes, purl=FALSE}
+  method   = "DESeq2",               # or "edgeR" (QL) / "limma-voom"
+  formula  = list(~ sex + condition, ~ condition, ~ condition, ~ condition),
+  contrast = contrasts,
+  BPPARAM  = BiocParallel::MulticoreParam(4))
+mx_de_summary(studies, padj_threshold = 0.05, lfc_threshold = 0)
 de_results <- lapply(studies, function(s) s@de_result)
+```
 
-# Inspect gene coverage across cohorts
-cov_mat <- mx_missing_summary(de_results)
+(`sex` must exist in `colData`, e.g.
+`studies$GSE125583$sex <- studies$GSE125583$"Sex:ch1"`.)
 
-# Retain genes present in at least 2 cohorts or apply k-NN imputation
-de_results <- mx_filter_coverage(de_results, min_studies = 2)
-# de_results <- mx_impute(de_results, method = "knn")
+---
+
+# 4. Pre-pooling checks
+
+```{r checks}
+mx_study_concordance(de_results)   # negative r => flipped contrast
+cov <- mx_missing_summary(de_results)
+table(studies_measured = rowSums(cov))
+```
+
+`mx_meta()` analyses each gene over the studies that measured it
+(`min_studies`, default 2). Prefer this to imputation:
+`mx_impute()` fills fold changes from the other studies, which is
+circular.
+
+---
+
+# 5. Meta-analysis
+
+Choose the method a priori from the question being asked:
+
+| Question | Method |
+|---|---|
+| Average effect across heterogeneous cohorts (recommended) | `"random_effects"`, `tau_method = "REML"` |
+| Studies are technical replicates | `"fixed_effects"` |
+| Only p-values or z-scores are available | `"inverse_normal"` (√n weights) or `"stouffer"` |
+| Same-direction effect in at least one study | `"fisher"` (directional) |
+| DE in all, or in at least r, studies | `"maxp"`, `"rop"` |
+
+```{r meta}
+res <- mx_meta(de_results, method = "random_effects", tau_method = "REML")
+mt  <- res@meta_table
+head(mt[order(mt$meta_pvalue), c("gene_id", "meta_log2FC", "ci_lower",
+                                 "ci_upper", "pi_lower", "pi_upper",
+                                 "meta_padj", "i_squared", "tau2")])
+```
+
+The HKSJ adjustment (`hksj = TRUE`) gives better per-gene confidence
+intervals with few studies. With fewer than about 5 studies, though, its
+t-distribution makes genome-wide FDR control unreachable (see the case
+study).
+
+```{r loo}
+loo <- mx_sensitivity(de_results, method = "random_effects",
+                      tau_method = "REML")
+rob <- attr(loo, "robustness")
+core <- rob$gene_id[rob$full_padj <= 0.05 & rob$frac_loo_sig == 1]
 ```
 
 ---
 
-# 5. Statistical Meta-Analysis
+# 6. Pathways
 
-## 5a. Model Selection Guide
+```{r pathway}
+# GSEA on the signed meta z-score (fgsea + MSigDB)
+res <- mx_pathway_meta(res, db = "Hallmarks", method = "GSEA")
 
-- **2 cohorts:** `"fisher"` (Fisher's combined probability) or `"stouffer"` (Z-score weighting).
-- **3+ cohorts, low heterogeneity ($I^2 < 25\%$):** `"fixed_effects"` (Inverse-variance).
-- **3+ cohorts, moderate-to-high heterogeneity ($I^2 \ge 25\%$):** `"random_effects"` (DerSimonian-Laird, recommended default).
-- **Mixed heterogeneity:** `"awmeta"` (Adaptive weighting).
-
-```{r meta-analysis, purl=FALSE}
-meta_result <- mx_meta(de_results, method = "random_effects", min_studies = 2)
-meta_result
-```
-
-## 5b. Quantify Between-Study Heterogeneity
-
-Assess Cochran's $Q$, Higgins $I^2$, and $\tau^2$ for every gene:
-
-```{r heterogeneity, purl=FALSE}
-het <- mx_heterogeneity(de_results)
-summary(het$I_sq)
-```
-
-## 5c. Leave-One-Out Sensitivity Analysis
-
-Ensure discoveries are not driven by an individual outlier cohort:
-
-```{r sensitivity, purl=FALSE}
-loo <- mx_sensitivity(de_results, method = "random_effects")
-vapply(loo, function(r) sum(r@meta_table$meta_padj <= 0.05, na.rm = TRUE), integer(1))
+# Per-study GSEA combined across studies (directional Stouffer)
+ps <- mx_pathway_studies(de_results, db = "Reactome")
+mx_pathway_heatmap(attr(ps, "per_study"), top_n = 25, value = "NES")
+mx_pathway_dedup(ps, gene_sets = mx_gene_sets("Reactome"))
 ```
 
 ---
 
-# 6. Pathway Meta-Analysis
+# 7. Figures
 
-Perform cross-study Over-Representation Analysis (ORA) or Gene Set Enrichment Analysis (GSEA) on Hallmark, KEGG, or GO sets:
-
-```{r pathway, purl=FALSE}
-meta_result <- mx_pathway_meta(meta_result, db = "Hallmarks", method = "ORA")
-head(meta_result@pathway_result[order(meta_result@pathway_result$padj), ], 10)
+```{r figures}
+mx_volcano(res, padj_threshold = 0.05, lfc_threshold = 0.5, label_top = 15)
+mx_forest("GFAP", de_results, res)      # CI diamond + prediction interval
+mx_heterogeneity_plot(res)
+mx_upset(de_results, padj_threshold = 0.05, lfc_threshold = 0)
 ```
 
 ---
 
-# 7. Publication Visualizations
+# 8. Downstream biology
 
-## Volcano Plot
-
-```{r volcano, fig.width=8, fig.height=6, purl=FALSE}
-mx_volcano(meta_result, padj_threshold = 0.05, lfc_threshold = 1.0, label_top = 15)
-```
-
-## Forest Plot
-
-```{r forest-top-gene, fig.width=7, fig.height=5, purl=FALSE}
-top_gene <- meta_result@meta_table$gene_id[which.min(meta_result@meta_table$meta_padj)]
-mx_forest(top_gene, de_results, meta_result)
-```
-
-## Heterogeneity Plot
-
-```{r i2-distribution, fig.width=6, fig.height=4, purl=FALSE}
-mx_heterogeneity_plot(meta_result)
-```
-
----
-
-# 8. Downstream Biology
-
-Module 9 turns the meta-signature into testable biology. Each function takes a public prior-knowledge resource as a plain R object, so any regulon, marker set or drug library can be used. The calls below match the pan-cancer case study. `scripts/fetch_case_study_data.R` shows how to download every resource, and the [live tutorial](live_tutorial.html) runs them on bundled data.
+Module 9 turns the meta-signature into testable biology. Each function takes a public prior-knowledge resource as a plain R object, so any regulon, marker set or drug library can be used. The calls below show how to load each resource. `vignette("downstream_biology")` runs them on bundled real data.
 
 ## 8a. Load Prior-Knowledge Resources
 
@@ -249,7 +263,7 @@ lincs <- mx_read_signatures("LINCS_L1000_Chem_Pert_Consensus_Sigs.txt")
 
 ```{r tf-activity, purl=FALSE}
 # Use id_col = "symbol" when gene_id holds Entrez/Ensembl IDs
-tf <- mx_tf_activity(meta_result, collectri, id_col = "symbol", min_size = 10)
+tf <- mx_tf_activity(res, collectri, id_col = "symbol", min_size = 10)
 head(tf)
 mx_downstream_plot(tf, top = 30)
 ```
@@ -266,7 +280,7 @@ mx_downstream_plot(comp)
 
 ```{r coexpression, purl=FALSE}
 net <- mx_coexpression_modules(studies, n_genes = 3000, consensus = "min",
-                               cut_height = 0.3, meta_result = meta_result)
+                               cut_height = 0.3, meta_result = res)
 net$module_stats      # pooled eigengene effect, hub genes, meta-DEG overlap
 head(net$modules)     # gene-to-module assignment with kME
 mx_downstream_plot(net)
@@ -275,7 +289,7 @@ mx_downstream_plot(net)
 ## 8e. Drug Signature Reversal
 
 ```{r drug-reversal, purl=FALSE}
-drugs <- mx_drug_connectivity(meta_result, lincs, id_col = "symbol")
+drugs <- mx_drug_connectivity(res, lincs, id_col = "symbol")
 head(drugs, 20)       # negative reversal_score = reverses the disease signature
 mx_downstream_plot(drugs, top = 30)
 ```
@@ -287,8 +301,8 @@ mx_downstream_plot(drugs, top = 30)
 ## Generate Reproducible Reports & Export
 
 ```{r report, purl=FALSE}
-mx_report(meta_result, studies, de_results, format = "html", output_dir = "results/")
-mx_export(meta_result, format = "csv", output_dir = "results/")
+mx_report(res, de_results, output_dir = "results")    # HTML with methods text
+mx_export(res, format = "csv", output_dir = "results")
 ```
 
 ---

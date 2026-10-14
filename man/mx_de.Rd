@@ -8,6 +8,8 @@ mx_de(
   study,
   method = c("DESeq2", "edgeR", "limma-voom"),
   formula = ~condition,
+  contrast = NULL,
+  shrink = c("none", "apeglm", "ashr", "normal"),
   ...
 )
 }
@@ -17,32 +19,83 @@ mx_de(
 \item{method}{Character scalar. DE method. One of \code{"DESeq2"}
 (default), \code{"edgeR"}, or \code{"limma-voom"}.}
 
-\item{formula}{A formula specifying the design. Default: \code{~ condition}.
-The \code{condition} column in \code{colData(study)} is used as the
-contrast variable; the last level is the reference.}
+\item{formula}{A design formula whose variables are columns of
+\code{colData(study)}. Must contain \code{condition}; any other terms
+(e.g. \code{~ sex + age + condition}) are adjusted for. Default:
+\code{~ condition}.}
 
-\item{...}{Additional arguments passed to the underlying DE function.}
+\item{contrast}{Optional length-2 character vector
+\code{c(case_level, control_level)} naming the two \code{condition}
+levels to compare. Fold changes are \code{case / control}. When
+\code{NULL}, the control level is auto-detected (e.g. \code{"control"},
+\code{"normal"}, \code{"healthy"}, \code{"untreated"}) and the first
+other level is the case. Set this explicitly for every study in a
+meta-analysis so fold-change directions agree.}
+
+\item{shrink}{Character scalar. Optional log fold-change shrinkage for
+DESeq2: \code{"none"} (default), \code{"apeglm"}, \code{"ashr"} or
+\code{"normal"}. Shrunken values are added as \code{log2FC_shrunk} for
+ranking and plotting; the unshrunken maximum-likelihood \code{log2FC}
+and \code{lfcSE} are always kept because inverse-variance meta-analysis
+requires unbiased estimates with their sampling variance.}
+
+\item{...}{Additional arguments passed to \code{DESeq2::DESeq()},
+\code{edgeR::glmQLFit()} or \code{limma::lmFit()}.}
 }
 \value{
 The input \code{study} with the \code{de_result} slot populated.
-  \code{de_result} is a \code{data.frame} with columns: \code{gene_id},
-  \code{log2FC}, \code{pvalue}, \code{padj}, \code{baseMean}, \code{method}.
+  \code{de_result} is a \code{data.frame} with columns:
+  \describe{
+    \item{gene_id}{Gene identifier (rownames of the count matrix).}
+    \item{log2FC}{Log2 fold change, case vs control.}
+    \item{lfcSE}{Standard error of \code{log2FC} (log2 scale).}
+    \item{stat}{Signed standard-normal test statistic
+      (\code{sign(log2FC) * qnorm(pvalue / 2, lower.tail = FALSE)}
+      for edgeR/limma, the Wald statistic for DESeq2).}
+    \item{pvalue, padj}{Raw and Benjamini-Hochberg adjusted p-values.}
+    \item{baseMean}{Mean normalized expression.}
+    \item{n_case, n_control}{Number of samples in each group, used by
+      \code{\link{mx_meta}} for sample-size weighting.}
+    \item{method}{DE engine used.}
+  }
+  The case and control labels are stored in
+  \code{attr(de_result, "contrast")}.
 }
 \description{
 Performs differential expression analysis on one
-\code{metaXpressStudy} using DESeq2, edgeR, or limma-voom. Stores the
-full result (all genes) in the \code{de_result} slot of the returned
-study object.
+\code{metaXpressStudy} using DESeq2, edgeR (quasi-likelihood), or
+limma-voom. Stores the full result (all tested genes) in the
+\code{de_result} slot of the returned study object, in a common format
+that \code{\link{mx_meta}} consumes directly.
 }
 \details{
-\strong{CRITICAL:} Always use \code{padj} (not raw \code{pvalue}) for
-significance filtering downstream. The default significance threshold is
-\code{padj <= 0.05} AND \code{|log2FC| >= 1}.
+For edgeR and limma-voom, low-count genes are removed with
+\code{edgeR::filterByExpr()} before testing; DESeq2 applies its own
+independent filtering to \code{padj} but reports all genes. Genes removed
+by filtering are treated as \emph{not measured} in that study and are
+handled explicitly by Module 5 (\code{\link{mx_missing_summary}}).
+
+For edgeR, standard errors are back-calculated from the quasi-likelihood
+test as \code{|log2FC| / |z|}, where \code{z} is the normal quantile of
+the two-sided p-value. This places all three engines on the same
+log2-scale effect/variance footing required for inverse-variance
+meta-analysis (Rau et al. 2014).
+
+Use \code{padj} (not raw \code{pvalue}) for per-study significance calls.
 }
 \examples{
-\dontrun{
-  study <- mx_de(study, method = "DESeq2", formula = ~ condition)
-  head(study@de_result)
+if (requireNamespace("airway", quietly = TRUE) &&
+    requireNamespace("DESeq2", quietly = TRUE)) {
+  # Himes et al. (2014) airway smooth muscle cells, GEO GSE52778:
+  # dexamethasone vs untreated, paired by donor cell line.
+  data("airway", package = "airway")
+  study <- mx_from_se(airway, condition_col = "dex",
+                      accession = "GSE52778")
+  study <- study[rowSums(SummarizedExperiment::assay(study)) >= 10, ]
+  study <- mx_de(study, formula = ~ cell + condition,
+                 contrast = c("trt", "untrt"))
+  de <- study@de_result
+  head(de[order(de$padj), ])
 }
 
 }
@@ -51,19 +104,21 @@ Love, M.I., Huber, W. & Anders, S. (2014) Moderated estimation of fold
 change and dispersion for RNA-seq data with DESeq2. \emph{Genome Biology},
 \strong{15}(12), 550. \doi{10.1186/s13059-014-0550-8}
 
-Robinson, M.D., McCarthy, D.J. & Smyth, G.K. (2010) edgeR: a Bioconductor
-package for differential expression analysis of digital gene expression
-data. \emph{Bioinformatics}, \strong{26}(1), 139--140.
-\doi{10.1093/bioinformatics/btp616}
-
-Ritchie, M.E. et al. (2015) limma powers differential expression analyses
-for RNA-sequencing and microarray studies. \emph{Nucleic Acids Research},
-\strong{43}(7), e47. \doi{10.1093/nar/gkv007}
+Chen, Y., Lun, A.T.L. & Smyth, G.K. (2016) From reads to genes to
+pathways: differential expression analysis of RNA-Seq experiments using
+Rsubread and the edgeR quasi-likelihood pipeline. \emph{F1000Research},
+\strong{5}, 1438. \doi{10.12688/f1000research.8987.2}
 
 Law, C.W. et al. (2014) voom: precision weights unlock linear model
 analysis tools for RNA-seq read counts. \emph{Genome Biology},
 \strong{15}(2), R29. \doi{10.1186/gb-2014-15-2-r29}
+
+Zhu, A., Ibrahim, J.G. & Love, M.I. (2019) Heavy-tailed prior
+distributions for sequence count data: removing the noise and preserving
+large differences. \emph{Bioinformatics}, \strong{35}(12), 2084--2092.
+\doi{10.1093/bioinformatics/bty895}
 }
 \seealso{
-\code{\link{mx_de_all}}, \code{\link{mx_de_summary}}
+\code{\link{mx_de_all}}, \code{\link{mx_de_summary}},
+  \code{\link{mx_meta}}
 }

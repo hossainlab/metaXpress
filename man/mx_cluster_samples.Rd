@@ -2,31 +2,39 @@
 % Please edit documentation in R/01_ingest.R
 \name{mx_cluster_samples}
 \alias{mx_cluster_samples}
-\title{Automatically cluster samples by metadata}
+\title{Suggest sample groups from metadata text}
 \usage{
-mx_cluster_samples(study)
+mx_cluster_samples(study, k = 2, columns = NULL)
 }
 \arguments{
 \item{study}{A \code{\linkS4class{metaXpressStudy}} object.}
+
+\item{k}{Integer. Number of groups. Default: \code{2}.}
+
+\item{columns}{Optional character vector of \code{colData} columns to use.
+Default: all character/factor columns except identifiers.}
 }
 \value{
-The input \code{study} with the \code{condition} column updated
-  in \code{metadata}.
+The input \code{study} with \code{colData(study)$cluster}. A
+  cross-tabulation against \code{condition} (if present) is printed.
 }
 \description{
-Uses text mining on metadata fields to assign samples to case/control groups,
-mimicking the \code{sampleclusteR} approach for automated group assignment from
-GEO metadata. It computes string distances between sample descriptions and
-uses hierarchical clustering to partition them into two groups.
+Exploratory helper for GEO series whose phenotype columns do not state
+the case/control group cleanly. Concatenates each sample's text metadata,
+computes Jaro-Winkler string distances and cuts an average-linkage
+hierarchical clustering into \code{k} groups. The result is written to a
+new \code{cluster} column; \code{condition} is \strong{not} changed,
+because automatically derived labels must be checked by a person before
+they define a contrast.
 }
 \examples{
-\dontrun{
-  study <- mx_cluster_samples(study)
+counts <- matrix(rpois(60, 50), nrow = 10,
+                 dimnames = list(paste0("G", 1:10), paste0("S", 1:6)))
+meta <- data.frame(title = c(paste("healthy donor", 1:3),
+                             paste("tumour patient", 1:3)))
+if (requireNamespace("stringdist", quietly = TRUE)) {
+  s <- mx_cluster_samples(metaXpressStudy(counts, meta))
+  s$cluster
 }
 
-}
-\references{
-Coke, T., Niranjan, M. & Ewing, R.M. (2025) sampleclusteR: automated
-case/control group assignment from GEO metadata. \emph{bioRxiv}.
-\doi{10.1101/2025.04.10.648129}
 }

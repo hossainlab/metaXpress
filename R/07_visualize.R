@@ -120,7 +120,7 @@ mx_volcano <- function(meta_result, padj_threshold = 0.05,
 #'
 #' @seealso \code{\link{mx_volcano}}, \code{\link{mx_heterogeneity_plot}}
 #'
-#' @importFrom ggplot2 ggplot aes geom_point geom_errorbarh geom_vline
+#' @importFrom ggplot2 ggplot aes geom_point geom_errorbar geom_vline
 #'   geom_polygon annotate scale_y_discrete labs theme_bw theme
 #' @export
 mx_forest <- function(gene, de_results, meta_result = NULL) {
@@ -144,7 +144,7 @@ mx_forest <- function(gene, de_results, meta_result = NULL) {
     se <- if ("lfcSE" %in% colnames(row) && !is.na(row$lfcSE[1]))
       row$lfcSE[1]
     else
-      abs(row$log2FC[1]) / qnorm(1 - row$pvalue[1] / 2 + .Machine$double.eps)
+      abs(row$log2FC[1]) / stats::qnorm(row$pvalue[1] / 2, lower.tail = FALSE)
     data.frame(study = study_names[i], log2FC = row$log2FC[1], se = se,
                stringsAsFactors = FALSE)
   })
@@ -155,53 +155,67 @@ mx_forest <- function(gene, de_results, meta_result = NULL) {
   if (nrow(plot_df) == 0)
     stop("Gene '", gene, "' not found in any study.")
 
-  plot_df$ci_lo <- plot_df$log2FC - 1.96 * plot_df$se
-  plot_df$ci_hi <- plot_df$log2FC + 1.96 * plot_df$se
-  plot_df$study <- factor(plot_df$study, levels = rev(plot_df$study))
+  k <- nrow(plot_df)
+  plot_df$ci_lo <- plot_df$log2FC - stats::qnorm(0.975) * plot_df$se
+  plot_df$ci_hi <- plot_df$log2FC + stats::qnorm(0.975) * plot_df$se
+  plot_df$y     <- rev(seq_len(k)) + 1
+  plot_df$w     <- 1 / plot_df$se^2
 
-  pooled_lfc  <- NA_real_
-  i_sq_label  <- ""
+  labels  <- plot_df$study
+  breaks  <- plot_df$y
+  caption <- NULL
+  mt_row  <- NULL
 
   if (!is.null(meta_result) && is(meta_result, "metaXpressResult")) {
-    idx <- which(meta_result@meta_table$gene_id == gene)
-    if (length(idx) == 1) {
-      pooled_lfc <- meta_result@meta_table$meta_log2FC[idx]
-      i_sq <- meta_result@meta_table$i_squared[idx]
-      if (!is.na(i_sq))
-        i_sq_label <- sprintf("I\u00b2 = %.1f%%", i_sq)
-    }
+    mt <- meta_result@meta_table
+    idx <- which(mt$gene_id == gene)
+    if (length(idx) == 1) mt_row <- mt[idx, , drop = FALSE]
   }
 
-  p <- ggplot2::ggplot(plot_df,
-                        ggplot2::aes(x = log2FC, y = study)) +
-    ggplot2::geom_point(size = 3, colour = "#377EB8") +
-    ggplot2::geom_errorbar(
-      ggplot2::aes(xmin = ci_lo, xmax = ci_hi),
-      width = 0.2, colour = "#377EB8"
-    ) +
+  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = log2FC, y = y)) +
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed",
                         colour = "grey40") +
-    ggplot2::labs(title = paste0("Forest plot: ", gene),
-                  x = "log\u2082 fold change (95% CI)",
-                  y = NULL,
-                  caption = i_sq_label) +
-    ggplot2::theme_bw() +
-    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+    ggplot2::geom_errorbar(ggplot2::aes(xmin = ci_lo, xmax = ci_hi),
+                           width = 0.2, orientation = "y",
+                           colour = "grey20") +
+    ggplot2::geom_point(ggplot2::aes(size = w), shape = 15,
+                        colour = "#377EB8", show.legend = FALSE) +
+    ggplot2::scale_size_area(max_size = 6)
 
-  if (!is.na(pooled_lfc)) {
-    half_h <- 0.4
-    ymax   <- nrow(plot_df)
-    diamond_df <- data.frame(
-      x = c(pooled_lfc - 0.1, pooled_lfc, pooled_lfc + 0.1, pooled_lfc),
-      y = c(0, half_h, 0, -half_h) + ymax + 1.2
-    )
-    p <- p +
-      ggplot2::geom_polygon(data = diamond_df,
-                             ggplot2::aes(x = x, y = y),
-                             fill = "#E41A1C", inherit.aes = FALSE)
+  if (!is.null(mt_row) && !is.na(mt_row$meta_log2FC)) {
+    est <- mt_row$meta_log2FC
+    lo  <- if ("ci_lower" %in% names(mt_row)) mt_row$ci_lower else NA_real_
+    hi  <- if ("ci_upper" %in% names(mt_row)) mt_row$ci_upper else NA_real_
+    if (is.na(lo) || is.na(hi)) { lo <- est; hi <- est }
+    diamond_df <- data.frame(x = c(lo, est, hi, est),
+                             y = c(0.6, 0.85, 0.6, 0.35))
+    p <- p + ggplot2::geom_polygon(data = diamond_df,
+                                   ggplot2::aes(x = x, y = y),
+                                   fill = "#E41A1C", inherit.aes = FALSE)
+    if (all(c("pi_lower", "pi_upper") %in% names(mt_row)) &&
+        !is.na(mt_row$pi_lower))
+      p <- p + ggplot2::annotate("segment", x = mt_row$pi_lower,
+                                 xend = mt_row$pi_upper, y = 0.6, yend = 0.6,
+                                 colour = "#E41A1C", linewidth = 0.4,
+                                 linetype = "dotted")
+    labels <- c(labels, sprintf("Pooled (%s)", meta_result@method))
+    breaks <- c(breaks, 0.6)
+    caption <- sprintf(
+      "Pooled log2FC = %.2f [%.2f, %.2f]; meta FDR = %.2g; I\u00b2 = %.0f%%; tau\u00b2 = %.3f%s",
+      est, lo, hi, mt_row$meta_padj, mt_row$i_squared,
+      if ("tau2" %in% names(mt_row)) mt_row$tau2 else NA_real_,
+      if ("pi_lower" %in% names(mt_row) && !is.na(mt_row$pi_lower))
+        "\nDotted line: 95% prediction interval" else "")
   }
 
-  p
+  p +
+    ggplot2::scale_y_continuous(breaks = breaks, labels = labels) +
+    ggplot2::labs(title = paste0("Forest plot: ", gene),
+                  x = "log\u2082 fold change (95% CI)", y = NULL,
+                  caption = caption) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                   panel.grid.minor = ggplot2::element_blank())
 }
 
 #' Heatmap of top DEGs across studies
@@ -450,5 +464,71 @@ mx_heterogeneity_plot <- function(meta_result) {
                   x     = "I\u00b2 (%)",
                   y     = "Number of genes",
                   caption = "Dashed lines: 25% (low) and 75% (high) thresholds") +
+    ggplot2::theme_bw()
+}
+
+#' Funnel plot for one gene
+#'
+#' Plots each study's log2 fold change against its standard error, with the
+#' pooled estimate and pseudo 95\% confidence limits. Asymmetry suggests
+#' small-study effects; see \code{\link{mx_small_study}} for formal tests.
+#'
+#' @param gene Gene identifier.
+#' @param de_results Named list of per-study DE \code{data.frame}s or
+#'   \code{\linkS4class{metaXpressStudy}} objects.
+#' @param meta_result Optional \code{\linkS4class{metaXpressResult}}; its
+#'   pooled estimate is used as the funnel centre. Otherwise the
+#'   inverse-variance fixed-effect estimate is used.
+#'
+#' @return A \code{ggplot2} object.
+#'
+#' @references
+#' Sterne, J.A.C. & Egger, M. (2001) Funnel plots for detecting bias in
+#' meta-analysis: guidelines on choice of axis. \emph{Journal of Clinical
+#' Epidemiology}, \strong{54}(10), 1046--1055.
+#' \doi{10.1016/S0895-4356(01)00377-8}
+#'
+#' @examples
+#' ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+#'                           package = "metaXpress"))
+#' mx_funnel("GFAP", ad$de_results)
+#'
+#' @seealso \code{\link{mx_small_study}}, \code{\link{mx_forest}}
+#' @export
+mx_funnel <- function(gene, de_results, meta_result = NULL) {
+  de_results <- .extract_de_results(de_results)
+  if (is.null(names(de_results)))
+    names(de_results) <- paste0("study_", seq_along(de_results))
+  df <- do.call(rbind, lapply(names(de_results), function(nm) {
+    d <- de_results[[nm]]
+    i <- match(gene, d$gene_id)
+    if (is.na(i) || !"lfcSE" %in% names(d)) return(NULL)
+    data.frame(study = nm, log2FC = d$log2FC[i], se = d$lfcSE[i])
+  }))
+  df <- df[!is.na(df$se) & df$se > 0, , drop = FALSE]
+  if (is.null(df) || nrow(df) == 0)
+    stop("Gene '", gene, "' has no study with log2FC and lfcSE")
+
+  centre <- NA_real_
+  if (!is.null(meta_result)) {
+    mt <- meta_result@meta_table
+    centre <- mt$meta_log2FC[match(gene, mt$gene_id)]
+  }
+  if (is.na(centre)) centre <- sum(df$log2FC / df$se^2) / sum(1 / df$se^2)
+
+  se_max <- max(df$se) * 1.1
+  tri <- data.frame(x = c(centre - 1.96 * se_max, centre,
+                          centre + 1.96 * se_max),
+                    y = c(se_max, 0, se_max))
+  ggplot2::ggplot(df, ggplot2::aes(x = log2FC, y = se)) +
+    ggplot2::geom_polygon(data = tri, ggplot2::aes(x = x, y = y),
+                          fill = "grey92", colour = "grey60",
+                          linetype = "dashed", inherit.aes = FALSE) +
+    ggplot2::geom_vline(xintercept = centre, colour = "#E41A1C") +
+    ggplot2::geom_point(size = 3, colour = "#377EB8") +
+    ggrepel::geom_text_repel(ggplot2::aes(label = study), size = 3) +
+    ggplot2::scale_y_reverse() +
+    ggplot2::labs(title = paste0("Funnel plot: ", gene),
+                  x = "log\u2082 fold change", y = "Standard error") +
     ggplot2::theme_bw()
 }

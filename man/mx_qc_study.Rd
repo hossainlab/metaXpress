@@ -4,62 +4,70 @@
 \alias{mx_qc_study}
 \title{Score a study against the 10-point QC checklist}
 \usage{
-mx_qc_study(study)
+mx_qc_study(study, min_genes = 15000)
 }
 \arguments{
 \item{study}{A \code{\linkS4class{metaXpressStudy}} object.}
+
+\item{min_genes}{Integer. Threshold for criterion 6. Default \code{15000},
+appropriate for an unfiltered human or mouse gene-level matrix; lower it
+for matrices already restricted (e.g. to protein-coding genes).}
 }
 \value{
-The input \code{study} with the \code{qc_score} slot filled.
-  A \code{qc_details} attribute is attached with a per-criterion breakdown.
+The input \code{study} with \code{qc_score} filled (criteria
+  passed, 0--10). The per-criterion table (\code{criterion}, \code{name},
+  \code{status}, \code{score}, \code{details}) is stored in
+  \code{S4Vectors::metadata(study)$qc} and in \code{attr(study,
+  "qc_details")}.
 }
 \description{
-Applies each of the 10 QC criteria defined by Heberle et al. (2025) and
-stores the total score in the \code{qc_score} slot. Criteria that cannot
-be evaluated (e.g., alignment rate not in metadata) are scored \code{NA}
-and do not penalise the total.
+Applies 10 data-level QC criteria. Each criterion is recorded as
+\code{"pass"}, \code{"fail"} or \code{"not evaluable"} (the information
+needed is absent, e.g. alignment rate is not deposited in GEO).
+\code{qc_score} is the number of criteria \emph{passed}. Criteria that
+could not be evaluated are not counted as passed and the score is
+\strong{not} rescaled, so a score is only comparable between studies
+together with the number of evaluable criteria. Decide on inclusion with
+\code{\link{mx_filter_studies}}, which works on failures rather than the
+score.
 }
 \details{
 The 10 criteria are:
 \enumerate{
-  \item \strong{Minimum sample size:} at least 3 samples per condition
-    group, required for reliable dispersion estimation in negative binomial
-    models (Schurch et al. 2016).
-  \item \strong{Sequencing depth:} median library size >= 10 million reads,
-    ensuring adequate power for detecting low-abundance transcripts
-    (Sims et al. 2014).
-  \item \strong{Alignment rate:} mean alignment rate >= 70\%, indicating
-    acceptable read quality (optional; skipped if not available).
-  \item \strong{rRNA contamination:} mean rRNA fraction < 10\%, flagging
-    insufficient ribosomal depletion (optional).
-  \item \strong{Duplicate rate:} mean duplicate rate < 50\%, flagging
-    library complexity issues (optional).
-  \item \strong{Gene detection:} at least 15,000 genes detected in >= 50\%
-    of samples, confirming adequate transcriptome coverage.
-  \item \strong{Metadata completeness:} required columns \code{condition}
-    and \code{sample_id} are present.
-  \item \strong{Clear case/control:} exactly two condition levels, ensuring
-    a well-defined contrast for differential expression.
+  \item \strong{Minimum sample size:} at least 3 samples in every
+    condition group (Schurch et al. 2016).
+  \item \strong{Sequencing depth:} median library size >= 10 million
+    assigned reads.
+  \item \strong{Alignment rate:} mean >= 70\% (column
+    \code{alignment_rate} in \code{colData}, fraction or percent).
+  \item \strong{rRNA contamination:} mean < 10\% (column
+    \code{rrna_fraction}).
+  \item \strong{Duplicate rate:} mean < 50\% (column
+    \code{duplicate_rate}).
+  \item \strong{Gene detection:} at least \code{min_genes} genes with a
+    non-zero count in >= 50\% of samples.
+  \item \strong{Condition labels complete:} every sample has a non-missing,
+    non-empty \code{condition}.
+  \item \strong{Clear contrast:} exactly two condition levels. Studies with
+    more groups fail until they are subset to the two compared groups.
   \item \strong{No batch-condition confounding:} batch and condition are not
-    perfectly aliased, which would make batch correction impossible
-    (Leek et al. 2010).
-  \item \strong{Raw counts:} data are non-negative integers with maximum
-    > 1,000, confirming untransformed count data suitable for count-based
-    statistical models.
+    perfectly aliased (Leek et al. 2010). Not evaluable without a
+    \code{batch} column.
+  \item \strong{Raw counts:} non-negative integers with maximum > 1,000,
+    i.e. untransformed counts suitable for count models.
 }
 }
 \examples{
-\dontrun{
+if (requireNamespace("airway", quietly = TRUE)) {
+  data("airway", package = "airway")
+  study <- mx_from_se(airway, condition_col = "dex", accession = "GSE52778")
   study <- mx_qc_study(study)
-  attr(study, "qc_details")
+  study@qc_score
+  S4Vectors::metadata(study)$qc
 }
 
 }
 \references{
-Heberle, H. et al. (2025) A comprehensive framework for quality control
-and meta-analysis of bulk RNA-seq data. \emph{Alzheimer's & Dementia},
-\strong{21}(1), e70025. \doi{10.1002/alz.70025}
-
 Schurch, N.J. et al. (2016) How many biological replicates are needed in an
 RNA-seq experiment and which differential expression tool should you use?
 \emph{RNA}, \strong{22}(6), 839--851. \doi{10.1261/rna.053959.115}
@@ -67,4 +75,9 @@ RNA-seq experiment and which differential expression tool should you use?
 Leek, J.T. et al. (2010) Tackling the widespread and critical impact of
 batch effects in high-throughput data. \emph{Nature Reviews Genetics},
 \strong{11}(10), 733--739. \doi{10.1038/nrg2825}
+
+Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
+RNAseq studies in human Alzheimer's disease brain tissue. \emph{bioRxiv}.
+\doi{10.1101/2024.11.07.622520} (complementary study-level reporting
+quality assessment).
 }

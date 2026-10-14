@@ -1,13 +1,14 @@
 # ==============================================================================
-# Rebuild the pan-cancer case study input data from public sources
+# Rebuild the PDAC Module 9 demo input data from public sources
 # ==============================================================================
 # Downloads NCBI-processed raw counts (GRCh38.p13, Entrez IDs) for the three
-# GEO cohorts, the matching NCBI gene annotation, and the external resources
+# GEO PDAC cohorts, the matching NCBI gene annotation, and the external resources
 # used by the downstream biology analyses:
 #   - CollecTRI TF-target regulons (OmniPath; Mueller-Dott et al. 2023)
 #   - MCP-counter cell-type marker genes (Becht et al. 2016)
 #   - LINCS L1000 chemical perturbation consensus signatures (Enrichr)
-# Sample condition labels come from inst/extdata/case_study_subset.rds.
+# Sample condition labels are read from the GEO series metadata by
+# scripts/run_case_study_applications.R.
 # Output: geo_cache/case_study/ (git-ignored)
 # ==============================================================================
 

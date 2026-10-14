@@ -1,0 +1,159 @@
+---
+title: "Downstream biology: from meta-signature to mechanism"
+author: "Md. Jubayer Hossain"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Downstream biology: from meta-signature to mechanism}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE,
+                      warning = FALSE, fig.width = 7, fig.height = 4.8,
+                      fig.align = "center")
+```
+
+A list of meta-DEGs is the starting point for biology, not the end. Module 9
+turns a meta-signature into testable hypotheses using public prior
+knowledge. It answers four questions:
+
+1. **Transcription factors.** Which regulators explain the signature?
+2. **Cell composition.** Is the signature caused by shifts in cell types?
+3. **Co-expression.** Which gene programs are shared by all cohorts?
+4. **Drug reversal.** Which compounds reverse the disease state?
+
+The demo is a meta-analysis of **pancreatic ductal adenocarcinoma (PDAC)
+versus adjacent non-tumour pancreas** in three independent GEO cohorts:
+
+| GEO | Tumour / non-tumour |
+|---|---|
+| GSE130688 | 15 / 15 |
+| GSE136569 | 5 / 5 |
+| GSE171485 | 6 / 6 |
+
+All counts are NCBI GEO-generated raw counts. Sample labels come from the
+GEO series metadata. The shipped file contains real inputs:
+
+- the **genome-wide** random-effects (REML) meta-analysis (29,679 genes);
+- the three cohorts, restricted to cell-type markers and the 1,500 most
+  variable genes, with their true library sizes;
+- the CollecTRI TF-target network (Mueller-Dott et al. 2023);
+- MCP-counter markers (Becht et al. 2016);
+- 200 LINCS L1000 drug signatures (Subramanian et al. 2017).
+
+The file is rebuilt by `scripts/fetch_case_study_data.R`,
+`scripts/run_case_study_applications.R` and
+`scripts/make_downstream_extdata.R` in the source repository.
+
+```{r load}
+library(metaXpress)
+ds <- readRDS(system.file("extdata", "case_study_downstream.rds",
+                          package = "metaXpress"))
+ds$meta_result
+nrow(ds$collectri)     # TF-target interactions
+length(ds$lincs)       # drug signatures in the demo subset
+```
+
+## 1. Transcription factor activity
+
+Which upstream regulators explain the PDAC tumour program? `mx_tf_activity()` regresses the signed meta z-score of every gene on each TF's target weights (decoupleR's ULM method):
+
+```{r tf-activity, fig.height=6}
+tf <- mx_tf_activity(ds$meta_result, ds$collectri, id_col = "symbol",
+                     min_size = 10)
+head(tf, 10)
+mx_downstream_plot(tf, top = 20)
+```
+
+These results use the genome-wide meta-signature. Of 552 TFs with at
+least 10 measured targets, 148 are significant (FDR < 0.05):
+
+- **NF-kB** (RELA, REL, RELB, NFKB1/2) and **AP-1** (JUN) dominate. This
+  is the inflammatory signalling of the PDAC tumour microenvironment.
+- **E2F1/E2F4, MYC and TP53 targets** are also activated. Proliferation
+  and p53-pathway target genes are up in tumour.
+- **SNAI2** and the HDACs HDAC1 and HDAC4 are the significantly repressed
+  regulators.
+
+## 2. Cell-type composition
+
+Could the signal be caused by tumours simply containing more immune or stromal cells? `mx_cell_composition()` scores each sample for each cell type, computes Hedges' g per cohort and pools them:
+
+```{r composition, fig.height=4}
+comp <- mx_cell_composition(ds$studies, ds$markers)
+comp[, c("cell_type", "meta_g", "padj", "i_squared",
+         grep("^g_", names(comp), value = TRUE))]
+mx_downstream_plot(comp)
+```
+
+Neutrophils, monocytic cells, myeloid dendritic cells and fibroblasts are
+significantly higher in tumour (FDR < 0.05) and homogeneous across cohorts
+(I² ≤ 27%). This is the desmoplastic, myeloid-rich stroma typical of PDAC.
+Lymphocyte scores are higher in two cohorts but not in GSE136569, so they
+are heterogeneous and not significant.
+
+The implication for interpretation: part of the gene-level signature
+reflects **tissue composition**, not tumour-cell-intrinsic regulation.
+Inflammatory and ECM genes in particular should be read with this in
+mind. CD8 T cells are dropped because only one of their markers was
+measured.
+
+## 3. Consensus co-expression modules
+
+`mx_coexpression_modules()` finds gene programs whose co-expression holds in **every** cohort (minimum correlation across studies), then tests each module's eigengene between tumour and normal:
+
+```{r coexpression, fig.height=4}
+net <- mx_coexpression_modules(ds$studies, n_genes = 1500, cut_height = 0.3,
+                               min_module_size = 20,
+                               meta_result = ds$meta_result)
+ms <- net$module_stats
+# Hub genes are Entrez IDs; show symbols stored in rowData
+sym <- setNames(SummarizedExperiment::rowData(ds$studies[[1]])$symbol,
+                rownames(ds$studies[[1]]))
+ms$hub_genes <- vapply(strsplit(ms$hub_genes, ", "),
+                       function(g) paste(sym[g], collapse = ", "), character(1))
+ms[, c("module", "n_genes", "meta_g", "padj", "pct_meta_up", "hub_genes")]
+mx_downstream_plot(net)
+```
+
+Two modules are significant and a third shows a trend:
+
+- **M2 (tumour epithelial, up).** The leading module (FDR = 1.5e-4) has
+  **MST1R** (RON) as its top hub, with TSPAN1, B3GNT3, ITGB4 and PLEK2.
+  77% of its genes are up-regulated meta-DEGs. MST1R is a recognised PDAC
+  oncogene and therapeutic target.
+- **M1 (stroma and ECM, up; FDR = 0.01).** Hubs include TPM4, PXDN and LAMA4,
+  consistent with the fibroblast shift above.
+- **M3 (acinar, down; FDR = 0.06).** PNLIPRP1, CELP, CUZD1 and CPA2 mark
+  the loss of normal exocrine tissue in tumour samples.
+
+The remaining modules capture immunoglobulin, ribosomal RNA, smooth muscle
+and islet (PCSK2, SLC30A8, ABCC8) programs.
+
+## 4. Drug signature reversal
+
+Which compounds push expression in the opposite direction to the tumour state? `mx_drug_connectivity()` scores each drug's up/down gene sets against the meta-ranking (negative = reverses the disease):
+
+```{r drugs, fig.height=6}
+drugs <- mx_drug_connectivity(ds$meta_result, ds$lincs, id_col = "symbol")
+head(drugs, 10)
+mx_downstream_plot(drugs, top = 20)
+```
+
+**Five of the top eight compounds inhibit the TGF-beta type I receptor
+ALK5:** SD-208, GW-788388, LY-2109761, LY-364947 and SB-525334. TGF-beta
+drives PDAC stromal desmoplasia. The EGFR inhibitor **erlotinib**, which
+is approved in combination with gemcitabine for advanced PDAC, ranks fifth.
+This is a useful positive control for the method.
+
+> **Caveats.** This demo ships only 200 of the 5,425 LINCS signatures, chosen from the full ranking, so the adjusted p-values here are not meaningful. Even in the full analysis the p-values assume independent genes and are anti-conservative, so use the score for ranking only. LINCS signatures come from cancer cell lines, so these hits are hypotheses for experimental follow-up. The full analysis is reproduced by `scripts/run_case_study_applications.R` in the package source repository.
+
+
+```{r session}
+sessionInfo()
+```

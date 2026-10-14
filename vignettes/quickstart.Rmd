@@ -1,141 +1,182 @@
 ---
-title: "metaXpress Quickstart"
+title: "Getting started with metaXpress"
 author: "Md. Jubayer Hossain"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
+    toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{metaXpress Quickstart}
+  %\VignetteIndexEntry{Getting started with metaXpress}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment  = "#>",
-  message  = FALSE,
-  warning  = FALSE,
-  eval     = FALSE,  # All chunks are illustrative; run interactively
-  purl     = FALSE   # Exclude from R CMD check vignette code extraction
-)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE,
+                      warning = FALSE, fig.width = 7, fig.height = 4.5,
+                      fig.align = "center")
+has_gsea <- requireNamespace("fgsea", quietly = TRUE) &&
+  requireNamespace("msigdbr", quietly = TRUE)
+has_airway <- requireNamespace("airway", quietly = TRUE) &&
+  requireNamespace("DESeq2", quietly = TRUE)
 ```
 
-# Overview
+metaXpress combines bulk RNA-seq differential expression (DE) results from
+several independent studies into one gene-level meta-analysis. Every code
+chunk in this vignette runs on **real public data** when the vignette is
+built.
 
-`metaXpress` provides an end-to-end pipeline for integrating multiple bulk
-RNA-seq studies into a unified meta-analysis. This guide walks through installation
-from GitHub and a minimal workflow for ingesting public data from NCBI GEO,
-performing quality control, differential expression analysis, meta-analysis,
-and visualization.
+The workflow has three steps:
 
-# Installation from GitHub
+1. **Per-study DE.** `mx_de()` runs DESeq2, edgeR or limma-voom separately
+   in each study, from raw counts.
+2. **Meta-analysis.** `mx_meta()` pools the per-study log2 fold changes
+   (random effects by default) or combines p-values.
+3. **Interpretation.** Heterogeneity, robustness, visualisation and pathway
+   analysis.
 
-`metaXpress` is currently available on GitHub and targets future submission to Bioconductor.
-
-You can install the package directly from GitHub using `remotes` or `pak`:
-
-```{r install-github, eval=FALSE}
-# Install remotes if needed
-if (!requireNamespace("remotes", quietly = TRUE))
-    install.packages("remotes")
-
-# Install metaXpress directly from GitHub
-remotes::install_github("hossainlab/metaXpress")
-```
-
-Alternatively, using `pak`:
-
-```{r install-pak, eval=FALSE}
-# install.packages("pak")
-pak::pkg_install("hossainlab/metaXpress")
-```
-
-Once installed, load the library:
-
-```{r load-package, eval=FALSE}
+```{r load}
 library(metaXpress)
 ```
 
-# Ingest Public Data from GEO
+# 1. Per-study differential expression
 
-You can fetch public RNA-seq count matrices and curated metadata directly from
-NCBI GEO using accession numbers:
+`mx_de()` takes a `metaXpressStudy`, which is a `SummarizedExperiment` with
+raw counts and a `condition` column. Any `SummarizedExperiment` converts
+with `mx_from_se()`.
 
-```{r load-data, eval=FALSE}
-# Fetch two bulk RNA-seq cohorts from GEO
-studies <- mx_fetch_geo(c("GSE53697", "GSE95587"))
-lapply(studies, show)
+The example uses the airway smooth-muscle experiment of Himes et al. (2014;
+GEO [GSE52778](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE52778)):
+4 donors, each treated with dexamethasone or left untreated.
+
+```{r airway, eval = has_airway}
+data("airway", package = "airway")
+study <- mx_from_se(airway, condition_col = "dex", accession = "GSE52778")
+study <- study[rowSums(SummarizedExperiment::assay(study)) >= 10, ]
+
+# Adjust for donor (paired design); fold changes are trt / untrt
+study <- mx_de(study, formula = ~ cell + condition,
+               contrast = c("trt", "untrt"))
+de <- study@de_result
+head(de[order(de$padj), c("gene_id", "log2FC", "lfcSE", "stat", "padj")])
 ```
 
-# Step 1 — QC Filtering
+Every DE engine returns the same columns. `log2FC` and `lfcSE` are on the
+log2 scale, `stat` is a signed z-score, and `n_case`/`n_control` record the
+group sizes used for weighting. Shrunken fold changes (`shrink = "apeglm"`)
+are added as a separate column, because inverse-variance meta-analysis needs
+the unshrunken estimate together with its standard error.
 
-Each study is evaluated against a 10-point quality control standard
-(replicate counts, depth, alignment rate, raw integer counts, etc.):
+# 2. Meta-analysis of four Alzheimer's disease cohorts
 
-```{r filter-studies, eval=FALSE}
-# Filter studies passing QC threshold (score >= 7)
-studies <- mx_filter_studies(studies, qc_threshold = 7)
-message("Studies passing QC: ", length(studies))
+The package ships per-study DESeq2 results from four **independent**
+Alzheimer's disease (AD) vs control post-mortem brain cohorts. All four
+were quantified by the same NCBI GEO RNA-seq pipeline, so alignment,
+annotation and counting are identical across them. The script that rebuilds
+the file from GEO is `system.file("scripts", "make_ad_brain_extdata.R",
+package = "metaXpress")`.
+
+```{r ad-data}
+ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+                          package = "metaXpress"))
+ad$studies
+de_results <- ad$de_results
 ```
 
-# Step 2 — Align Gene Spaces
+## Check that the studies agree in direction
 
-Identify the common gene universe across all cohorts:
+Before pooling, make sure that every study encodes AD vs control in the
+same orientation. A negative correlation would mean a flipped contrast.
 
-```{r align-genes, eval=FALSE}
-studies <- mx_align_genes(studies)
+```{r concordance}
+mx_study_concordance(de_results)
 ```
 
-# Step 3 — Per-Study Differential Expression
+The fold changes of three cohorts correlate strongly (r = 0.68 to 0.80).
+The small dorsolateral prefrontal cortex study (GSE53697, 6 vs 6) has only
+one significant gene of its own, so its concordance is weak but not
+negative.
 
-Run negative binomial GLMs on each study independently using DESeq2, edgeR, or limma-voom:
+## Pool the effects
 
-```{r de-analysis, eval=FALSE}
-studies <- mx_de_all(studies, method = "DESeq2", formula = ~ condition)
-mx_de_summary(studies)
+```{r meta}
+res <- mx_meta(de_results, method = "random_effects", tau_method = "REML")
+res
+mt  <- res@meta_table
+sig <- mt[mt$meta_padj <= 0.05, ]
+nrow(sig)
+head(mt[order(mt$meta_pvalue),
+        c("gene_id", "meta_log2FC", "ci_lower", "ci_upper",
+          "pi_lower", "pi_upper", "meta_padj", "i_squared")], 10)
 ```
 
-# Step 4 — Meta-Analysis
+For every gene the table reports:
 
-Combine per-study effect sizes and standard errors using the DerSimonian-Laird Random Effects Model:
+- the pooled log2 fold change with its 95% confidence interval;
+- tau² and I², which measure between-study heterogeneity;
+- the 95% **prediction interval** (`pi_lower`, `pi_upper`), the range in
+  which the effect in a new cohort is expected to fall.
 
-```{r meta-analysis, eval=FALSE}
-de_results <- lapply(studies, function(s) s@de_result)
-meta_result <- mx_meta(de_results, method = "random_effects")
-meta_result
+When the prediction interval excludes zero, the effect is reproducible
+across settings and not only on average.
+
+```{r volcano}
+mx_volcano(res, padj_threshold = 0.05, lfc_threshold = 0.5, label_top = 12)
 ```
 
-# Step 5 — Visualise
+## Established AD genes
 
-Generate publication-grade plots:
+The neurosecretory protein VGF and the astrocyte marker GFAP are
+among the most replicated AD brain changes:
 
-```{r volcano, fig.width=7, fig.height=5, eval=FALSE}
-# Volcano plot of meta-analysis results
-mx_volcano(meta_result, label_top = 10)
+```{r forest, fig.height = 3.2}
+mx_forest("VGF", de_results, res)
+mx_forest("GFAP", de_results, res)
 ```
 
-```{r forest, fig.width=6, fig.height=4, eval=FALSE}
-# Multi-study forest plot for the top gene
-top_gene <- meta_result@meta_table$gene_id[
-  which.min(meta_result@meta_table$meta_padj)]
-mx_forest(top_gene, de_results, meta_result)
+VGF is down-regulated in every cohort, but its I² is high and its
+prediction interval crosses zero: the size of the loss varies by brain
+region. GFAP is homogeneous (I² = 0) and its prediction interval excludes
+zero.
+
+## How robust is the signature?
+
+`mx_sensitivity()` repeats the analysis once without each study in turn.
+
+```{r loo}
+loo <- mx_sensitivity(de_results, method = "random_effects")
+vapply(loo, function(r) sum(r@meta_table$meta_padj <= 0.05), integer(1))
+rob <- attr(loo, "robustness")
+table(robust = rob$frac_loo_sig[rob$full_padj <= 0.05] == 1)
 ```
 
-```{r heterogeneity, fig.width=6, fig.height=4, eval=FALSE}
-# Between-study heterogeneity distribution
-mx_heterogeneity_plot(meta_result)
+Dropping the large fusiform-gyrus cohort (GSE125583, n = 288) removes most
+of the significant genes. Report the subset that survives every omission
+as the robust core signature.
+
+# 3. Pathways
+
+GSEA ranks genes by the signed meta-analysis z-score (fgsea, MSigDB
+Hallmarks):
+
+```{r gsea, eval = has_gsea}
+res <- mx_pathway_meta(res, db = "Hallmarks")
+head(res@pathway_result[, c("pathway_id", "NES", "padj")], 8)
 ```
 
-# Step 6 — Export Results
+Oxidative phosphorylation is down-regulated, and inflammatory, TNF/NF-kB
+and IL6/JAK/STAT3 signalling are up-regulated. This matches the
+mitochondrial and neuroinflammatory components of AD pathology.
 
-```{r export, eval=FALSE}
-mx_export(meta_result, format = "csv", output_dir = tempdir())
-```
+# Next steps
 
-# Session Info
+- `vignette("case_study", package = "metaXpress")`: the full AD analysis,
+  covering method choice, heterogeneity, the Hartung-Knapp adjustment,
+  cross-study pathway meta-analysis and reporting.
+- `vignette("full_workflow", package = "metaXpress")`: starting from GEO
+  accessions with `mx_fetch_geo()`.
 
-```{r session-info, eval=FALSE}
-mx_session_info()$session_info
+```{r session}
+sessionInfo()
 ```

@@ -1,7 +1,8 @@
 # ==============================================================================
 # metaXpress Case Study, Part 2: Downstream Biology Applications
 # ==============================================================================
-# Rebuilds the pan-cancer meta-analysis (CRC, PDAC, ccRCC vs normal tissue)
+# Rebuilds a three-cohort pancreatic ductal adenocarcinoma (PDAC) meta-analysis
+# (tumour vs adjacent non-tumour pancreas; GSE130688, GSE136569, GSE171485)
 # from NCBI GEO counts, then applies Module 9:
 #   A. Transcription factor activity      (CollecTRI regulons)
 #   B. Cell-type composition shifts       (MCP-counter markers)
@@ -33,16 +34,29 @@ save_plot <- function(p, name, width = 7, height = 6) {
 # ------------------------------------------------------------------------------
 message("\n== 1. Building studies from NCBI GEO counts ==")
 
-labels <- readRDS("inst/extdata/case_study_subset.rds")
-cohorts <- c(GSE130688 = "CRC", GSE136569 = "PDAC", GSE171485 = "ccRCC")
+# Tumour / adjacent-normal labels straight from the GEO series metadata
+cohorts <- c(GSE130688 = "PDAC", GSE136569 = "PDAC", GSE171485 = "PDAC")
+label_col <- c(GSE130688 = "source_name_ch1",   # "pancreas_tumor" / "_Non-tumor"
+               GSE136569 = "tissue:ch1",        # "pancreatic cancer" / "normal ..."
+               GSE171485 = "pathologic types:ch1")  # "Cancer" / "Adjacent"
+geo_labels <- function(acc) {
+  gse <- GEOquery::getGEO(acc, destdir = in_dir, GSEMatrix = TRUE)
+  pd  <- do.call(rbind, lapply(gse, function(e)
+    Biobase::pData(e)[, c("geo_accession", label_col[[acc]])]))
+  raw <- tolower(pd[[2]])
+  data.frame(sample_id = pd$geo_accession,
+             condition = ifelse(grepl("non|normal|adjacent", raw),
+                                "normal", "tumor"),
+             geo_label = pd[[2]])
+}
 
 studies <- lapply(names(cohorts), function(acc) {
   counts <- read.delim(file.path(in_dir, paste0(acc, "_raw_counts.tsv.gz")),
                        row.names = 1, check.names = FALSE)
-  meta <- as.data.frame(SummarizedExperiment::colData(labels[[acc]]))
+  meta <- geo_labels(acc)
+  meta <- meta[meta$sample_id %in% colnames(counts), ]
   counts <- as.matrix(counts[, meta$sample_id])
-  meta$condition <- ifelse(meta$condition == "normal", "normal", "tumor")
-  mx_qc_study(metaXpressStudy(counts, meta, accession = acc))
+  suppressWarnings(mx_qc_study(metaXpressStudy(counts, meta, accession = acc)))
 })
 names(studies) <- paste(names(cohorts), cohorts, sep = "_")
 
@@ -62,13 +76,14 @@ symbol_of <- setNames(gene_info$Symbol, gene_info$GeneID)
 # ------------------------------------------------------------------------------
 message("\n== 2. Per-study DESeq2 + random-effects meta-analysis ==")
 
-studies <- mx_filter_studies(studies, qc_threshold = 7)
+studies <- mx_filter_studies(studies)
 studies <- mx_align_genes(studies)
-studies <- mx_de_all(studies, method = "DESeq2")
+studies <- mx_de_all(studies, method = "DESeq2",
+                     contrast = c("tumor", "normal"))
 de_results <- lapply(studies, function(s) s@de_result)
 
-meta_res <- mx_meta(de_results, method = "random_effects", min_studies = 3,
-                    n_samples = vapply(studies, ncol, integer(1)))
+meta_res <- mx_meta(de_results, method = "random_effects",
+                    tau_method = "REML", min_studies = 3)
 mt <- meta_res@meta_table
 mt$symbol <- unname(symbol_of[mt$gene_id])
 meta_res@meta_table <- mt

@@ -4,32 +4,28 @@
 \alias{mx_pathway_dedup}
 \title{Remove redundant pathways}
 \usage{
-mx_pathway_dedup(pathway_results, jaccard_threshold = 0.5)
+mx_pathway_dedup(pathway_results, gene_sets = NULL, jaccard_threshold = 0.5)
 }
 \arguments{
-\item{pathway_results}{A \code{data.frame} from \code{\link{mx_pathway_meta}}
-or a list thereof.}
+\item{pathway_results}{A \code{data.frame} with \code{pathway_id} and a
+p-value column (\code{padj} or \code{meta_padj}).}
 
-\item{jaccard_threshold}{Numeric. Jaccard similarity threshold above which
-two pathways are considered redundant. Default: \code{0.5}.}
+\item{gene_sets}{The named list of gene sets used for the enrichment.
+When \code{NULL}, results are returned unchanged with a warning.}
+
+\item{jaccard_threshold}{Numeric. Default: \code{0.5}.}
 }
 \value{
-A \code{data.frame} with redundant pathways removed.
+The filtered \code{data.frame}, ordered by significance.
 }
 \description{
-Reduces pathway result sets by removing pathways with high gene set overlap,
-retaining the most significant representative from each cluster of similar
-pathways.
+Greedy redundancy filter: pathways are visited from most to least
+significant and a pathway is dropped when its gene-set Jaccard similarity
+with an already retained pathway is at least \code{jaccard_threshold}.
 }
 \examples{
-\dontrun{
-  result <- mx_pathway_dedup(result@pathway_result)
-}
+sets <- list(A = letters[1:10], B = letters[1:9], C = letters[15:25])
+res  <- data.frame(pathway_id = c("A", "B", "C"), padj = c(0.01, 0.02, 0.03))
+mx_pathway_dedup(res, gene_sets = sets)
 
-}
-\references{
-Gu, Z. & Huebschmann, D. (2023) simplifyEnrichment: a Bioconductor package
-for clustering and visualizing functional enrichment results.
-\emph{Genomics, Proteomics & Bioinformatics}, \strong{21}(1), 190--202.
-\doi{10.1016/j.gpb.2022.04.008}
 }

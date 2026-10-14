@@ -92,4 +92,4 @@ See `metaXpress_package_plan.md` for the full phased plan. Current phase targets
 
 ## Validation Reference
 
-Use the Alzheimer's dataset from Heberle et al. (2025) as the primary benchmark for correctness. The QC checklist (10 criteria) in `mx_qc_study()` is directly derived from that paper.
+Statistical correctness is validated against reference implementations in tests: `mx_meta()` against `metafor::rma()` (DL/REML/PM, HKSJ) and `mx_de()` against native DESeq2 on `airway` (GSE52778). Heberle et al. (2024, bioRxiv, doi:10.1101/2024.11.07.622520) is a systematic review of AD brain RNA-seq whose 10-category tool grades study *reporting* quality; the numeric thresholds in `mx_qc_study()` are metaXpress defaults, not taken from that paper. Never cite a reference without verifying it exists (PubMed/DOI).

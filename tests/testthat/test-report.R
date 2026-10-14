@@ -44,3 +44,30 @@ test_that("mx_export errors on non-metaXpressResult input", {
 test_that("mx_report errors when meta_result is not metaXpressResult", {
   expect_error(mx_report("not_result", list(), list()), "metaXpressResult")
 })
+
+test_that("mx_report renders an HTML report from real data", {
+  skip_on_cran()
+  skip_if_not(rmarkdown::pandoc_available())
+  ad  <- readRDS(system.file("extdata", "ad_brain_de.rds",
+                             package = "metaXpress"))
+  de  <- lapply(ad$de_results, function(d) d[d$gene_id %in%
+                                               ad$de_results[[1]]$gene_id[1:300], ])
+  res <- suppressMessages(mx_meta(de))
+  out <- suppressMessages(mx_report(res, de, output_dir = tempdir(),
+                                    output_file = "mx_test_report"))
+  expect_true(file.exists(out))
+  expect_gt(file.size(out), 10000)
+})
+
+test_that("shipped AD brain data has the documented structure", {
+  ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+                            package = "metaXpress"))
+  expect_named(ad, c("de_results", "studies", "provenance"))
+  expect_equal(names(ad$de_results),
+               c("GSE125583", "GSE104704", "GSE53697", "GSE173955"))
+  for (d in ad$de_results)
+    expect_true(all(c("gene_id", "log2FC", "lfcSE", "stat", "pvalue", "padj",
+                      "n_case", "n_control") %in% names(d)))
+  cc <- mx_study_concordance(ad$de_results)
+  expect_true(all(cc$correlation > 0))
+})

@@ -45,6 +45,7 @@ make_test_de_results <- function(n_genes = 100, n_studies = 3, seed = 42) {
       padj     = p.adjust(pv, method = "BH"),
       baseMean = abs(rnorm(n_genes, mean = 200, sd = 50)),
       lfcSE    = abs(rnorm(n_genes, mean = 0.3, sd = 0.1)),
+      n_case   = 4L, n_control = 4L,
       method   = "DESeq2",
       stringsAsFactors = FALSE
     )

@@ -1,215 +1,361 @@
 ---
-title: "Public GEO Case Study: Pan-Cancer Meta-Analysis"
+title: "Case study: Alzheimer's disease brain meta-analysis"
 author: "Md. Jubayer Hossain"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: true
+    toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Public GEO Case Study: Pan-Cancer Meta-Analysis}
+  %\VignetteIndexEntry{Case study: Alzheimer's disease brain meta-analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment  = "#>",
-  message  = FALSE,
-  warning  = FALSE,
-  eval     = FALSE,
-  purl     = FALSE
-)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE,
+                      warning = FALSE, fig.width = 7, fig.height = 4.5,
+                      fig.align = "center")
+has_gsea <- requireNamespace("fgsea", quietly = TRUE) &&
+  requireNamespace("msigdbr", quietly = TRUE)
 ```
 
-# Executive Summary
+This vignette is a complete, executable meta-analysis of published bulk
+RNA-seq data. It walks through the decisions a reviewer will ask about:
+study selection, independence, model choice, heterogeneity, robustness and
+pathway inference. Every number below is computed when the vignette is
+built.
 
-This case study benchmarks and validates the **`metaXpress`** pipeline on real-world clinical transcriptomics. We integrated **three independent, publicly available bulk RNA-seq cohorts from NCBI Gene Expression Omnibus (GEO)** comparing solid epithelial tumors against matched normal tissues:
-
-1. **Colorectal Adenocarcinoma (CRC):** [GSE130688](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE130688) ($n = 30$ samples)
-2. **Pancreatic Ductal Adenocarcinoma (PDAC):** [GSE136569](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE136569) ($n = 10$ samples)
-3. **Clear Cell Renal Cell Carcinoma (ccRCC):** [GSE171485](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE171485) ($n = 12$ samples)
-
-Across **52 patient samples** and **39,376 aligned genes**, `metaXpress` rescued statistical power from small-sample cohorts, identifying **558 robust, shared Pan-Cancer Meta-DEGs** ($\text{FDR} < 0.05, |\log_2\text{FC}| \ge 1.0$) with 100% directional concordance and minimal heterogeneity ($I^2 = 0.0\%$). Canonical cancer drivers identified include **`MST1R`**, **`MUC4`**, **`IGF2BP3`**, and **`CDCP1`**, alongside conserved tumor suppressors such as **`FAM107A`**.
-
-Downstream analyses (Module 9) go further. They show coordinated **E2F and NF-κB transcription factor activation**, find that **MST1R and CDCP1 are hubs of a 398-gene co-expression module** conserved in all three cohorts, find no consistent immune/stromal composition shift, and rank **TGF-β receptor, CDK, MEK and MDM2 inhibitors** as the top LINCS compounds that reverse the shared tumour signature.
-
----
-
-# Cohorts & Quality Control (QC)
-
-Each cohort was evaluated using `metaXpress::mx_qc_study()`, scoring against 10 rigorous QC metrics:
-
-| GEO Accession | Disease / Malignancy | Platform | Normal ($n$) | Tumor ($n$) | Total ($n$) | Aligned Genes | Median Library Depth | QC Score |
-|---|---|---|---|---|---|---|---|---|
-| **GSE130688** | Colorectal Adenocarcinoma | Illumina HiSeq 2500 | 15 | 15 | 30 | 39,376 | 42.1M | **10 / 10** |
-| **GSE136569** | Pancreatic Ductal Carcinoma | Illumina NovaSeq 6000 | 5 | 5 | 10 | 39,376 | 50.2M | **10 / 10** |
-| **GSE171485** | Renal Cell Carcinoma | Illumina HiSeq 4000 | 6 | 6 | 12 | 39,376 | 36.8M | **10 / 10** |
-
-```{r load-pkg, eval=FALSE}
+```{r pkgs}
 library(metaXpress)
-
-# Ingest and assess quality metrics for public cohorts
-studies <- mx_fetch_geo(c("GSE130688", "GSE136569", "GSE171485"), count_type = "raw")
-studies <- mx_filter_studies(studies, qc_threshold = 7)
-mx_study_overview(studies)
 ```
 
-<img src="figures/case_study_study_overview.png" alt="Study Characteristics Overview" width="100%" />
+# 1. Question and study selection
 
----
+**Question:** which genes are consistently differentially expressed in
+Alzheimer's disease (AD) brain tissue compared with age-matched controls,
+across brain regions and cohorts?
 
-# Per-Study Differential Expression
+The candidates were human post-mortem brain bulk RNA-seq series in GEO with
+an AD vs non-demented control design and raw counts from the NCBI GEO
+RNA-seq pipeline. These four were **included**:
 
-Independent negative binomial Generalized Linear Models were fit for each study using **DESeq2** (`mx_de_all`), followed by multi-study pooling:
+| GEO | Region | AD | Control | Notes |
+|---|---|---:|---:|---|
+| [GSE125583](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE125583) | Fusiform gyrus | 218 | 70 | Adjusted for sex |
+| [GSE104704](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE104704) | Lateral temporal lobe | 12 | 10 | Aged controls only; young controls excluded |
+| [GSE53697](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE53697) | Dorsolateral PFC | 6 | 6 | NCBI processed 12 of 17 libraries |
+| [GSE173955](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE173955) | Hippocampus | 8 | 10 | |
 
-| Cohort | Total DEGs Tested | Significant Up | Significant Down | Total Significant ($\text{FDR} < 0.05$) |
-|---|---|---|---|---|
-| **GSE130688 (CRC)** | 39,376 | 2,345 | 1,901 | **4,246** |
-| **GSE136569 (PDAC)** | 39,376 | 140 | 6 | **146** |
-| **GSE171485 (ccRCC)** | 39,376 | 0 | 18 | **18** |
-| **metaXpress Meta-Analysis** | **29,560** | **377** | **181** | **558** |
+These two were **excluded** because their donors overlap with included
+studies, which would count the same individuals twice:
 
-### Statistical Power Amplification
+- **GSE95587** (fusiform gyrus): 89 of its 117 case IDs also appear in
+  GSE125583.
+- **GSE159699** (lateral temporal lobe): the same brain-bank donors as
+  GSE104704.
 
-Small cohorts (such as `GSE171485`, $n = 12$) often suffer from low statistical power after genome-wide FDR correction. By pooling effect sizes and standard errors with the **DerSimonian-Laird Random Effects Model** (`mx_meta`), `metaXpress` amplified signal-to-noise ratio and uncovered shared dysregulation invisible in underpowered individual cohorts.
+Meta-analysis assumes the studies are independent. Checking donor and
+case identifiers across series from the same lab or brain bank is
+essential.
 
----
+## How the per-study results were produced
 
-# Meta-Analysis Findings
+The per-study DESeq2 results are shipped with the package. They were built
+by `inst/scripts/make_ad_brain_extdata.R`, which runs:
 
-## Conserved Pan-Cancer Oncogenic Drivers ($\text{FDR} < 0.05, \log_2\text{FC} \ge 1.0$)
-
-| Gene Symbol | Meta $\log_2\text{FC}$ | Meta Adjusted $p$-value | $I^2$ Heterogeneity | Concordance | Known Oncogenic Function |
-|---|---|---|---|---|---|
-| **MST1R** (RON) | **+2.14** | $5.50 \times 10^{-7}$ | 0.0% | **100%** | Receptor tyrosine kinase driving cell motility, invasion, and EMT. |
-| **MUC4** | **+3.21** | $5.50 \times 10^{-7}$ | 0.0% | **100%** | Mucinous glycoprotein promoting tumor proliferation and anti-apoptosis. |
-| **IGF2BP3** (IMP3) | **+3.00** | $5.50 \times 10^{-7}$ | 0.0% | **100%** | Oncofetal RNA-binding protein promoting translation of proliferative transcripts. |
-| **CDCP1** | **+1.63** | $1.02 \times 10^{-5}$ | 0.0% | **100%** | Transmembrane glycoprotein mediating tumor invasion and metastasis. |
-| **XDH** | **+2.72** | $1.02 \times 10^{-5}$ | 0.0% | **100%** | Xanthine dehydrogenase driving reactive oxygen species in tumor metabolism. |
-
-## Conserved Pan-Cancer Down-regulated Genes ($\text{FDR} < 0.05, \log_2\text{FC} \le -1.0$)
-
-| Gene Symbol | Meta $\log_2\text{FC}$ | Meta Adjusted $p$-value | $I^2$ Heterogeneity | Concordance | Known Physiological Function |
-|---|---|---|---|---|---|
-| **FAM107A** (DRR1) | **-1.94** | $2.39 \times 10^{-5}$ | 0.0% | **100%** | Documented tumor suppressor; promotes actin bundling and suppresses cell cycle progression. |
-| **BDKRB1** | **-2.00** | $2.96 \times 10^{-5}$ | 0.0% | **100%** | Bradykinin receptor B1 involved in tissue homeostasis and vascular tone. |
-| **SYPL2** | **-1.54** | $5.19 \times 10^{-5}$ | 2.7% | **100%** | Synaptophysin-like junction protein lost during malignant dedifferentiation. |
-| **TTPA** | **-2.32** | $2.18 \times 10^{-4}$ | 0.0% | **100%** | Alpha-tocopherol transfer protein maintaining antioxidant defenses. |
-
----
-
-# Visualizations
-
-## Meta-Analysis Volcano Plot
-
-```{r volcano-code, eval=FALSE}
-mx_volcano(meta_result, padj_threshold = 0.05, lfc_threshold = 1.0, label_top = 15)
+```{r build, eval = FALSE}
+studies <- mx_fetch_geo(
+  c("GSE125583", "GSE104704", "GSE53697", "GSE173955"),
+  condition_col = c(GSE125583 = "diagnosis:ch1",
+                    GSE104704 = "study group:ch1",
+                    GSE53697  = "disease status:ch1",
+                    GSE173955 = "title"))
+# ... keep AD and control samples, protein-coding genes,
+#     >= 10 counts in >= (smaller group size) samples ...
+studies <- mx_de_all(
+  studies, method = "DESeq2",
+  formula  = list(~ sex + condition, ~ condition, ~ condition, ~ condition),
+  contrast = list(c("Alzheimer's disease", "control"),
+                  c("Aged, diseased", "Old"),
+                  c("advanced Alzheimer's Disease", "control"),
+                  c("Alzheimer's Disease", "non-Alzheimer's Disease")))
 ```
 
-<img src="figures/case_study_volcano_plot.png" alt="Pan-Cancer Meta-Analysis Volcano Plot" width="100%" />
+Three choices in this code matter:
 
-## Between-Study Heterogeneity ($I^2$) Distribution
+- `mx_fetch_geo()` downloads **NCBI-generated raw counts**: one HISAT2 and
+  featureCounts pipeline on GRCh38 for every study. This removes the
+  aligner and annotation differences that usually add technical
+  heterogeneity between published count tables.
+- `contrast` is set per study because GEO labels differ ("control",
+  "Old", "non-Alzheimer's Disease"). Every fold change is AD / control.
+- Batch correction is **not** applied. Each study is analysed separately,
+  so between-study batch effects never enter the fold changes.
 
-```{r het-code, eval=FALSE}
-mx_heterogeneity_plot(meta_result)
+```{r data}
+ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+                          package = "metaXpress"))
+de <- ad$de_results
+ad$studies
+str(ad$provenance)
 ```
 
-<img src="figures/case_study_heterogeneity_plot.png" alt="Heterogeneity Distribution" width="100%" />
+# 2. Pre-pooling checks
 
-## Multi-Cohort Forest Plots
+## Direction and concordance
 
-Individual effect sizes with 95% Confidence Intervals alongside the summary DerSimonian-Laird Random Effects pooled diamond:
-
-### Top Up-regulated Marker (`MST1R` / `C12orf36`)
-
-<img src="figures/case_study_forest_top_up.png" alt="Forest Plot Top Up-regulated" width="100%" />
-
-### Top Down-regulated Marker (`FAM107A` / `C8orf34`)
-
-<img src="figures/case_study_forest_top_down.png" alt="Forest Plot Top Down-regulated" width="100%" />
-
----
-
-# Downstream Biology Applications
-
-The meta-signature (29,560 genes, 558 meta-DEGs) is a starting point, not an endpoint. Module 9 of `metaXpress` turns it into testable biology with four analyses. Each takes a public prior-knowledge resource as a plain R object, so the same code works with any regulon, marker set or drug library.
-
-| Analysis | Function | Resource | Question answered |
-|---|---|---|---|
-| A. TF activity | `mx_tf_activity()` | CollecTRI regulons (OmniPath) | Which upstream regulators drive the shared tumour program? |
-| B. Cell composition | `mx_cell_composition()` | MCP-counter markers | Is the signal explained by shifts in immune/stromal content? |
-| C. Co-expression | `mx_coexpression_modules()` | none (data-driven) | Which gene programs are co-regulated in *every* cohort? |
-| D. Drug reversal | `mx_drug_connectivity()` | LINCS L1000 consensus signatures | Which compounds push expression opposite to the tumour state? |
-
-```r
-tf    <- mx_tf_activity(meta_res, collectri, id_col = "symbol", min_size = 10)
-comp  <- mx_cell_composition(studies, mcp_markers)
-net   <- mx_coexpression_modules(studies, n_genes = 3000, cut_height = 0.3,
-                                 meta_result = meta_res)
-sigs  <- mx_read_signatures("LINCS_L1000_Chem_Pert_Consensus_Sigs.txt")
-drugs <- mx_drug_connectivity(meta_res, sigs, id_col = "symbol")
-mx_downstream_plot(tf)
+```{r concordance}
+mx_study_concordance(de)
 ```
 
-<img src="figures/app_downstream_panel.png" alt="Downstream biology applications" width="100%" />
+No study pair is negatively correlated, so the contrasts are oriented
+consistently. Concordance between the three larger cohorts is high. The
+dorsolateral PFC study (6 vs 6) correlates weakly with the others, which
+is expected for a small study of a less affected region.
 
-## A. Transcription factor activity
+## Gene coverage
 
-Of 548 TFs with at least 10 measured CollecTRI targets, **65 were significantly altered** (FDR < 0.05): 62 activated and 3 repressed in tumours.
+Genes removed by the expression filter in a study are treated as
+*not measured* in that study, not as zero effects. `mx_meta()` pools each
+gene over the studies that measured it, and `n_studies` records how many
+that was.
 
-* **Proliferation:** the E2F family dominates (E2F1 t = 6.9, FDR = 3.4 × 10⁻⁹, plus E2F2, E2F3 and E2F4). This is consistent with cell-cycle deregulation shared by all three carcinomas.
-* **Inflammation:** NF-κB (RELA, REL, RELB and the NFKB1–RELA complex) and AP-1 (JUN) are activated. This points to a shared inflammatory-signalling component.
-* **Repressed:** SNAI2 (t = −4.7, FDR = 3.6 × 10⁻⁵), CEBPA and HDAC4 are the significantly repressed regulators. MYC (FDR = 0.18) and TP53 (FDR = 0.57) were *not* consistently altered across cohorts.
-
-## B. Cell-type composition
-
-None of the nine MCP-counter populations shifted significantly after FDR correction. (CD8 T cells were dropped because only one marker was measured.) Pooled effects were positive for all populations, but the per-study effects show that this comes from the CRC cohort alone (Hedges' g ≈ 1.0–1.6). PDAC and ccRCC are close to zero, and heterogeneity is moderate (I² up to 62%). So **the shared meta-DEGs are unlikely to be an artefact of a consistent immune or stromal infiltration change**, which supports them as tumour-intrinsic.
-
-## C. Consensus co-expression modules
-
-Using the 3,000 most variable genes and a conservative minimum-correlation consensus (a link must hold in all three cohorts), we found 9 modules. Two have significantly higher eigengenes in tumours:
-
-| Module | Genes | Pooled g | FDR | I² | % meta-DEGs up | Hub genes |
-|---|---|---|---|---|---|---|
-| **M2** | 398 | **+1.50** | 0.043 | 66% | **29.1%** | **MST1R**, PLEK2, TSPAN1, B3GNT3, **CDCP1** |
-| **M7** | 27 | **+1.07** | 0.003 | 0% | 14.8% | USH1C, ONECUT2, HSD17B2, SLC5A1, PRR15L |
-
-**M2 independently recovers the top meta-analysis drivers.** MST1R and CDCP1 were found gene-by-gene in *Meta-Analysis Findings*, and here they emerge as the most connected hubs of a 398-gene invasive-epithelial program that is co-regulated in every cohort. The remaining modules mostly capture tissue-of-origin programs and do not differ consistently between tumour and normal: pancreatic acinar (M3: CELP, PNLIPRP1), islet/neuroendocrine (M6: NEUROD1, PCSK2), lymphoid (M8: CCL19, CD79B) and endothelial/smooth muscle (M9: CD34, ITGA7).
-
-## D. Drug signature reversal
-
-We scored 5,425 LINCS L1000 consensus chemical signatures for their ability to reverse the meta-signature (negative score: the drug lowers tumour-up genes and raises tumour-down genes). The top of the ranking converges on a small number of mechanisms:
-
-| Rank | Compound | Reversal score | Mechanism |
-|---|---|---|---|
-| 1 | SD-208 | −11.8 | TGF-β receptor I (ALK5) inhibitor |
-| 2 | R-547 | −10.9 | CDK1/2/4 inhibitor |
-| 3 | GW-788388 | −9.8 | TGF-β receptor I (ALK5) inhibitor |
-| 5 | LY-2109761 | −9.0 | TGF-β receptor I/II inhibitor |
-| 6 | C646 | −9.0 | p300/CBP acetyltransferase inhibitor |
-| 9 | TAK-733 | −8.7 | MEK inhibitor |
-| 10, 12 | SAR405838, RG7112 | −8.2, −8.0 | MDM2 inhibitors (p53 reactivation) |
-
-**Three of the top five compounds are TGF-β receptor inhibitors.** The other top hits act on CDK-driven proliferation and on MEK and MDM2–p53 signalling. These match the E2F activity (A) and the invasive M2 module (C), so the drug ranking agrees with the regulator-level evidence.
-
-> **Interpretation note.** Reversal p-values assume independent genes and are strongly anti-conservative: 1,035 compounds reach FDR < 0.05. Use the score as a *ranking* for prioritisation. L1000 signatures come from cancer cell lines, so the hits are hypotheses that need experimental validation.
-
-Full tables: `app_tf_activity.csv`, `app_cell_composition.csv`, `app_coexpression_modules.csv`, `app_coexpression_module_stats.csv`, `app_drug_connectivity.csv`.
-
----
-
-# Reproducibility
-
-The complete case study can be reproduced end-to-end using:
-
-```bash
-Rscript scripts/run_scientific_case_study.R
-
-# Downstream biology applications
-Rscript scripts/fetch_case_study_data.R
-Rscript scripts/run_case_study_applications.R
+```{r coverage}
+cov <- mx_missing_summary(de)
+colSums(cov)                              # genes measured per study
+table(studies_measured = rowSums(cov))    # genes by number of studies
 ```
 
-The resulting gene-level dataset is exported as CSV:
-`case_study_results/pan_cancer_meta_results.csv` (3.4 MB, 29,560 genes).
+Imputing missing fold changes from the other studies is circular: it
+inflates the apparent number of studies and deflates I². It is not used
+here.
+
+# 3. Choosing the model
+
+The aim is to estimate the average AD effect across regions and cohorts,
+which are expected to differ. That makes a **random-effects** model the
+appropriate a-priori choice. tau² is estimated by REML, which is less
+biased than DerSimonian-Laird (Veroniki et al. 2016; Langan et al. 2019).
+
+```{r meta}
+res <- mx_meta(de, method = "random_effects", tau_method = "REML")
+res
+mt <- res@meta_table
+```
+
+Other methods answer different questions, so they are not alternatives to
+try until something comes out significant:
+
+```{r compare}
+n_sig <- function(...) sum(mx_meta(de, ...)@meta_table$meta_padj <= 0.05)
+data.frame(
+  method   = c("random_effects (REML)", "fixed_effects",
+               "inverse_normal (sqrt n)", "fisher (directional)",
+               "rop (r = 2 of 4)", "maxp (all 4)", "awmeta"),
+  question = c("average effect across populations",
+               "one common effect (studies are replicates)",
+               "signed evidence, weighted by sample size",
+               "same-direction effect in at least one study",
+               "DE in at least 2 studies",
+               "DE in every study",
+               "AW-Fisher: DE in an adaptively selected subset"),
+  n_FDR05  = c(n_sig(method = "random_effects"),
+               n_sig(method = "fixed_effects"),
+               n_sig(method = "inverse_normal"),
+               n_sig(method = "fisher"),
+               n_sig(method = "rop", r = 2),
+               n_sig(method = "maxp"),
+               if (requireNamespace("AWFisher", quietly = TRUE))
+                 n_sig(method = "awmeta") else NA))
+```
+
+The fixed-effect and p-value methods call more genes because they ignore
+between-study variance. With one cohort of n = 288, they mostly reflect
+that cohort.
+
+## A note on the Hartung-Knapp-Sidik-Jonkman (HKSJ) adjustment
+
+HKSJ gives better-calibrated confidence intervals when few studies are
+pooled, and is widely recommended for clinical meta-analysis
+(IntHout et al. 2014). With k = 4 studies, though, it uses a t
+distribution with 3 degrees of freedom:
+
+```{r hksj}
+hk <- mx_meta(de, tau_method = "REML", hksj = TRUE)@meta_table
+c(min_p = min(hk$meta_pvalue),
+  BH_threshold_for_one_hit = 0.05 / nrow(hk),
+  n_FDR05 = sum(hk$meta_padj <= 0.05))
+```
+
+Even a gene with perfectly consistent effects reaches only p ≈ 1e-5. That
+cannot pass genome-wide FDR control over about 16,000 genes. With few
+studies, use HKSJ for per-gene confidence intervals of prioritised genes,
+not for genome-wide discovery.
+
+# 4. Results
+
+```{r summary}
+sig <- mt$meta_padj <= 0.05
+c(tested = nrow(mt), significant = sum(sig),
+  up = sum(sig & mt$meta_log2FC > 0), down = sum(sig & mt$meta_log2FC < 0),
+  pi_excludes_zero = sum(sig & (mt$pi_lower > 0 | mt$pi_upper < 0),
+                         na.rm = TRUE))
+```
+
+The last number counts significant genes whose 95% **prediction interval**
+excludes zero. For these genes, a new cohort is expected to show the same
+direction of change. They are the most transferable part of the signature.
+
+```{r volcano}
+mx_volcano(res, padj_threshold = 0.05, lfc_threshold = 0.5, label_top = 15)
+```
+
+```{r heterogeneity}
+mx_heterogeneity_plot(res)
+```
+
+## Known AD biology
+
+```{r known}
+known <- c("GFAP", "C4B", "CD44", "VIP", "VGF", "BDNF", "CRH", "NPTX2",
+           "SST", "PVALB")
+k_tab <- mt[match(known, mt$gene_id),
+            c("gene_id", "meta_log2FC", "ci_lower", "ci_upper", "meta_padj",
+              "i_squared", "pi_lower", "pi_upper")]
+k_tab[, -1] <- signif(k_tab[, -1], 3)
+k_tab
+```
+
+The meta-analysis recovers the expected pattern:
+
+- **Up:** reactive glial and complement genes (GFAP, C4B, CD44).
+- **Down:** neuronal and neuropeptide genes (VIP, VGF, BDNF, CRH, NPTX2).
+
+The heterogeneity is informative in its own right. Interneuron markers
+such as SST and PVALB have very high I² and are not significant on
+average. Their loss depends on the region and the cohort, which is the
+pattern expected if the signal partly reflects neuronal loss in the
+sampled tissue.
+
+```{r forest, fig.height = 3.2}
+mx_forest("GFAP", de, res)
+mx_forest("SST", de, res)
+```
+
+AWmeta also records which studies carry each gene's signal
+(`aw_studies`). This shows whether a finding rests mainly on the large
+fusiform-gyrus cohort:
+
+```{r awmeta, eval = requireNamespace("AWFisher", quietly = TRUE)}
+aw <- mx_meta(de, method = "awmeta")@meta_table
+aw_sig <- aw[aw$meta_padj <= 0.05, ]
+head(sort(table(aw_sig$aw_studies), decreasing = TRUE), 5)
+aw[match(c("GFAP", "VGF", "SST"), aw$gene_id),
+   c("gene_id", "meta_log2FC", "meta_padj", "aw_studies")]
+```
+
+Most AWmeta-significant genes rest on GSE125583 alone or together with one
+other cohort.
+
+SST shows how the two hypotheses differ. AWmeta calls it significant because
+it selects the two cohorts with a strong loss and ignores the others.
+Random effects asks for an *average* effect across all cohorts and does not
+call it significant (I² = 87%). Report which hypothesis was tested.
+
+# 5. Robustness
+
+```{r loo}
+loo <- mx_sensitivity(de, method = "random_effects", tau_method = "REML")
+vapply(loo, function(r) sum(r@meta_table$meta_padj <= 0.05), integer(1))
+rob <- attr(loo, "robustness")
+core <- rob[rob$full_padj <= 0.05 & rob$frac_loo_sig == 1, ]
+nrow(core)
+```
+
+Removing GSE125583 (n = 288) shrinks the result most, which shows how much
+statistical power that single cohort provides. The **core signature** of
+`r nrow(core)` genes stays significant, with the same direction, after
+omitting any single study. These are the genes to report as robust
+findings and to prioritise for validation.
+
+## Small-study effects
+
+Do the smaller cohorts report systematically larger effects? With four
+studies these tests have very little power: Sterne et al. (2011) advise
+against them below 10 studies. They are shown here as a template and must
+not be read as evidence that no bias exists.
+
+```{r small-study}
+ss <- suppressWarnings(mx_small_study(de, genes = core$gene_id))
+c(tested = nrow(ss), egger_FDR05 = sum(ss$egger_padj <= 0.05, na.rm = TRUE))
+mx_funnel("GFAP", de, res)
+```
+
+# 6. Pathways
+
+## Enrichment of the meta-signature
+
+```{r gsea, eval = has_gsea}
+res <- mx_pathway_meta(res, db = "Hallmarks", method = "GSEA")
+head(res@pathway_result[, c("pathway_id", "NES", "padj")], 10)
+```
+
+## Cross-study pathway meta-analysis
+
+A complementary test runs GSEA within each study and combines the
+pathway-level evidence. Pathways enriched in opposite directions cancel
+out, and the `n_up` and `n_down` columns show the direction in each study.
+
+```{r pathway-studies, eval = has_gsea}
+ps <- mx_pathway_studies(de, db = "Hallmarks")
+head(ps[, c("pathway_id", "mean_NES", "n_up", "n_down", "n_sig",
+            "meta_padj")], 10)
+mx_pathway_heatmap(attr(ps, "per_study"), top_n = 15, value = "NES")
+```
+
+Both analyses agree on the two main themes:
+
+- **Loss of mitochondrial oxidative phosphorylation** (down in 3 of 4
+  cohorts).
+- **Gain of inflammatory signalling** (TNF-alpha/NF-kB, IL6/JAK/STAT3).
+
+# 7. Reporting
+
+```{r report, eval = FALSE}
+mx_export(res, format = "csv", output_dir = "results")
+mx_report(res, de, output_dir = "results")   # HTML report with methods text
+```
+
+A methods section should state:
+
+- the study inclusion and exclusion criteria, including the donor-overlap
+  check;
+- the count source (NCBI GEO pipeline) and the per-study DE model and
+  covariates;
+- the meta-analysis model (random effects, REML tau²);
+- FDR control (Benjamini-Hochberg);
+- I², tau² and prediction intervals for the reported genes;
+- the leave-one-out robust core.
+
+# References
+
+- Higgins, J.P.T., Thompson, S.G. & Spiegelhalter, D.J. (2009) A
+  re-evaluation of random-effects meta-analysis. *J R Stat Soc A* 172,
+  137-159.
+- IntHout, J., Ioannidis, J.P.A. & Borm, G.F. (2014) The
+  Hartung-Knapp-Sidik-Jonkman method for random effects meta-analysis.
+  *BMC Med Res Methodol* 14, 25.
+- Langan, D. et al. (2019) A comparison of heterogeneity variance
+  estimators in simulated random-effects meta-analyses. *Res Synth Methods*
+  10, 83-98.
+- Shen, K. & Tseng, G.C. (2010) Meta-analysis for pathway enrichment
+  analysis when combining multiple genomic studies. *Bioinformatics* 26,
+  1316-1323.
+- Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
+  RNAseq studies in human Alzheimer's disease brain tissue. *bioRxiv*
+  doi:10.1101/2024.11.07.622520.
+
+```{r session}
+sessionInfo()
+```

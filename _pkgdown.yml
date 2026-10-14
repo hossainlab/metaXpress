@@ -26,14 +26,14 @@ navbar:
     articles:
       text: Articles
       menu:
-        - text: "Live Demonstration Tutorial"
-          href: articles/live_tutorial.html
-        - text: "Getting Started (Quickstart)"
+        - text: "Getting started"
           href: articles/quickstart.html
-        - text: "Full Workflow: GEO to Report"
-          href: articles/full_workflow.html
-        - text: "Public GEO Case Study: Pan-Cancer"
+        - text: "Case study: Alzheimer's disease brain meta-analysis"
           href: articles/case_study.html
+        - text: "Full workflow: GEO to report"
+          href: articles/full_workflow.html
+        - text: "Downstream biology"
+          href: articles/downstream_biology.html
 
 reference:
   - title: "Package Overview"
@@ -79,11 +79,13 @@ reference:
       - mx_de_summary
 
   - title: "Module 4: Meta-Analysis Statistics"
-    desc: "P-value combination (Fisher, Stouffer), effect-size meta-analysis (REM, FEM), and heterogeneity."
+    desc: "Random-effects (REML/PM/DL, HKSJ) and fixed-effect models, directional p-value combination, heterogeneity, concordance and leave-one-out robustness."
     contents:
       - mx_meta
+      - mx_study_concordance
       - mx_heterogeneity
       - mx_sensitivity
+      - mx_small_study
 
   - title: "Module 5: Missing Gene Handling"
     desc: "Identify missingness patterns across studies and apply imputation or coverage filtering."
@@ -93,9 +95,11 @@ reference:
       - mx_missing_summary
 
   - title: "Module 6: Pathway Meta-Analysis"
-    desc: "Cross-study over-representation (ORA) and GSEA, consensus pathways, and deduplication."
+    desc: "fgsea GSEA and ORA on the meta-signature, per-study GSEA combined across studies, consensus and redundancy filtering."
     contents:
+      - mx_gene_sets
       - mx_pathway_meta
+      - mx_pathway_studies
       - mx_pathway_consensus
       - mx_pathway_dedup
       - mx_pathway_heatmap
@@ -108,6 +112,7 @@ reference:
       - mx_heatmap
       - mx_upset
       - mx_heterogeneity_plot
+      - mx_funnel
 
   - title: "Module 8: Reporting & Export"
     desc: "Generate reproducible HTML/PDF reports and export meta-analysis results."

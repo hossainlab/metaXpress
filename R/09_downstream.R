@@ -666,13 +666,14 @@ mx_downstream_plot <- function(x, top = 20, padj_threshold = 0.05,
             "two studies: ", paste(rownames(g_mat)[k < 2], collapse = ", "))
   g_mat  <- g_mat[k >= 2, , drop = FALSE]
   se_mat <- se_mat[k >= 2, , drop = FALSE]
-  het <- .compute_heterogeneity_mat(g_mat, se_mat)
-  re  <- .meta_random_effects(g_mat, se_mat, het$tau_sq)
+  se_mat[!is.finite(se_mat) | se_mat <= 0] <- NA_real_
+  het <- .heterogeneity(g_mat, se_mat, tau_method = "DL")
+  re  <- .meta_re(g_mat, se_mat, het$tau2, hksj = FALSE, alpha = 0.05)
   out <- data.frame(
     label     = rownames(g_mat),
-    meta_g    = re$meta_log2FC,
-    pvalue    = re$meta_pvalue,
-    padj      = stats::p.adjust(re$meta_pvalue, method = "BH"),
+    meta_g    = re$est,
+    pvalue    = re$p,
+    padj      = stats::p.adjust(re$p, method = "BH"),
     i_squared = het$I_sq,
     n_studies = rowSums(!is.na(g_mat) & !is.na(se_mat)),
     stringsAsFactors = FALSE

@@ -18,8 +18,9 @@ columns: \code{gene_id}, \code{meta_log2FC}, \code{meta_pvalue},
 \code{direction_consistency}.}
 
 \item{\code{method}}{A length-1 character naming the meta-analysis method used.
-One of \code{"fisher"}, \code{"stouffer"}, \code{"inverse_normal"},
-\code{"fixed_effects"}, \code{"random_effects"}, \code{"awmeta"}.}
+One of \code{"random_effects"}, \code{"fixed_effects"}, \code{"fisher"},
+\code{"stouffer"}, \code{"inverse_normal"}, \code{"minp"},
+\code{"maxp"}, \code{"rop"}.}
 
 \item{\code{n_studies}}{A length-1 integer giving the total number of studies
 integrated.}

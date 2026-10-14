@@ -221,8 +221,9 @@ setAs("metaXpressStudy", "SummarizedExperiment", function(from) {
 #'   \code{meta_padj}, \code{i_squared}, \code{q_stat}, \code{n_studies},
 #'   \code{direction_consistency}.
 #' @slot method A length-1 character naming the meta-analysis method used.
-#'   One of \code{"fisher"}, \code{"stouffer"}, \code{"inverse_normal"},
-#'   \code{"fixed_effects"}, \code{"random_effects"}, \code{"awmeta"}.
+#'   One of \code{"random_effects"}, \code{"fixed_effects"}, \code{"fisher"},
+#'   \code{"stouffer"}, \code{"inverse_normal"}, \code{"minp"},
+#'   \code{"maxp"}, \code{"rop"}.
 #' @slot n_studies A length-1 integer giving the total number of studies
 #'   integrated.
 #' @slot heterogeneity A \code{data.frame} with per-gene heterogeneity

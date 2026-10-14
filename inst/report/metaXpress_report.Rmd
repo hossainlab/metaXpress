@@ -1,0 +1,123 @@
+---
+title: "metaXpress meta-analysis report"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
+params:
+  meta_result: NULL
+  de_results: NULL
+  studies: NULL
+  padj_threshold: 0.05
+  lfc_threshold: 0
+  top_n: 25
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
+                      fig.width = 7, fig.height = 4.5)
+library(metaXpress)
+res <- params$meta_result
+de  <- params$de_results
+mt  <- res@meta_table
+set <- attr(mt, "settings")
+fmt <- function(x, d = 3) formatC(x, digits = d, format = "g")
+```
+
+# Methods
+
+Per-study differential expression results from `r length(de)` studies were
+combined with the **`r res@method`** method in metaXpress
+`r as.character(utils::packageVersion("metaXpress"))`.
+`r if (!is.null(set) && res@method == "random_effects") sprintf("Between-study variance was estimated by %s%s. ", set$tau_method, if (isTRUE(set$hksj)) " with the Hartung-Knapp-Sidik-Jonkman adjustment" else "")`
+Genes measured in at least `r if (is.null(set)) 2 else set$min_studies` studies
+were analysed (n = `r nrow(mt)`). P-values were adjusted across genes with the
+Benjamini-Hochberg procedure. Significance: meta FDR <= `r params$padj_threshold`
+and |log2FC| >= `r params$lfc_threshold`.
+
+# Studies
+
+```{r studies}
+st <- do.call(rbind, lapply(names(de), function(nm) {
+  d <- de[[nm]]
+  data.frame(
+    study     = nm,
+    n_case    = if ("n_case" %in% names(d)) d$n_case[1] else NA,
+    n_control = if ("n_control" %in% names(d)) d$n_control[1] else NA,
+    genes     = nrow(d),
+    DEG_FDR05 = sum(d$padj <= 0.05, na.rm = TRUE),
+    method    = if ("method" %in% names(d)) d$method[1] else NA)
+}))
+knitr::kable(st, row.names = FALSE)
+```
+
+## Fold-change concordance
+
+A negative correlation indicates a flipped case/control contrast.
+
+```{r concordance}
+knitr::kable(suppressWarnings(mx_study_concordance(de)), digits = 3,
+             row.names = FALSE)
+```
+
+# Meta-analysis results
+
+```{r summary}
+sig <- !is.na(mt$meta_padj) & mt$meta_padj <= params$padj_threshold &
+  abs(mt$meta_log2FC) >= params$lfc_threshold
+```
+
+`r sum(sig)` genes were significant (`r sum(sig & mt$meta_log2FC > 0)` up,
+`r sum(sig & mt$meta_log2FC < 0)` down). Median I² among significant genes:
+`r fmt(stats::median(mt$i_squared[sig], na.rm = TRUE))`%.
+
+```{r volcano}
+print(mx_volcano(res, padj_threshold = params$padj_threshold,
+                 lfc_threshold = params$lfc_threshold))
+```
+
+```{r top}
+top <- mt[order(mt$meta_pvalue), ][seq_len(min(params$top_n, nrow(mt))),
+  intersect(c("gene_id", "meta_log2FC", "ci_lower", "ci_upper", "pi_lower",
+              "pi_upper", "meta_padj", "i_squared", "n_studies",
+              "direction_consistency"), names(mt))]
+knitr::kable(top, digits = 3, row.names = FALSE,
+             caption = "Top genes by meta-analysis p-value")
+```
+
+## Heterogeneity
+
+```{r het}
+print(mx_heterogeneity_plot(res))
+```
+
+## Forest plots of the top genes
+
+```{r forest, fig.height = 3.2}
+for (g in head(top$gene_id, 4)) print(mx_forest(g, de, res))
+```
+
+```{r loo, results = "asis"}
+if (length(de) >= 3) {
+  cat("## Leave-one-out robustness\n\n")
+  loo <- suppressMessages(mx_sensitivity(de, method = res@method))
+  rob <- attr(loo, "robustness")
+  rob <- rob[!is.na(rob$full_padj) & rob$full_padj <= params$padj_threshold, ]
+  cat(sprintf("Of %d significant genes, %d (%.0f%%) remained significant ",
+              nrow(rob), sum(rob$frac_loo_sig == 1),
+              100 * mean(rob$frac_loo_sig == 1)),
+      "with the same direction after removing any single study.\n\n")
+}
+```
+
+```{r pathways, results = "asis"}
+pr <- res@pathway_result
+if (nrow(pr) > 0) {
+  cat("# Pathway enrichment\n\n")
+  print(knitr::kable(utils::head(pr[order(pr$padj), setdiff(names(pr),
+    c("leading_edge", "overlap_genes"))], 20), digits = 3, row.names = FALSE))
+}
+```
+
+# Reproducibility
+
+```{r session}
+utils::sessionInfo()
+```

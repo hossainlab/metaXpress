@@ -2,36 +2,48 @@
 % Please edit documentation in R/02_harmonize.R
 \name{mx_remove_batch}
 \alias{mx_remove_batch}
-\title{Remove batch effects across studies}
+\title{Remove between-study batch effects for pooled expression analyses}
 \usage{
 mx_remove_batch(
   studies,
-  method = c("ComBat-seq", "ComBat", "limma", "harmony")
+  method = c("ComBat-seq", "ComBat", "limma"),
+  covariate = "condition"
 )
 }
 \arguments{
 \item{studies}{A named list of \code{\linkS4class{metaXpressStudy}} objects.}
 
-\item{method}{Character scalar. Batch removal method. One of
-\code{"ComBat-seq"} (default), \code{"ComBat"}, \code{"limma"},
-or \code{"harmony"}.}
+\item{method}{Character scalar. \code{"ComBat-seq"} (default; negative
+binomial model on counts), \code{"ComBat"} (empirical Bayes on
+log2 CPM) or \code{"limma"} (\code{removeBatchEffect} on log2 CPM).}
+
+\item{covariate}{Name of a \code{colData} column whose effect must be
+preserved. Default: \code{"condition"}. Use \code{NULL} only if you
+understand that condition effects confounded with study will be removed.}
 }
 \value{
-The input list of studies with batch effects removed from
-  \code{counts}.
+The input list of studies, restricted to their common genes, with
+  the corrected values in a new assay: \code{"combat_seq_counts"} for
+  ComBat-seq or \code{"log2cpm_batch_corrected"} otherwise. The raw
+  \code{"counts"} assay is untouched.
 }
 \description{
-Applies one of four batch effect removal methods to harmonize expression
-levels across studies before meta-analysis.
+Combines all studies into one expression matrix and removes study-level
+batch effects while preserving the biological \code{condition} effect.
 }
 \details{
-Batch is defined as study of origin. \code{"ComBat-seq"} operates on raw
-counts and is preferred for count data. \code{"ComBat"} and
-\code{"limma"} operate on log-transformed values.
+\strong{Batch correction is not required, and should not be used, before
+per-study DE}: \code{\link{mx_de}} analyses each study separately, so
+between-study batch effects never enter the per-study fold changes, and
+feeding batch-corrected values into count models invalidates their
+variance assumptions. Use this function only for pooled visualizations
+(PCA, heatmaps), consensus co-expression or other analyses on a merged
+matrix. Batch is defined as study of origin.
 }
 \examples{
 \dontrun{
-  studies <- mx_remove_batch(studies, method = "ComBat-seq")
+  pooled <- mx_remove_batch(studies, method = "limma")
+  SummarizedExperiment::assay(pooled[[1]], "log2cpm_batch_corrected")
 }
 
 }
@@ -41,13 +53,14 @@ microarray expression data using empirical Bayes methods.
 \emph{Biostatistics}, \strong{8}(1), 118--127.
 \doi{10.1093/biostatistics/kxj037}
 
-Zhang, Y. et al. (2020) ComBat-seq: batch effect adjustment for RNA-seq
-count data. \emph{NAR Genomics and Bioinformatics}, \strong{2}(3),
-lqaa078. \doi{10.1093/nargab/lqaa078}
+Zhang, Y., Parmigiani, G. & Johnson, W.E. (2020) ComBat-seq: batch effect
+adjustment for RNA-seq count data. \emph{NAR Genomics and
+Bioinformatics}, \strong{2}(3), lqaa078. \doi{10.1093/nargab/lqaa078}
 
-Ritchie, M.E. et al. (2015) limma powers differential expression analyses
-for RNA-sequencing and microarray studies. \emph{Nucleic Acids Research},
-\strong{43}(7), e47. \doi{10.1093/nar/gkv007}
+Nygaard, V., Rødland, E.A. & Hovig, E. (2016) Methods that remove batch
+effects while retaining group differences may lead to exaggerated
+confidence in downstream analyses. \emph{Biostatistics}, \strong{17}(1),
+29--39. \doi{10.1093/biostatistics/kxv027}
 }
 \seealso{
 \code{\link{mx_normalize}}

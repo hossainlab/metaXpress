@@ -7,55 +7,93 @@ NULL
 
 #' Fetch bulk RNA-seq studies from GEO
 #'
-#' Downloads count matrices and sample metadata from the Gene Expression
-#' Omnibus (GEO) for one or more accession IDs and returns a list of
+#' Downloads raw count matrices and sample metadata from the Gene Expression
+#' Omnibus (GEO) for one or more series and returns a list of
 #' \code{metaXpressStudy} objects ready for downstream analysis.
 #'
-#' @param accessions Character vector of GEO accession IDs
-#'   (e.g., \code{c("GSE12345", "GSE67890")}).
+#' By default (\code{source = "ncbi"}) counts come from the NCBI GEO RNA-seq
+#' pipeline, which re-processes the SRA reads of every eligible human and
+#' mouse series with a single pipeline (HISAT2 alignment to GRCh38.p13 /
+#' GRCm39 and featureCounts against NCBI RefSeq annotation). Because every
+#' study is quantified identically, these counts remove the largest source
+#' of technical heterogeneity in a meta-analysis (different aligners,
+#' annotations and count definitions). Genes are NCBI Entrez Gene IDs.
+#' Series without NCBI counts fall back to author-supplied supplementary
+#' files.
+#'
+#' @param accessions Character vector of GEO series accessions
+#'   (e.g., \code{c("GSE52778", "GSE95587")}).
+#' @param source Character scalar. \code{"ncbi"} (default) uses NCBI
+#'   GEO-generated raw counts with fallback to supplementary files;
+#'   \code{"supplementary"} only uses author-supplied files.
 #' @param count_type Character scalar. One of \code{"raw"} (default) or
-#'   \code{"normalized"}. Always prefer \code{"raw"} for meta-analysis.
+#'   \code{"normalized"}. Always use \code{"raw"} for count-based DE.
+#' @param condition_col Optional. Name of the GEO phenotype column holding
+#'   the case/control labels (e.g. \code{"disease state:ch1"}), either one
+#'   name for all series or a character vector named by accession. When
+#'   \code{NULL}, a column is auto-detected; always check the result.
+#' @param annotate Logical. Add Entrez ID, gene symbol and gene type from
+#'   NCBI \code{gene_info} to \code{rowData} for NCBI counts. Default:
+#'   \code{TRUE}.
 #' @param cache_dir Character scalar. Directory for caching downloaded files.
-#'   Defaults to \code{tempdir()}.
+#'   Defaults to \code{tempdir()}; use a persistent directory to avoid
+#'   repeated downloads.
+#' @param BPPARAM Unused; downloads run serially to respect NCBI rate limits.
+#'   Kept for backward compatibility.
 #'
 #' @return A named list of \code{\linkS4class{metaXpressStudy}} objects, one
-#'   per accession. QC scores are filled by an internal call to
-#'   \code{\link{mx_qc_study}}. Studies failing QC receive a warning but are
-#'   returned (use \code{\link{mx_filter_studies}} to remove them).
+#'   per accession. \code{metadata(study)$count_source} records where the
+#'   counts came from. QC scores are filled by \code{\link{mx_qc_study}}.
 #'
 #' @references
 #' Davis, S. & Meltzer, P.S. (2007) GEOquery: a bridge between the Gene
 #' Expression Omnibus (GEO) and BioConductor. \emph{Bioinformatics},
 #' \strong{23}(14), 1846--1847. \doi{10.1093/bioinformatics/btm254}
 #'
-#' Heberle, H. et al. (2025) A comprehensive framework for quality control
-#' and meta-analysis of bulk RNA-seq data. \emph{Alzheimer's & Dementia},
-#' \strong{21}(1), e70025. \doi{10.1002/alz.70025}
+#' Clough, E. et al. (2024) NCBI GEO: archive for gene expression and
+#' epigenomics data sets: 23-year update. \emph{Nucleic Acids Research},
+#' \strong{52}(D1), D138--D144. \doi{10.1093/nar/gkad965}
 #'
 #' @examples
-#' \dontrun{
-#'   studies <- mx_fetch_geo(c("GSE12345", "GSE67890"))
-#'   studies <- mx_filter_studies(studies, qc_threshold = 7)
+#' \donttest{
+#' # Requires internet access. Himes et al. (2014) airway smooth muscle,
+#' # NCBI-processed counts for 16 samples.
+#' if (requireNamespace("GEOquery", quietly = TRUE)) {
+#'   studies <- mx_fetch_geo("GSE52778",
+#'                           condition_col = "treatment:ch1")
+#'   studies$GSE52778
+#'   table(studies$GSE52778$condition)
+#' }
 #' }
 #'
 #' @seealso \code{\link{mx_load_local}}, \code{\link{mx_qc_study}},
 #'   \code{\link{mx_filter_studies}}
 #'
-#' @param BPPARAM A \code{\link[BiocParallel]{BiocParallelParam}} object
-#'   controlling parallelization. Default: \code{BiocParallel::bpparam()}.
-#'   Set to \code{BiocParallel::SerialParam()} for sequential execution.
-#'
 #' @importFrom methods new
 #' @export
-mx_fetch_geo <- function(accessions, count_type = "raw",
-                          cache_dir = tempdir(),
-                          BPPARAM = BiocParallel::bpparam()) {
+mx_fetch_geo <- function(accessions,
+                         source        = c("ncbi", "supplementary"),
+                         count_type    = "raw",
+                         condition_col = NULL,
+                         annotate      = TRUE,
+                         cache_dir     = tempdir(),
+                         BPPARAM       = NULL) {
   if (!is.character(accessions) || length(accessions) == 0)
     stop("'accessions' must be a non-empty character vector of GEO IDs")
+  source     <- match.arg(source)
   count_type <- match.arg(count_type, c("raw", "normalized"))
+  if (!is.null(condition_col)) {
+    if (is.null(names(condition_col))) {
+      if (length(condition_col) != 1)
+        stop("Unnamed 'condition_col' must be a single column name")
+      condition_col <- stats::setNames(rep(condition_col, length(accessions)),
+                                       accessions)
+    }
+  }
 
   .require_package("GEOquery", "fetching data from GEO")
   .require_package("Biobase", "parsing GEO metadata")
+  dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
 
   message("Fetching ", length(accessions), " studies from GEO...")
 
@@ -63,7 +101,10 @@ mx_fetch_geo <- function(accessions, count_type = "raw",
   studies <- lapply(accessions, function(acc) {
     message("  Downloading: ", acc)
     tryCatch(
-      .fetch_single_geo(acc, count_type = count_type, cache_dir = cache_dir),
+      .fetch_single_geo(acc, count_type = count_type, cache_dir = cache_dir,
+                        source = source,
+                        condition_col = condition_col[acc],
+                        annotate = annotate),
       error = function(e) {
         warning("Failed to fetch ", acc, ": ", conditionMessage(e))
         NULL
@@ -284,49 +325,53 @@ mx_load_local <- function(count_paths, metadata_paths,
 
 #' Score a study against the 10-point QC checklist
 #'
-#' Applies each of the 10 QC criteria defined by Heberle et al. (2025) and
-#' stores the total score in the \code{qc_score} slot. Criteria that cannot
-#' be evaluated (e.g., alignment rate not in metadata) are scored \code{NA}
-#' and do not penalise the total.
+#' Applies 10 data-level QC criteria. Each criterion is recorded as
+#' \code{"pass"}, \code{"fail"} or \code{"not evaluable"} (the information
+#' needed is absent, e.g. alignment rate is not deposited in GEO).
+#' \code{qc_score} is the number of criteria \emph{passed}. Criteria that
+#' could not be evaluated are not counted as passed and the score is
+#' \strong{not} rescaled, so a score is only comparable between studies
+#' together with the number of evaluable criteria. Decide on inclusion with
+#' \code{\link{mx_filter_studies}}, which works on failures rather than the
+#' score.
 #'
 #' The 10 criteria are:
 #' \enumerate{
-#'   \item \strong{Minimum sample size:} at least 3 samples per condition
-#'     group, required for reliable dispersion estimation in negative binomial
-#'     models (Schurch et al. 2016).
-#'   \item \strong{Sequencing depth:} median library size >= 10 million reads,
-#'     ensuring adequate power for detecting low-abundance transcripts
-#'     (Sims et al. 2014).
-#'   \item \strong{Alignment rate:} mean alignment rate >= 70\%, indicating
-#'     acceptable read quality (optional; skipped if not available).
-#'   \item \strong{rRNA contamination:} mean rRNA fraction < 10\%, flagging
-#'     insufficient ribosomal depletion (optional).
-#'   \item \strong{Duplicate rate:} mean duplicate rate < 50\%, flagging
-#'     library complexity issues (optional).
-#'   \item \strong{Gene detection:} at least 15,000 genes detected in >= 50\%
-#'     of samples, confirming adequate transcriptome coverage.
-#'   \item \strong{Metadata completeness:} required columns \code{condition}
-#'     and \code{sample_id} are present.
-#'   \item \strong{Clear case/control:} exactly two condition levels, ensuring
-#'     a well-defined contrast for differential expression.
+#'   \item \strong{Minimum sample size:} at least 3 samples in every
+#'     condition group (Schurch et al. 2016).
+#'   \item \strong{Sequencing depth:} median library size >= 10 million
+#'     assigned reads.
+#'   \item \strong{Alignment rate:} mean >= 70\% (column
+#'     \code{alignment_rate} in \code{colData}, fraction or percent).
+#'   \item \strong{rRNA contamination:} mean < 10\% (column
+#'     \code{rrna_fraction}).
+#'   \item \strong{Duplicate rate:} mean < 50\% (column
+#'     \code{duplicate_rate}).
+#'   \item \strong{Gene detection:} at least \code{min_genes} genes with a
+#'     non-zero count in >= 50\% of samples.
+#'   \item \strong{Condition labels complete:} every sample has a non-missing,
+#'     non-empty \code{condition}.
+#'   \item \strong{Clear contrast:} exactly two condition levels. Studies with
+#'     more groups fail until they are subset to the two compared groups.
 #'   \item \strong{No batch-condition confounding:} batch and condition are not
-#'     perfectly aliased, which would make batch correction impossible
-#'     (Leek et al. 2010).
-#'   \item \strong{Raw counts:} data are non-negative integers with maximum
-#'     > 1,000, confirming untransformed count data suitable for count-based
-#'     statistical models.
+#'     perfectly aliased (Leek et al. 2010). Not evaluable without a
+#'     \code{batch} column.
+#'   \item \strong{Raw counts:} non-negative integers with maximum > 1,000,
+#'     i.e. untransformed counts suitable for count models.
 #' }
 #'
 #' @param study A \code{\linkS4class{metaXpressStudy}} object.
+#' @param min_genes Integer. Threshold for criterion 6. Default \code{15000},
+#'   appropriate for an unfiltered human or mouse gene-level matrix; lower it
+#'   for matrices already restricted (e.g. to protein-coding genes).
 #'
-#' @return The input \code{study} with the \code{qc_score} slot filled.
-#'   A \code{qc_details} attribute is attached with a per-criterion breakdown.
+#' @return The input \code{study} with \code{qc_score} filled (criteria
+#'   passed, 0--10). The per-criterion table (\code{criterion}, \code{name},
+#'   \code{status}, \code{score}, \code{details}) is stored in
+#'   \code{S4Vectors::metadata(study)$qc} and in \code{attr(study,
+#'   "qc_details")}.
 #'
 #' @references
-#' Heberle, H. et al. (2025) A comprehensive framework for quality control
-#' and meta-analysis of bulk RNA-seq data. \emph{Alzheimer's & Dementia},
-#' \strong{21}(1), e70025. \doi{10.1002/alz.70025}
-#'
 #' Schurch, N.J. et al. (2016) How many biological replicates are needed in an
 #' RNA-seq experiment and which differential expression tool should you use?
 #' \emph{RNA}, \strong{22}(6), 839--851. \doi{10.1261/rna.053959.115}
@@ -335,233 +380,270 @@ mx_load_local <- function(count_paths, metadata_paths,
 #' batch effects in high-throughput data. \emph{Nature Reviews Genetics},
 #' \strong{11}(10), 733--739. \doi{10.1038/nrg2825}
 #'
+#' Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
+#' RNAseq studies in human Alzheimer's disease brain tissue. \emph{bioRxiv}.
+#' \doi{10.1101/2024.11.07.622520} (complementary study-level reporting
+#' quality assessment).
+#'
 #' @examples
-#' \dontrun{
+#' if (requireNamespace("airway", quietly = TRUE)) {
+#'   data("airway", package = "airway")
+#'   study <- mx_from_se(airway, condition_col = "dex", accession = "GSE52778")
 #'   study <- mx_qc_study(study)
-#'   attr(study, "qc_details")
+#'   study@qc_score
+#'   S4Vectors::metadata(study)$qc
 #' }
 #'
 #' @export
-mx_qc_study <- function(study) {
+mx_qc_study <- function(study, min_genes = 15000) {
   if (!is(study, "metaXpressStudy"))
     stop("'study' must be a metaXpressStudy object")
 
   counts   <- .counts(study)
   metadata <- .samples(study)
-  score    <- integer(10)
+  cond     <- as.character(metadata$condition)
+  score    <- rep(NA_integer_, 10)
   details  <- character(10)
+  names    <- c("sample size", "sequencing depth", "alignment rate",
+                "rRNA fraction", "duplicate rate", "gene detection",
+                "condition labels", "clear contrast", "batch confounding",
+                "raw counts")
+  as_frac  <- function(x) {
+    x <- suppressWarnings(as.numeric(x))
+    if (all(x > 1, na.rm = TRUE)) x / 100 else x
+  }
+  labelled <- !is.na(cond) & nzchar(trimws(cond))
 
-  # 1. Minimum sample size
-  min_n    <- min(table(metadata$condition))
-  score[1] <- as.integer(min_n >= 3)
-  details[1] <- sprintf("Min samples per group: %d (need >= 3)", min_n)
+  # 1. Minimum sample size per group
+  if (any(labelled)) {
+    min_n <- min(table(cond[labelled]))
+    score[1] <- as.integer(min_n >= 3)
+    details[1] <- sprintf("Min samples per group: %d (need >= 3)", min_n)
+  } else {
+    details[1] <- "No condition labels"
+  }
 
-  # 2. Sequencing depth
-  lib_sizes <- colSums(counts)
-  med_depth <- median(lib_sizes)
+  # 2. Sequencing depth (assigned reads)
+  med_depth <- stats::median(colSums(counts))
   score[2]  <- as.integer(med_depth >= 10e6)
-  details[2] <- sprintf("Median depth: %.1fM reads (need >= 10M)",
-                         med_depth / 1e6)
+  details[2] <- sprintf("Median assigned reads: %.1fM (need >= 10M)",
+                        med_depth / 1e6)
 
-  # 3. Alignment rate (optional)
-  if ("alignment_rate" %in% colnames(metadata)) {
-    mean_align <- mean(metadata$alignment_rate, na.rm = TRUE)
-    score[3]   <- as.integer(mean_align >= 0.70)
-    details[3] <- sprintf("Mean alignment: %.1f%% (need >= 70%%)",
-                           mean_align * 100)
-  } else {
-    score[3]   <- NA_integer_
-    details[3] <- "Alignment rate: not available in metadata"
+  # 3-5. Optional alignment metrics
+  opt <- list(c(3, "alignment_rate", ">=", 0.70),
+              c(4, "rrna_fraction", "<", 0.10),
+              c(5, "duplicate_rate", "<", 0.50))
+  for (o in opt) {
+    i <- as.integer(o[1]); col <- o[2]; thr <- as.numeric(o[4])
+    if (col %in% colnames(metadata) &&
+        any(!is.na(suppressWarnings(as.numeric(metadata[[col]]))))) {
+      v <- mean(as_frac(metadata[[col]]), na.rm = TRUE)
+      ok <- if (o[3] == ">=") v >= thr else v < thr
+      score[i] <- as.integer(ok)
+      details[i] <- sprintf("Mean %s: %.1f%% (need %s %.0f%%)", col, v * 100,
+                            o[3], thr * 100)
+    } else {
+      details[i] <- sprintf("'%s' not in colData", col)
+    }
   }
 
-  # 4. rRNA contamination (optional)
-  if ("rrna_fraction" %in% colnames(metadata)) {
-    mean_rrna <- mean(metadata$rrna_fraction, na.rm = TRUE)
-    score[4]  <- as.integer(mean_rrna < 0.10)
-    details[4] <- sprintf("Mean rRNA: %.1f%% (need < 10%%)",
-                           mean_rrna * 100)
-  } else {
-    score[4]  <- NA_integer_
-    details[4] <- "rRNA fraction: not available in metadata"
-  }
+  # 6. Gene detection
+  genes_in_half <- sum(rowSums(counts > 0) >= ncol(counts) * 0.5)
+  score[6] <- as.integer(genes_in_half >= min_genes)
+  details[6] <- sprintf("Genes detected in >= 50%% of samples: %d (need >= %d)",
+                        genes_in_half, min_genes)
 
-  # 5. Duplicate rate (optional)
-  if ("duplicate_rate" %in% colnames(metadata)) {
-    mean_dup <- mean(metadata$duplicate_rate, na.rm = TRUE)
-    score[5] <- as.integer(mean_dup < 0.50)
-    details[5] <- sprintf("Mean duplicate rate: %.1f%% (need < 50%%)",
-                           mean_dup * 100)
-  } else {
-    score[5]  <- NA_integer_
-    details[5] <- "Duplicate rate: not available in metadata"
-  }
+  # 7. Condition labels complete
+  score[7] <- as.integer(length(cond) > 0 && all(labelled))
+  details[7] <- sprintf("Samples with a condition label: %d / %d",
+                        sum(labelled), length(cond))
 
-  # 6. Gene detection rate
-  n_detected    <- rowSums(counts > 0)
-  genes_in_half <- sum(n_detected >= (ncol(counts) * 0.5))
-  score[6]      <- as.integer(genes_in_half >= 15000)
-  details[6]    <- sprintf(
-    "Genes detected in >=50%% samples: %d (need >= 15000)", genes_in_half)
-
-  # 7. Metadata completeness
-  required     <- c("condition", "sample_id")
-  has_required <- all(required %in% colnames(metadata))
-  score[7]     <- as.integer(has_required)
-  details[7]   <- sprintf("Required metadata columns present: %s",
-                           ifelse(has_required, "yes", "no"))
-
-  # 8. Clear case/control definition
-  n_levels <- length(unique(metadata$condition))
+  # 8. Clear two-group contrast
+  n_levels <- length(unique(cond[labelled]))
   score[8] <- as.integer(n_levels == 2)
   details[8] <- sprintf("Condition levels: %d (need exactly 2)", n_levels)
 
-  # 9. No batch-condition confounding
-  if ("batch" %in% colnames(metadata)) {
-    tab        <- table(metadata$condition, metadata$batch)
+  # 9. Batch-condition confounding
+  if ("batch" %in% colnames(metadata) &&
+      length(unique(stats::na.omit(metadata$batch))) > 1) {
+    tab <- table(cond, metadata$batch)
     confounded <- all(apply(tab, 2, function(x) sum(x > 0) == 1))
-    score[9]   <- as.integer(!confounded)
-    details[9] <- sprintf("Batch-condition confounding: %s",
-                           ifelse(confounded, "YES (problem)", "no"))
+    score[9] <- as.integer(!confounded)
+    details[9] <- sprintf("Batch aliased with condition: %s",
+                          if (confounded) "YES" else "no")
   } else {
-    score[9]   <- 1L
-    details[9] <- "No batch variable present"
+    details[9] <- "No multi-level 'batch' column in colData"
   }
 
-  # 10. Raw counts available
-  is_int  <- all(counts == floor(counts), na.rm = TRUE)
-  is_pos  <- all(counts >= 0, na.rm = TRUE)
-  is_raw  <- is_int && is_pos && max(counts, na.rm = TRUE) > 1000
-  score[10]   <- as.integer(is_raw)
+  # 10. Raw counts
+  is_raw <- all(counts == floor(counts), na.rm = TRUE) &&
+    all(counts >= 0, na.rm = TRUE) && max(counts, na.rm = TRUE) > 1000
+  score[10] <- as.integer(is_raw)
   details[10] <- sprintf("Raw integer counts: %s",
-                          ifelse(is_raw, "yes", "no (likely pre-normalized)"))
+                         if (is_raw) "yes" else "no (likely transformed)")
 
-  # Score normalized to 0-10 scale, counting only evaluable criteria
-  n_evaluable    <- sum(!is.na(score))
-  raw_score      <- sum(score, na.rm = TRUE)
-  total_score    <- round(raw_score / n_evaluable * 10)
-  study@qc_score <- total_score
+  status <- ifelse(is.na(score), "not evaluable",
+                   ifelse(score == 1L, "pass", "fail"))
+  qc <- data.frame(criterion = seq_len(10), name = names, status = status,
+                   score = score, details = details,
+                   stringsAsFactors = FALSE)
 
-  attr(study, "qc_details") <- data.frame(
-    criterion = seq_len(10),
-    score     = score,
-    details   = details,
-    stringsAsFactors = FALSE
-  )
+  study@qc_score <- sum(score, na.rm = TRUE)
+  S4Vectors::metadata(study)$qc <- qc
+  attr(study, "qc_details") <- qc
 
-  if (total_score < 7)
-    warning(sprintf(
-      "Study %s has low QC score (%d/10). Consider excluding with mx_filter_studies().",
-      study@accession, total_score))
-
+  failed <- qc$name[qc$status == "fail"]
+  if (length(failed) > 0)
+    warning("Study ", study@accession, " failed QC: ",
+            paste(failed, collapse = ", "),
+            ". See S4Vectors::metadata(study)$qc.")
   study
 }
 
-#' Automatically cluster samples by metadata
+#' Remove studies that fail quality control
 #'
-#' Uses text mining on metadata fields to assign samples to case/control groups,
-#' mimicking the \code{sampleclusteR} approach for automated group assignment from
-#' GEO metadata. It computes string distances between sample descriptions and
-#' uses hierarchical clustering to partition them into two groups.
+#' Keeps studies according to the per-criterion QC results from
+#' \code{\link{mx_qc_study}}. Failures, not the summed score, drive the
+#' decision, because criteria that cannot be evaluated (common for GEO
+#' data) should not count against a study.
 #'
-#' @param study A \code{\linkS4class{metaXpressStudy}} object.
+#' @param studies A named list of \code{\linkS4class{metaXpressStudy}}
+#'   objects after \code{\link{mx_qc_study}}.
+#' @param required Integer vector of criteria that must not fail. Default:
+#'   \code{c(1, 7, 10)} (>= 3 samples per group, complete condition labels,
+#'   raw counts) -- the minimum for valid count-based DE.
+#' @param max_failed Integer. Maximum number of other failed criteria
+#'   allowed. Default: \code{Inf} (only \code{required} criteria exclude).
+#' @param qc_threshold Optional minimum \code{qc_score} (criteria passed).
+#'   Default \code{NULL}: not used.
 #'
-#' @return The input \code{study} with the \code{condition} column updated
-#'   in \code{metadata}.
-#'
-#' @references
-#' Coke, T., Niranjan, M. & Ewing, R.M. (2025) sampleclusteR: automated
-#' case/control group assignment from GEO metadata. \emph{bioRxiv}.
-#' \doi{10.1101/2025.04.10.648129}
+#' @return The filtered list. A message lists removed studies and reasons.
 #'
 #' @examples
-#' \dontrun{
-#'   study <- mx_cluster_samples(study)
+#' if (requireNamespace("airway", quietly = TRUE)) {
+#'   data("airway", package = "airway")
+#'   s <- mx_qc_study(mx_from_se(airway, condition_col = "dex",
+#'                               accession = "GSE52778"))
+#'   length(mx_filter_studies(list(airway = s)))
 #' }
 #'
 #' @export
-mx_cluster_samples <- function(study) {
-  if (!is(study, "metaXpressStudy"))
-    stop("'study' must be a metaXpressStudy object")
-    
-  .require_package("stringdist", "string distance calculation for clustering")
-  
-  meta <- .samples(study)
-  
-  # Concatenate all character/factor columns for each sample into a single text document
-  text_cols <- vapply(meta, function(x) is.character(x) || is.factor(x), logical(1))
-  if (sum(text_cols) == 0) {
-    warning("No character columns found in metadata to cluster on.")
-    return(study)
-  }
-  
-  docs <- apply(meta[, text_cols, drop=FALSE], 1, function(x) {
-    paste(na.omit(as.character(x)), collapse = " ")
-  })
-  
-  # Compute Jaro-Winkler string distance matrix
-  dist_mat <- stringdist::stringdistmatrix(docs, docs, method = "jw")
-  
-  # Hierarchical clustering
-  hc <- hclust(as.dist(dist_mat), method = "ward.D2")
-  groups <- cutree(hc, k = 2)
-  
-  # Assign the groups as "group1" and "group2"
-  study$condition <- paste0("group", groups)
-  
-  message("Auto-clustered ", nrow(meta), " samples into 2 groups based on metadata text.")
-  study
-}
-
-#' Filter studies below a QC threshold
-#'
-#' Removes studies whose \code{qc_score} is below the specified threshold.
-#' Studies with \code{NA} QC scores (i.e., \code{\link{mx_qc_study}} has not
-#' been run) are always removed with a warning.
-#'
-#' @param studies A named list of \code{\linkS4class{metaXpressStudy}} objects.
-#' @param qc_threshold Numeric scalar. Minimum acceptable QC score (inclusive).
-#'   Default: \code{7}.
-#'
-#' @return A filtered list of \code{\linkS4class{metaXpressStudy}} objects.
-#'
-#' @examples
-#' \dontrun{
-#'   studies <- mx_fetch_geo(c("GSE12345", "GSE67890"))
-#'   studies <- mx_filter_studies(studies, qc_threshold = 7)
-#' }
-#'
-#' @seealso \code{\link{mx_qc_study}}
-#'
-#' @export
-mx_filter_studies <- function(studies, qc_threshold = 7) {
+mx_filter_studies <- function(studies, required = c(1, 7, 10),
+                              max_failed = Inf, qc_threshold = NULL) {
   if (!is.list(studies))
     stop("'studies' must be a list of metaXpressStudy objects")
-  if (!is.numeric(qc_threshold) || length(qc_threshold) != 1)
-    stop("'qc_threshold' must be a single numeric value")
+  if (is.null(names(studies)))
+    names(studies) <- vapply(studies, function(s) s@accession, character(1))
 
-  scores <- vapply(studies, function(s) s@qc_score, numeric(1))
-
-  na_idx <- is.na(scores)
+  qc <- lapply(studies, function(s) {
+    q <- S4Vectors::metadata(s)$qc
+    if (is.null(q)) q <- attr(s, "qc_details")
+    q
+  })
+  na_idx <- vapply(qc, is.null, logical(1))
   if (any(na_idx))
-    warning(sum(na_idx), " study/studies have NA QC scores (mx_qc_study ",
-            "not run?) and will be removed: ",
+    warning(sum(na_idx), " study/studies have no QC results (run ",
+            "mx_qc_study() first) and will be removed: ",
             paste(names(studies)[na_idx], collapse = ", "))
 
-  keep <- !na_idx & scores >= qc_threshold
-  removed <- sum(!keep)
+  reasons <- vapply(seq_along(studies), function(i) {
+    if (na_idx[i]) return("QC not run")
+    q <- qc[[i]]
+    st <- if ("status" %in% names(q)) q$status
+          else ifelse(is.na(q$score), "not evaluable",
+                      ifelse(q$score == 1, "pass", "fail"))
+    why <- character(0)
+    req_fail <- q$criterion[st == "fail" & q$criterion %in% required]
+    if (length(req_fail))
+      why <- c(why, paste("required criterion failed:",
+                          paste(req_fail, collapse = ",")))
+    other_fail <- sum(st == "fail" & !q$criterion %in% required)
+    if (other_fail > max_failed)
+      why <- c(why, sprintf("%d other failures (max %s)", other_fail,
+                            max_failed))
+    if (!is.null(qc_threshold) && studies[[i]]@qc_score < qc_threshold)
+      why <- c(why, sprintf("qc_score %d < %s", studies[[i]]@qc_score,
+                            qc_threshold))
+    paste(why, collapse = "; ")
+  }, character(1))
 
-  if (removed > 0)
-    message(removed, " study/studies removed (QC score < ", qc_threshold, "): ",
-            paste(names(studies)[!keep], collapse = ", "))
-
+  keep <- reasons == ""
+  if (any(!keep))
+    message(sum(!keep), " study/studies removed: ",
+            paste(names(studies)[!keep], " (", reasons[!keep], ")",
+                  sep = "", collapse = "; "))
   studies[keep]
 }
+
+#' Suggest sample groups from metadata text
+#'
+#' Exploratory helper for GEO series whose phenotype columns do not state
+#' the case/control group cleanly. Concatenates each sample's text metadata,
+#' computes Jaro-Winkler string distances and cuts an average-linkage
+#' hierarchical clustering into \code{k} groups. The result is written to a
+#' new \code{cluster} column; \code{condition} is \strong{not} changed,
+#' because automatically derived labels must be checked by a person before
+#' they define a contrast.
+#'
+#' @param study A \code{\linkS4class{metaXpressStudy}} object.
+#' @param k Integer. Number of groups. Default: \code{2}.
+#' @param columns Optional character vector of \code{colData} columns to use.
+#'   Default: all character/factor columns except identifiers.
+#'
+#' @return The input \code{study} with \code{colData(study)$cluster}. A
+#'   cross-tabulation against \code{condition} (if present) is printed.
+#'
+#' @examples
+#' counts <- matrix(rpois(60, 50), nrow = 10,
+#'                  dimnames = list(paste0("G", 1:10), paste0("S", 1:6)))
+#' meta <- data.frame(title = c(paste("healthy donor", 1:3),
+#'                              paste("tumour patient", 1:3)))
+#' if (requireNamespace("stringdist", quietly = TRUE)) {
+#'   s <- mx_cluster_samples(metaXpressStudy(counts, meta))
+#'   s$cluster
+#' }
+#'
+#' @export
+mx_cluster_samples <- function(study, k = 2, columns = NULL) {
+  if (!is(study, "metaXpressStudy"))
+    stop("'study' must be a metaXpressStudy object")
+  .require_package("stringdist", "string distance calculation for clustering")
+
+  meta <- .samples(study)
+  if (is.null(columns)) {
+    columns <- names(meta)[vapply(meta, function(x)
+      is.character(x) || is.factor(x), logical(1))]
+    columns <- setdiff(columns, c("sample_id", "geo_accession", "condition",
+                                  "cluster"))
+    columns <- columns[!grepl("supplementary|date|contact|protocol|^relation",
+                              columns, ignore.case = TRUE)]
+  }
+  if (length(columns) == 0) {
+    warning("No text columns found in metadata to cluster on.")
+    return(study)
+  }
+
+  docs <- apply(meta[, columns, drop = FALSE], 1, function(x)
+    tolower(paste(stats::na.omit(as.character(x)), collapse = " ")))
+  d  <- stats::as.dist(stringdist::stringdistmatrix(docs, docs, method = "jw"))
+  hc <- stats::hclust(d, method = "average")
+  study$cluster <- paste0("cluster", stats::cutree(hc, k = k))
+
+  if ("condition" %in% names(meta) && any(!is.na(meta$condition)))
+    print(table(condition = meta$condition, cluster = study$cluster))
+  message("Assigned ", ncol(study), " samples to ", k, " clusters in ",
+          "'cluster'. Inspect before using as condition labels.")
+  study
+}
+
 
 # ============================================================================
 # Internal helpers
 # ============================================================================
 
-.fetch_single_geo <- function(accession, count_type, cache_dir) {
+.fetch_single_geo <- function(accession, count_type, cache_dir,
+                              source = "supplementary",
+                              condition_col = NULL, annotate = FALSE) {
   .require_package("GEOquery", "fetching data from GEO")
   .require_package("Biobase", "parsing GEO metadata")
 
@@ -573,45 +655,69 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
            conditionMessage(e))
     }
   )
-  if (is.list(gse)) gse <- gse[[1]]
+  if (is.list(gse)) {
+    if (length(gse) > 1)
+      message("  ", accession, " spans ", length(gse), " platforms; ",
+              "combining sample metadata")
+    pdata <- do.call(.rbind_fill, lapply(gse, Biobase::pData))
+    gse1  <- gse[[1]]
+  } else {
+    pdata <- Biobase::pData(gse)
+    gse1  <- gse
+  }
 
-  # --- Detect organism from GEO metadata ---
-  organism <- .detect_organism(gse)
+  organism <- .detect_organism(gse1)
+  counts   <- NULL
+  gene_info <- NULL
+  count_source <- NA_character_
 
-  # --- Download supplementary (count) files ---
-  supp_files <- tryCatch(
-    GEOquery::getGEOSuppFiles(accession, baseDir = cache_dir),
-    error = function(e) NULL
-  )
+  # --- NCBI GEO-generated raw counts (uniformly processed) ---
+  if (source == "ncbi" && count_type == "raw") {
+    counts <- .fetch_ncbi_counts(accession, organism, cache_dir)
+    if (!is.null(counts)) {
+      count_source <- "NCBI GEO RNA-seq pipeline"
+      message("  Using NCBI-generated raw counts (", nrow(counts), " genes x ",
+              ncol(counts), " samples)")
+      if (annotate)
+        gene_info <- .ncbi_gene_info(rownames(counts), organism, cache_dir)
+    } else {
+      message("  No NCBI-generated counts for ", accession,
+              "; trying supplementary files")
+    }
+  }
 
-  # --- Extract count matrix ---
-  counts <- NULL
-
-  if (!is.null(supp_files) && nrow(supp_files) > 0) {
-    # Try to find a count matrix in supplementary files
-    counts <- tryCatch(
-      .parse_geo_counts(supp_files, accession, cache_dir),
-      error = function(e) {
-        warning("Could not parse supplementary files for ", accession,
-                ": ", conditionMessage(e))
-        NULL
-      }
+  # --- Author-supplied supplementary files ---
+  if (is.null(counts)) {
+    supp_files <- tryCatch(
+      GEOquery::getGEOSuppFiles(accession, baseDir = cache_dir),
+      error = function(e) NULL
     )
+    if (!is.null(supp_files) && nrow(supp_files) > 0) {
+      counts <- tryCatch(
+        .parse_geo_counts(supp_files, accession, cache_dir),
+        error = function(e) {
+          warning("Could not parse supplementary files for ", accession,
+                  ": ", conditionMessage(e))
+          NULL
+        }
+      )
+      if (!is.null(counts)) count_source <- "GEO supplementary file"
+    }
   }
 
   # Fallback: use the expression matrix from the GSEMatrix
   if (is.null(counts) && count_type == "normalized") {
     message("  Using expression matrix from GSEMatrix for ", accession)
-    expr_mat <- Biobase::exprs(gse)
+    expr_mat <- Biobase::exprs(gse1)
     if (nrow(expr_mat) > 0 && ncol(expr_mat) > 0) {
       counts <- as.matrix(expr_mat)
+      count_source <- "GEO series matrix (normalized)"
     }
   }
 
   if (is.null(counts) || nrow(counts) == 0 || ncol(counts) == 0) {
     warning("No count matrix could be extracted for ", accession,
             ". Use mx_load_local() with manually downloaded count files.")
-    # Return a minimal valid object (empty counts, but valid metadata)
     empty_meta <- data.frame(sample_id = character(0),
                              condition = character(0),
                              stringsAsFactors = FALSE)
@@ -624,26 +730,103 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
                de_result = data.frame()))
   }
 
-  # --- Parse sample metadata from GEO phenotype data ---
-  metadata <- .parse_geo_metadata(gse)
-
-  # --- Align metadata to count columns ---
+  # --- Sample metadata ---
+  metadata <- .parse_geo_metadata(pdata, condition_col = condition_col)
   metadata <- .align_metadata_to_counts(metadata, counts)
+  counts   <- counts[, metadata$sample_id, drop = FALSE]
 
-  # --- Warn if counts look pre-normalized ---
   if (!all(counts == floor(counts), na.rm = TRUE)) {
     warning("Study '", accession, "': count matrix contains non-integer values. ",
             "This likely indicates pre-normalized data. ",
             "DESeq2/edgeR require raw integer counts for valid inference.")
   }
 
-  metaXpressStudy(
+  study <- metaXpressStudy(
       counts    = counts,
       metadata  = metadata,
       accession = accession,
       organism  = organism,
       qc_score  = NA_real_,
-      de_result = data.frame())
+      de_result = data.frame(),
+      gene_info = gene_info)
+  S4Vectors::metadata(study)$count_source <- count_source
+  study
+}
+
+# Row-bind data.frames with different columns
+.rbind_fill <- function(...) {
+  dfs  <- list(...)
+  cols <- unique(unlist(lapply(dfs, colnames)))
+  do.call(rbind, lapply(dfs, function(d) {
+    d[setdiff(cols, colnames(d))] <- NA
+    d[cols]
+  }))
+}
+
+# Download NCBI GEO-generated raw counts; NULL if unavailable
+.fetch_ncbi_counts <- function(accession, organism, cache_dir) {
+  build <- switch(organism,
+                  "Homo sapiens" = "GRCh38.p13",
+                  "Mus musculus" = "GRCm39",
+                  NULL)
+  if (is.null(build)) return(NULL)
+  fname <- sprintf("%s_raw_counts_%s_NCBI.tsv.gz", accession, build)
+  dest  <- file.path(cache_dir, fname)
+  if (!file.exists(dest)) {
+    url <- paste0("https://www.ncbi.nlm.nih.gov/geo/download/",
+                  "?type=rnaseq_counts&format=file&acc=", accession,
+                  "&file=", fname)
+    ok <- tryCatch({
+      utils::download.file(url, dest, mode = "wb", quiet = TRUE)
+      TRUE
+    }, error = function(e) FALSE, warning = function(w) FALSE)
+    if (!ok) { unlink(dest); return(NULL) }
+  }
+  tab <- tryCatch(
+    utils::read.delim(gzfile(dest), check.names = FALSE,
+                      stringsAsFactors = FALSE),
+    error = function(e) NULL)
+  if (is.null(tab) || colnames(tab)[1] != "GeneID" || ncol(tab) < 2) {
+    unlink(dest)
+    return(NULL)
+  }
+  mat <- as.matrix(tab[, -1, drop = FALSE])
+  storage.mode(mat) <- "integer"
+  rownames(mat) <- as.character(tab$GeneID)
+  mat
+}
+
+# Gene annotation from the NCBI gene_info FTP file
+.ncbi_gene_info <- function(entrez_ids, organism, cache_dir) {
+  file <- switch(organism,
+                 "Homo sapiens" = "Mammalia/Homo_sapiens.gene_info.gz",
+                 "Mus musculus" = "Mammalia/Mus_musculus.gene_info.gz",
+                 NULL)
+  if (is.null(file)) return(NULL)
+  dest <- file.path(cache_dir, basename(file))
+  if (!file.exists(dest)) {
+    ok <- tryCatch({
+      utils::download.file(
+        paste0("https://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/", file),
+        dest, mode = "wb", quiet = TRUE)
+      TRUE
+    }, error = function(e) FALSE, warning = function(w) FALSE)
+    if (!ok) {
+      unlink(dest)
+      message("  Could not download NCBI gene_info; rowData left empty")
+      return(NULL)
+    }
+  }
+  gi <- utils::read.delim(gzfile(dest), quote = "", comment.char = "",
+                          stringsAsFactors = FALSE,
+                          colClasses = "character")
+  idx <- match(entrez_ids, gi$GeneID)
+  S4Vectors::DataFrame(
+    entrez_id = entrez_ids,
+    symbol    = gi$Symbol[idx],
+    gene_type = gi$type_of_gene[idx],
+    row.names = entrez_ids
+  )
 }
 
 .parse_geo_counts <- function(supp_files, accession, cache_dir) {
@@ -864,8 +1047,8 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
   result
 }
 
-.parse_geo_metadata <- function(gse) {
-  pd <- Biobase::pData(gse)
+.parse_geo_metadata <- function(pd, condition_col = NULL) {
+  if (methods::is(pd, "ExpressionSet")) pd <- Biobase::pData(pd)
   meta <- as.data.frame(pd, stringsAsFactors = FALSE)
 
   # Set sample_id from GEO accession column or rownames
@@ -873,6 +1056,16 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
     meta$sample_id <- meta$geo_accession
   } else {
     meta$sample_id <- rownames(meta)
+  }
+
+  if (!is.null(condition_col) && !is.na(condition_col)) {
+    if (!condition_col %in% colnames(meta))
+      stop("condition_col '", condition_col, "' not found. Available: ",
+           paste(grep(":ch1$", colnames(meta), value = TRUE), collapse = ", "))
+    meta$condition <- trimws(sub("^[^:]+:\\s*", "", meta[[condition_col]]))
+    message("  Condition from '", condition_col, "': ",
+            paste(names(table(meta$condition)), table(meta$condition),
+                  sep = "=", collapse = ", "))
   }
 
   # --- Detect condition column from GEO phenotype data ---

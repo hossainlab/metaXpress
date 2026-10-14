@@ -18,6 +18,8 @@ export(mx_filter_coverage)
 export(mx_filter_studies)
 export(mx_forest)
 export(mx_from_se)
+export(mx_funnel)
+export(mx_gene_sets)
 export(mx_heatmap)
 export(mx_heterogeneity)
 export(mx_heterogeneity_plot)
@@ -30,6 +32,7 @@ export(mx_pathway_consensus)
 export(mx_pathway_dedup)
 export(mx_pathway_heatmap)
 export(mx_pathway_meta)
+export(mx_pathway_studies)
 export(mx_qc_study)
 export(mx_read_signatures)
 export(mx_reannotate)
@@ -37,6 +40,8 @@ export(mx_remove_batch)
 export(mx_report)
 export(mx_sensitivity)
 export(mx_session_info)
+export(mx_small_study)
+export(mx_study_concordance)
 export(mx_study_overview)
 export(mx_tf_activity)
 export(mx_upset)
@@ -48,7 +53,7 @@ import(methods)
 importClassesFrom(SummarizedExperiment,SummarizedExperiment)
 importFrom(BiocParallel,
   SerialParam,
-  bplapply
+  bpmapply
 )
 importFrom(ggplot2,
   aes,
@@ -56,7 +61,7 @@ importFrom(ggplot2,
   coord_flip,
   element_text,
   geom_col,
-  geom_errorbarh,
+  geom_errorbar,
   geom_histogram,
   geom_hline,
   geom_point,
@@ -78,15 +83,20 @@ importFrom(methods,
 )
 importFrom(stats,
   as.dist,
+  cor,
+  cor.test,
   cutree,
   hclust,
   median,
   na.omit,
   p.adjust,
+  pbeta,
   pchisq,
   pnorm,
   prcomp,
+  pt,
   qnorm,
+  qt,
   sd
 )
 importFrom(utils,head)

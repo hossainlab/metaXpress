@@ -42,7 +42,7 @@ test_that("mx_meta errors on invalid method", {
 test_that("mx_meta errors on missing required columns", {
   de <- make_test_de_results()
   de[[1]]$padj <- NULL
-  expect_error(mx_meta(de, method = "fisher"), "missing columns")
+  expect_error(mx_meta(de, method = "fisher"), "missing required columns")
 })
 
 test_that("mx_meta min_studies filters genes correctly", {
@@ -82,4 +82,195 @@ test_that("mx_sensitivity returns a list of length n-1", {
 test_that("mx_sensitivity errors with fewer than 3 studies", {
   de <- make_test_de_results(n_studies = 2)
   expect_error(mx_sensitivity(de), "at least 3 studies")
+})
+
+# --- Statistical correctness against reference implementations ------------
+
+make_het_de <- function(G = 60, K = 5, seed = 7) {
+  set.seed(seed)
+  de <- lapply(seq_len(K), function(s) {
+    lfc <- rnorm(G, rep(c(1, 0), c(10, G - 10)) +
+                   rnorm(G, 0, 0.4) * (s %% 2), 0.3)
+    se  <- runif(G, 0.1, 0.6)
+    p   <- 2 * pnorm(-abs(lfc / se))
+    d <- data.frame(gene_id = paste0("G", seq_len(G)), log2FC = lfc,
+                    lfcSE = se, pvalue = p, padj = p.adjust(p, "BH"),
+                    n_case = 4 + s, n_control = 4)
+    d[-sample(G, 5), ]
+  })
+  names(de) <- LETTERS[seq_len(K)]
+  de
+}
+
+test_that("random/fixed effects match metafor::rma for all estimators", {
+  skip_if_not_installed("metafor")
+  de <- make_het_de()
+  for (tm in c("DL", "REML", "PM")) for (hk in c(FALSE, TRUE)) {
+    mt <- suppressMessages(mx_meta(de, tau_method = tm, hksj = hk))@meta_table
+    for (i in c(1, 5, 20, 40)) {
+      g  <- mt$gene_id[i]
+      y  <- vapply(de, function(d) d$log2FC[match(g, d$gene_id)], numeric(1))
+      s  <- vapply(de, function(d) d$lfcSE[match(g, d$gene_id)], numeric(1))
+      ok <- !is.na(y)
+      ref <- metafor::rma(yi = y[ok], sei = s[ok], method = tm,
+                          test = if (hk) "knha" else "z",
+                          control = list(threshold = 1e-12, tol = 1e-12, maxiter = 5000,
+                                         stepadj = 0.5))
+      info <- paste(tm, hk, g)
+      expect_equal(mt$meta_log2FC[i], unname(ref$b[1, 1]), tolerance = 1e-7,
+                   info = info)
+      expect_equal(mt$meta_se[i], ref$se, tolerance = 1e-7, info = info)
+      expect_equal(mt$meta_pvalue[i], ref$pval, tolerance = 1e-6, info = info)
+      expect_equal(mt$tau2[i], ref$tau2, tolerance = 1e-7, info = info)
+      expect_equal(mt$q_stat[i], ref$QE, tolerance = 1e-8, info = info)
+      expect_equal(mt$ci_lower[i], ref$ci.lb, tolerance = 1e-7, info = info)
+    }
+  }
+  fe <- suppressMessages(mx_meta(de, method = "fixed_effects"))@meta_table
+  g  <- fe$gene_id[3]
+  y  <- vapply(de, function(d) d$log2FC[match(g, d$gene_id)], numeric(1))
+  s  <- vapply(de, function(d) d$lfcSE[match(g, d$gene_id)], numeric(1))
+  ok <- !is.na(y)
+  ref <- metafor::rma(yi = y[ok], sei = s[ok], method = "FE")
+  expect_equal(fe$meta_log2FC[3], unname(ref$b[1, 1]), tolerance = 1e-8)
+  expect_equal(fe$meta_pvalue[3], ref$pval, tolerance = 1e-8)
+})
+
+test_that("prediction interval uses t with k - 2 df (Higgins 2009)", {
+  de <- make_het_de()
+  mt <- suppressMessages(mx_meta(de, tau_method = "DL"))@meta_table
+  i  <- which(mt$n_studies >= 3)[1]
+  half <- qt(0.975, mt$n_studies[i] - 2) * sqrt(mt$tau2[i] + mt$meta_se[i]^2)
+  expect_equal(mt$pi_upper[i], mt$meta_log2FC[i] + half)
+})
+
+test_that("p-value combination methods match closed forms", {
+  de <- make_het_de(K = 3)
+  g  <- "G1"
+  p  <- vapply(de, function(d) d$pvalue[match(g, d$gene_id)], numeric(1))
+  l  <- vapply(de, function(d) d$log2FC[match(g, d$gene_id)], numeric(1))
+  ok <- !is.na(p); p <- p[ok]; l <- l[ok]; k <- length(p)
+  get <- function(...) {
+    mt <- suppressMessages(mx_meta(de, ...))@meta_table
+    mt$meta_pvalue[mt$gene_id == g]
+  }
+  expect_equal(get(method = "fisher", directional = FALSE),
+               pchisq(-2 * sum(log(p)), 2 * k, lower.tail = FALSE))
+  z <- qnorm(ifelse(l > 0, p / 2, 1 - p / 2), lower.tail = FALSE)
+  expect_equal(get(method = "stouffer"), 2 * pnorm(-abs(sum(z) / sqrt(k))))
+  n <- vapply(de, function(d) d$n_case[1] + d$n_control[1], numeric(1))[ok]
+  w <- sqrt(n)
+  expect_equal(get(method = "inverse_normal"),
+               2 * pnorm(-abs(sum(w * z) / sqrt(sum(w^2)))))
+  expect_equal(get(method = "minp"), 1 - (1 - min(p))^k)
+  expect_equal(get(method = "maxp"), max(p)^k)
+  expect_equal(get(method = "rop", r = 2), unname(pbeta(sort(p)[2], 2, k - 1)))
+})
+
+test_that("directional combination does not accumulate opposite effects", {
+  opp <- list(
+    a = data.frame(gene_id = "X", log2FC = 2, lfcSE = 0.5,
+                   pvalue = 1e-4, padj = 1e-3),
+    b = data.frame(gene_id = "X", log2FC = -2, lfcSE = 0.5,
+                   pvalue = 1e-4, padj = 1e-3))
+  stouffer <- suppressMessages(mx_meta(opp, "stouffer"))@meta_table
+  expect_equal(stouffer$meta_pvalue, 1)
+  dir <- suppressMessages(mx_meta(opp, "fisher"))@meta_table
+  undir <- suppressMessages(mx_meta(opp, "fisher",
+                                    directional = FALSE))@meta_table
+  expect_gt(dir$meta_pvalue, undir$meta_pvalue)
+  expect_equal(dir$direction_consistency, 0.5)
+})
+
+test_that("awmeta matches AWFisher + REML random effects on selected studies", {
+  skip_if_not_installed("AWFisher")
+  skip_if_not_installed("metafor")
+  de <- make_het_de(K = 4, G = 40)
+  mt <- suppressMessages(mx_meta(de, method = "awmeta"))@meta_table
+  expect_true(all(c("aw_studies", "aw_n_selected") %in% names(mt)))
+  for (i in c(1, 3, 12, 30)) {
+    g  <- mt$gene_id[i]
+    p  <- vapply(de, function(d) d$pvalue[match(g, d$gene_id)], numeric(1))
+    y  <- vapply(de, function(d) d$log2FC[match(g, d$gene_id)], numeric(1))
+    s  <- vapply(de, function(d) d$lfcSE[match(g, d$gene_id)], numeric(1))
+    ok <- !is.na(p)
+    aw <- AWFisher::AWFisher_pvalue(p[ok])
+    expect_equal(mt$meta_pvalue[i], aw$pvalues, info = g)
+    selected <- names(de)[ok][aw$weights == 1]
+    expect_equal(strsplit(mt$aw_studies[i], ";")[[1]], selected, info = g)
+    if (length(selected) >= 2) {
+      ref <- metafor::rma(yi = y[selected], sei = s[selected], method = "REML",
+                          control = list(threshold = 1e-12, maxiter = 5000,
+                                         stepadj = 0.5))
+      expect_equal(mt$meta_log2FC[i], unname(ref$b[1, 1]), tolerance = 1e-6,
+                   info = g)
+    } else {
+      expect_equal(mt$meta_log2FC[i], unname(y[selected]), info = g)
+    }
+  }
+  expect_equal(mt$meta_padj, p.adjust(mt$meta_pvalue, "BH"))
+})
+
+test_that("effect-size methods require lfcSE", {
+  de <- make_test_de_results()
+  de[[1]]$lfcSE <- NULL
+  expect_error(suppressMessages(mx_meta(de, "random_effects")), "lfcSE")
+  expect_s4_class(suppressMessages(mx_meta(de, "stouffer")),
+                  "metaXpressResult")
+})
+
+test_that("mx_sensitivity attaches a robustness table", {
+  de  <- make_het_de(K = 4)
+  loo <- suppressMessages(mx_sensitivity(de))
+  rob <- attr(loo, "robustness")
+  expect_true(all(c("gene_id", "n_loo_sig", "frac_loo_sig") %in% names(rob)))
+  expect_true(all(rob$frac_loo_sig >= 0 & rob$frac_loo_sig <= 1))
+})
+
+test_that("mx_study_concordance flags a flipped contrast", {
+  set.seed(1)
+  base <- rnorm(300)
+  de <- lapply(c(1, 1, -1), function(dir) {
+    lfc <- dir * base + rnorm(300, 0, 0.3)
+    p <- 2 * pnorm(-abs(lfc / 0.3))
+    data.frame(gene_id = paste0("G", 1:300), log2FC = lfc, pvalue = p,
+               padj = p.adjust(p, "BH"))
+  })
+  names(de) <- c("A", "B", "C")
+  expect_warning(cc <- mx_study_concordance(de), "contrast")
+  expect_true(cc$correlation[cc$study_1 == "A" & cc$study_2 == "B"] > 0.8)
+  expect_match(cc$flag[cc$study_2 == "C"][1], "NEGATIVE")
+})
+
+test_that("Egger and Begg tests match metafor::regtest / ranktest", {
+  skip_if_not_installed("metafor")
+  set.seed(11)
+  K <- 12; G <- 5
+  de <- lapply(seq_len(K), function(s) {
+    se <- runif(G, 0.1, 0.8)
+    lfc <- 0.3 + 1.2 * se * (seq_len(G) %% 2) + rnorm(G, 0, se)
+    p <- 2 * pnorm(-abs(lfc / se))
+    data.frame(gene_id = paste0("G", seq_len(G)), log2FC = lfc, lfcSE = se,
+               pvalue = p, padj = p)
+  })
+  ss <- mx_small_study(de, method = "both")
+  for (i in seq_len(G)) {
+    y <- vapply(de, function(d) d$log2FC[i], numeric(1))
+    s <- vapply(de, function(d) d$lfcSE[i], numeric(1))
+    fe <- metafor::rma(yi = y, sei = s, method = "FE")
+    eg <- metafor::regtest(fe, model = "lm", predictor = "sei")
+    expect_equal(ss$egger_pvalue[i], eg$pval, tolerance = 1e-8)
+    rk <- suppressWarnings(metafor::ranktest(fe))
+    expect_equal(ss$begg_tau[i], unname(rk$tau), tolerance = 1e-8)
+    expect_equal(ss$begg_pvalue[i], rk$pval, tolerance = 1e-8)
+  }
+})
+
+test_that("mx_small_study warns with few studies; mx_funnel plots", {
+  ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+                            package = "metaXpress"))
+  expect_warning(ss <- mx_small_study(ad$de_results, genes = c("GFAP", "VGF")),
+                 "low power")
+  expect_equal(nrow(ss), 2)
+  expect_s3_class(mx_funnel("GFAP", ad$de_results), "ggplot")
 })

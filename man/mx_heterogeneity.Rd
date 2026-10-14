@@ -4,26 +4,48 @@
 \alias{mx_heterogeneity}
 \title{Compute per-gene heterogeneity statistics}
 \usage{
-mx_heterogeneity(de_results)
+mx_heterogeneity(de_results, tau_method = c("REML", "PM", "DL"))
 }
 \arguments{
-\item{de_results}{A named list of \code{data.frame} objects from
-\code{\link{mx_de_all}}, or a list of
-\code{\linkS4class{metaXpressStudy}} objects.}
+\item{de_results}{A named list of \code{data.frame} objects (the
+\code{de_result} slots produced by \code{\link{mx_de}}), or a named list
+of \code{\linkS4class{metaXpressStudy}} objects after
+\code{\link{mx_de_all}}. Required columns: \code{gene_id},
+\code{log2FC}, \code{pvalue}, \code{padj}; effect-size methods also need
+\code{lfcSE}.}
+
+\item{tau_method}{Estimator of the between-study variance for
+\code{"random_effects"}: \code{"REML"} (default; restricted maximum
+likelihood), \code{"PM"} (Paule-Mandel) or \code{"DL"}
+(DerSimonian-Laird). REML and PM are preferred over DL, which
+underestimates \eqn{\tau^2} (Veroniki et al. 2016; Langan et al. 2019).}
 }
 \value{
 A \code{data.frame} with columns \code{gene_id}, \code{Q},
   \code{df}, \code{I_sq}, \code{tau_sq}, \code{p_heterogeneity}.
 }
 \description{
-Returns Cochran's Q, degrees of freedom, I-squared, tau-squared, and the
-p-value for the Q test for each gene across studies.
+Returns Cochran's Q, degrees of freedom, \eqn{I^2}, the between-study
+variance \eqn{\tau^2} and the p-value of the Q test for each gene measured
+in at least two studies.
+}
+\details{
+\eqn{I^2 = \max(0, (Q - df)/Q)} describes the proportion of
+variability due to between-study differences rather than sampling error
+(Higgins & Thompson 2002). With few studies the Q test has low power and
+\eqn{I^2} is imprecise, so heterogeneity should be interpreted alongside
+\eqn{\tau^2} and the prediction interval from \code{\link{mx_meta}}.
 }
 \examples{
-\dontrun{
-  het <- mx_heterogeneity(de_results)
-  hist(het$I_sq, main = "I-squared distribution")
-}
+set.seed(1)
+de <- lapply(1:3, function(s) {
+  lfc <- rnorm(50, s * 0.3, 0.2); se <- rep(0.2, 50)
+  p <- 2 * pnorm(-abs(lfc / se))
+  data.frame(gene_id = paste0("G", 1:50), log2FC = lfc, lfcSE = se,
+             pvalue = p, padj = p.adjust(p, "BH"))
+})
+het <- mx_heterogeneity(de)
+summary(het$I_sq)
 
 }
 \references{

@@ -12,12 +12,23 @@ Studies must have a \code{library_type} column in \code{metadata} with
 values \code{"polyA"} or \code{"rRNA_depleted"}.}
 }
 \value{
-The input list of studies with library type bias corrected.
+The input list of studies, restricted to their common genes, with
+  an added \code{"cpm_libtype_corrected"} assay in rRNA-depleted studies
+  (and plain CPM in polyA studies).
 }
 \description{
 Adjusts for systematic expression differences between polyA-selected and
-rRNA-depleted RNA-seq libraries using the ratio-based correction described
-by Bush et al. (2017).
+rRNA-depleted RNA-seq libraries with a per-gene ratio correction in the
+spirit of Bush et al. (2017). The ratio is estimated from
+\emph{control} samples only, so disease effects do not leak into it.
+}
+\details{
+Per-gene multiplicative scaling cancels out of within-study log fold
+changes, so this correction is \strong{not needed} for the standard
+per-study DE + meta-analysis workflow. It matters only when expression
+levels are compared across studies (pooled heatmaps, co-expression,
+cell-composition scores). The corrected values are stored in a new
+\code{"cpm_libtype_corrected"} assay; raw counts are untouched.
 }
 \examples{
 \dontrun{
@@ -26,7 +37,7 @@ by Bush et al. (2017).
 
 }
 \references{
-Bush, S.J. et al. (2017) Cross-species inference of long non-coding RNAs
-greatly expands the ruminant transcriptome. \emph{Genetics Selection
-Evolution}, \strong{50}(1), 20. \doi{10.1186/s12859-017-1714-9}
+Bush, S.J. et al. (2017) Integration of quantitated expression estimates
+from polyA-selected and rRNA-depleted RNA-seq libraries. \emph{BMC
+Bioinformatics}, \strong{18}, 301. \doi{10.1186/s12859-017-1714-9}
 }
