@@ -408,7 +408,11 @@ mx_funnel("GFAP", de, res)
 
 ``` r
 
-res <- mx_pathway_meta(res, db = "Hallmarks", method = "GSEA")
+# MSigDB Hallmarks (CC BY 4.0) shipped with metaXpress; for other
+# collections use mx_gene_sets("Reactome"), which downloads via msigdbr
+hallmarks <- readRDS(system.file("extdata", "hallmark_gene_sets.rds",
+                                 package = "metaXpress"))
+res <- mx_pathway_meta(res, gene_sets = hallmarks, method = "GSEA")
 head(res@pathway_result[, c("pathway_id", "NES", "padj")], 10)
 #>                            pathway_id       NES         padj
 #> 36 HALLMARK_OXIDATIVE_PHOSPHORYLATION -3.077706 4.911417e-31
@@ -432,7 +436,7 @@ study.
 
 ``` r
 
-ps <- mx_pathway_studies(de, db = "Hallmarks")
+ps <- mx_pathway_studies(de, gene_sets = hallmarks)
 head(ps[, c("pathway_id", "mean_NES", "n_up", "n_down", "n_sig",
             "meta_padj")], 10)
 #>                                    pathway_id   mean_NES n_up n_down n_sig
@@ -543,32 +547,31 @@ sessionInfo()
 #> [17] pkgconfig_2.0.3             Matrix_1.7-5               
 #> [19] data.table_1.18.6.1         RColorBrewer_1.1-3         
 #> [21] S7_0.2.2                    desc_1.4.3                 
-#> [23] S4Vectors_0.50.3            assertthat_0.2.1           
-#> [25] lifecycle_1.0.5             compiler_4.6.1             
-#> [27] farver_2.1.2                textshaping_1.0.5          
-#> [29] statmod_1.5.2               fgsea_1.38.0               
-#> [31] Seqinfo_1.2.0               codetools_0.2-20           
-#> [33] htmltools_0.5.9             sass_0.4.10                
-#> [35] yaml_2.3.12                 pillar_1.11.1              
-#> [37] pkgdown_2.2.1               jquerylib_0.1.4            
-#> [39] BiocParallel_1.46.0         DelayedArray_0.38.2        
-#> [41] cachem_1.1.0                limma_3.68.5               
-#> [43] abind_1.4-8                 tidyselect_1.2.1           
-#> [45] locfit_1.5-9.12             digest_0.6.39              
-#> [47] dplyr_1.2.1                 labeling_0.4.3             
-#> [49] cowplot_1.2.0               fastmap_1.2.0              
-#> [51] grid_4.6.1                  SparseArray_1.12.3         
-#> [53] cli_3.6.6                   magrittr_2.0.5             
-#> [55] S4Arrays_1.12.1             withr_3.0.3                
-#> [57] edgeR_4.10.5                scales_1.4.0               
-#> [59] XVector_0.52.0              rmarkdown_2.32             
-#> [61] matrixStats_1.5.0           otel_0.2.0                 
-#> [63] ragg_1.5.2                  evaluate_1.0.5             
-#> [65] knitr_1.52                  AWFisher_1.26.0            
-#> [67] GenomicRanges_1.64.0        IRanges_2.46.0             
-#> [69] msigdbr_26.1.1              rlang_1.3.0                
-#> [71] Rcpp_1.1.2                  glue_1.8.1                 
-#> [73] BiocGenerics_0.58.1         jsonlite_2.0.0             
-#> [75] R6_2.6.1                    MatrixGenerics_1.24.0      
-#> [77] systemfonts_1.3.2           fs_2.1.0
+#> [23] S4Vectors_0.50.3            lifecycle_1.0.5            
+#> [25] compiler_4.6.1              farver_2.1.2               
+#> [27] textshaping_1.0.5           statmod_1.5.2              
+#> [29] fgsea_1.38.0                Seqinfo_1.2.0              
+#> [31] codetools_0.2-20            htmltools_0.5.9            
+#> [33] sass_0.4.10                 yaml_2.3.12                
+#> [35] pillar_1.11.1               pkgdown_2.2.1              
+#> [37] jquerylib_0.1.4             BiocParallel_1.46.0        
+#> [39] cachem_1.1.0                DelayedArray_0.38.2        
+#> [41] limma_3.68.5                abind_1.4-8                
+#> [43] tidyselect_1.2.1            locfit_1.5-9.12            
+#> [45] digest_0.6.39               dplyr_1.2.1                
+#> [47] labeling_0.4.3              cowplot_1.2.0              
+#> [49] fastmap_1.2.0               grid_4.6.1                 
+#> [51] cli_3.6.6                   SparseArray_1.12.3         
+#> [53] magrittr_2.0.5              S4Arrays_1.12.1            
+#> [55] withr_3.0.3                 edgeR_4.10.5               
+#> [57] scales_1.4.0                XVector_0.52.0             
+#> [59] rmarkdown_2.32              matrixStats_1.5.0          
+#> [61] otel_0.2.0                  ragg_1.5.2                 
+#> [63] evaluate_1.0.5              knitr_1.52                 
+#> [65] AWFisher_1.26.0             GenomicRanges_1.64.0       
+#> [67] IRanges_2.46.0              rlang_1.3.0                
+#> [69] Rcpp_1.1.2                  glue_1.8.1                 
+#> [71] BiocGenerics_0.58.1         jsonlite_2.0.0             
+#> [73] R6_2.6.1                    MatrixGenerics_1.24.0      
+#> [75] systemfonts_1.3.2           fs_2.1.0
 ```

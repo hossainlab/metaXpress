@@ -50,16 +50,21 @@ hallmark gene set collection. *Cell Systems*, **1**(6), 417–425.
 ## Examples
 
 ``` r
+# Offline: the Hallmark collection ships with metaXpress
+hallmarks <- readRDS(system.file("extdata", "hallmark_gene_sets.rds",
+                                 package = "metaXpress"))
+length(hallmarks)
+#> [1] 50
+head(hallmarks$HALLMARK_INFLAMMATORY_RESPONSE)
+#> [1] "ABCA1"  "ABI1"   "ACVR1B" "ACVR2A" "ADGRE1" "ADM"   
+
+# \donttest{
+# Other collections are downloaded through msigdbr (needs internet)
 if (requireNamespace("msigdbr", quietly = TRUE)) {
-  hallmarks <- mx_gene_sets("Hallmarks")
-  length(hallmarks)
-  head(hallmarks$HALLMARK_INFLAMMATORY_RESPONSE)
+  reactome <- mx_gene_sets("Reactome")
+  length(reactome)
 }
 #> Downloading gene sets (first use only, may take a few minutes)...
-#> Warning: The `category` argument of `msigdbr()` is deprecated as of msigdbr 10.0.0.
-#> ℹ Please use the `collection` argument instead.
-#> ℹ The deprecated feature was likely used in the metaXpress package.
-#>   Please report the issue at <https://github.com/hossainlab/metaXpress/issues>.
-#> Downloading gene sets (first use only, may take a few minutes)...
-#> [1] "ABCA1"  "ABI1"   "ACVR1B" "ACVR2A" "ADGRE1" "ADM"   
+#> [1] 1839
+# }
 ```

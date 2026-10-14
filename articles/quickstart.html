@@ -267,10 +267,15 @@ omission as the robust core signature.</p>
 <div class="section level2">
 <h2 id="pathways">3. Pathways<a class="anchor" aria-label="anchor" href="#pathways"></a>
 </h2>
-<p>GSEA ranks genes by the signed meta-analysis z-score (fgsea, MSigDB
-Hallmarks):</p>
+<p>GSEA ranks genes by the signed meta-analysis z-score (fgsea). The 50
+MSigDB Hallmark gene sets [Liberzon et al. 2015; CC BY 4.0] ship with
+the package, so this runs offline:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_pathway_meta.html">mx_pathway_meta</a></span><span class="op">(</span><span class="va">res</span>, db <span class="op">=</span> <span class="st">"Hallmarks"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># MSigDB Hallmarks (CC BY 4.0) shipped with metaXpress; for other</span></span>
+<span><span class="co"># collections use mx_gene_sets("Reactome"), which downloads via msigdbr</span></span>
+<span><span class="va">hallmarks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"hallmark_gene_sets.rds"</span>,</span>
+<span>                                 package <span class="op">=</span> <span class="st">"metaXpress"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_pathway_meta.html">mx_pathway_meta</a></span><span class="op">(</span><span class="va">res</span>, gene_sets <span class="op">=</span> <span class="va">hallmarks</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">@</span><span class="va">pathway_result</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pathway_id"</span>, <span class="st">"NES"</span>, <span class="st">"padj"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">8</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                            pathway_id       NES         padj</span></span>
 <span><span class="co">#&gt; 36 HALLMARK_OXIDATIVE_PHOSPHORYLATION -3.077706 4.911417e-31</span></span>
@@ -336,32 +341,31 @@ starting from GEO accessions with <code><a href="../reference/mx_fetch_geo.html"
 <span><span class="co">#&gt; [19] Matrix_1.7-5                data.table_1.18.6.1        </span></span>
 <span><span class="co">#&gt; [21] RColorBrewer_1.1-3          S7_0.2.2                   </span></span>
 <span><span class="co">#&gt; [23] desc_1.4.3                  S4Vectors_0.50.3           </span></span>
-<span><span class="co">#&gt; [25] assertthat_0.2.1            lifecycle_1.0.5            </span></span>
-<span><span class="co">#&gt; [27] compiler_4.6.1              farver_2.1.2               </span></span>
-<span><span class="co">#&gt; [29] textshaping_1.0.5           fgsea_1.38.0               </span></span>
-<span><span class="co">#&gt; [31] DESeq2_1.52.0               Seqinfo_1.2.0              </span></span>
-<span><span class="co">#&gt; [33] codetools_0.2-20            htmltools_0.5.9            </span></span>
-<span><span class="co">#&gt; [35] sass_0.4.10                 yaml_2.3.12                </span></span>
-<span><span class="co">#&gt; [37] pillar_1.11.1               pkgdown_2.2.1              </span></span>
-<span><span class="co">#&gt; [39] jquerylib_0.1.4             BiocParallel_1.46.0        </span></span>
-<span><span class="co">#&gt; [41] cachem_1.1.0                DelayedArray_0.38.2        </span></span>
-<span><span class="co">#&gt; [43] abind_1.4-8                 locfit_1.5-9.12            </span></span>
-<span><span class="co">#&gt; [45] tidyselect_1.2.1            digest_0.6.39              </span></span>
-<span><span class="co">#&gt; [47] dplyr_1.2.1                 labeling_0.4.3             </span></span>
-<span><span class="co">#&gt; [49] cowplot_1.2.0               fastmap_1.2.0              </span></span>
-<span><span class="co">#&gt; [51] grid_4.6.1                  cli_3.6.6                  </span></span>
-<span><span class="co">#&gt; [53] SparseArray_1.12.3          magrittr_2.0.5             </span></span>
-<span><span class="co">#&gt; [55] S4Arrays_1.12.1             withr_3.0.3                </span></span>
-<span><span class="co">#&gt; [57] scales_1.4.0                rmarkdown_2.32             </span></span>
-<span><span class="co">#&gt; [59] XVector_0.52.0              matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt; [61] otel_0.2.0                  ragg_1.5.2                 </span></span>
-<span><span class="co">#&gt; [63] evaluate_1.0.5              knitr_1.52                 </span></span>
-<span><span class="co">#&gt; [65] GenomicRanges_1.64.0        IRanges_2.46.0             </span></span>
-<span><span class="co">#&gt; [67] msigdbr_26.1.1              rlang_1.3.0                </span></span>
-<span><span class="co">#&gt; [69] Rcpp_1.1.2                  glue_1.8.1                 </span></span>
-<span><span class="co">#&gt; [71] BiocGenerics_0.58.1         jsonlite_2.0.0             </span></span>
-<span><span class="co">#&gt; [73] R6_2.6.1                    MatrixGenerics_1.24.0      </span></span>
-<span><span class="co">#&gt; [75] systemfonts_1.3.2           fs_2.1.0</span></span></code></pre></div>
+<span><span class="co">#&gt; [25] lifecycle_1.0.5             compiler_4.6.1             </span></span>
+<span><span class="co">#&gt; [27] farver_2.1.2                textshaping_1.0.5          </span></span>
+<span><span class="co">#&gt; [29] fgsea_1.38.0                DESeq2_1.52.0              </span></span>
+<span><span class="co">#&gt; [31] Seqinfo_1.2.0               codetools_0.2-20           </span></span>
+<span><span class="co">#&gt; [33] htmltools_0.5.9             sass_0.4.10                </span></span>
+<span><span class="co">#&gt; [35] yaml_2.3.12                 pillar_1.11.1              </span></span>
+<span><span class="co">#&gt; [37] pkgdown_2.2.1               jquerylib_0.1.4            </span></span>
+<span><span class="co">#&gt; [39] BiocParallel_1.46.0         cachem_1.1.0               </span></span>
+<span><span class="co">#&gt; [41] DelayedArray_0.38.2         abind_1.4-8                </span></span>
+<span><span class="co">#&gt; [43] tidyselect_1.2.1            locfit_1.5-9.12            </span></span>
+<span><span class="co">#&gt; [45] digest_0.6.39               dplyr_1.2.1                </span></span>
+<span><span class="co">#&gt; [47] labeling_0.4.3              cowplot_1.2.0              </span></span>
+<span><span class="co">#&gt; [49] fastmap_1.2.0               grid_4.6.1                 </span></span>
+<span><span class="co">#&gt; [51] cli_3.6.6                   SparseArray_1.12.3         </span></span>
+<span><span class="co">#&gt; [53] magrittr_2.0.5              S4Arrays_1.12.1            </span></span>
+<span><span class="co">#&gt; [55] withr_3.0.3                 scales_1.4.0               </span></span>
+<span><span class="co">#&gt; [57] rmarkdown_2.32              XVector_0.52.0             </span></span>
+<span><span class="co">#&gt; [59] matrixStats_1.5.0           otel_0.2.0                 </span></span>
+<span><span class="co">#&gt; [61] ragg_1.5.2                  evaluate_1.0.5             </span></span>
+<span><span class="co">#&gt; [63] knitr_1.52                  GenomicRanges_1.64.0       </span></span>
+<span><span class="co">#&gt; [65] IRanges_2.46.0              rlang_1.3.0                </span></span>
+<span><span class="co">#&gt; [67] Rcpp_1.1.2                  glue_1.8.1                 </span></span>
+<span><span class="co">#&gt; [69] BiocGenerics_0.58.1         jsonlite_2.0.0             </span></span>
+<span><span class="co">#&gt; [71] R6_2.6.1                    MatrixGenerics_1.24.0      </span></span>
+<span><span class="co">#&gt; [73] systemfonts_1.3.2           fs_2.1.0</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
