@@ -37,3 +37,11 @@ case_study_downstream.rds
       lincs        200 of 5,425 LINCS L1000 consensus drug signatures
                    (Enrichr), selected from the full ranking for the demo
     Built by scripts/make_downstream_extdata.R (source repository).
+
+hallmark_gene_sets.rds
+    The 50 MSigDB Hallmark gene sets (human gene symbols), a named list of
+    character vectors, so that vignettes and examples run without internet.
+    MSigDB Hallmark collection (Liberzon et al. 2015, Cell Systems 1:417,
+    doi:10.1016/j.cels.2015.12.004), distributed under CC BY 4.0. Version
+    recorded in attr(x, "source"). Built by
+    inst/scripts/make_hallmark_extdata.R.

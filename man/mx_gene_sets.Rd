@@ -31,10 +31,18 @@ Downloads a gene set collection with \pkg{msigdbr} and returns it as a
 named list, using the identifier type that matches your gene IDs.
 }
 \examples{
+# Offline: the Hallmark collection ships with metaXpress
+hallmarks <- readRDS(system.file("extdata", "hallmark_gene_sets.rds",
+                                 package = "metaXpress"))
+length(hallmarks)
+head(hallmarks$HALLMARK_INFLAMMATORY_RESPONSE)
+
+\donttest{
+# Other collections are downloaded through msigdbr (needs internet)
 if (requireNamespace("msigdbr", quietly = TRUE)) {
-  hallmarks <- mx_gene_sets("Hallmarks")
-  length(hallmarks)
-  head(hallmarks$HALLMARK_INFLAMMATORY_RESPONSE)
+  reactome <- mx_gene_sets("Reactome")
+  length(reactome)
+}
 }
 
 }

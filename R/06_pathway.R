@@ -28,10 +28,18 @@ NULL
 #' 417--425. \doi{10.1016/j.cels.2015.12.004}
 #'
 #' @examples
+#' # Offline: the Hallmark collection ships with metaXpress
+#' hallmarks <- readRDS(system.file("extdata", "hallmark_gene_sets.rds",
+#'                                  package = "metaXpress"))
+#' length(hallmarks)
+#' head(hallmarks$HALLMARK_INFLAMMATORY_RESPONSE)
+#'
+#' \donttest{
+#' # Other collections are downloaded through msigdbr (needs internet)
 #' if (requireNamespace("msigdbr", quietly = TRUE)) {
-#'   hallmarks <- mx_gene_sets("Hallmarks")
-#'   length(hallmarks)
-#'   head(hallmarks$HALLMARK_INFLAMMATORY_RESPONSE)
+#'   reactome <- mx_gene_sets("Reactome")
+#'   length(reactome)
+#' }
 #' }
 #'
 #' @seealso \code{\link{mx_pathway_meta}}, \code{\link{mx_pathway_studies}}
