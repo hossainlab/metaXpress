@@ -10,7 +10,7 @@ mx_pathway_studies(
   gene_sets = NULL,
   min_size = 15,
   max_size = 500,
-  weights = NULL,
+  weights = "equal",
   seed = 1L,
   ...
 )
@@ -30,9 +30,12 @@ Ignored when \code{gene_sets} is supplied.}
 \item{min_size, max_size}{Gene set size limits after restricting to genes
 in the analysis. Defaults: \code{15} and \code{500}.}
 
-\item{weights}{Per-study weights for the Stouffer combination. Default:
-square root of the per-study sample size when \code{n_case} /
-\code{n_control} columns are present, otherwise equal.}
+\item{weights}{Per-study weights for the Stouffer combination:
+\code{"equal"} (default), \code{"sample_size"} (square root of the
+per-study sample size from \code{n_case} / \code{n_control}), or a
+numeric vector with one weight per study. Equal weights are the default
+because GSEA p-values of a large cohort are already far more extreme,
+and sample-size weights would let one cohort dominate.}
 
 \item{seed}{Integer seed for the fgsea permutation sampling, for
 reproducibility. The global RNG state is restored afterwards.}

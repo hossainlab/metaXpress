@@ -6,43 +6,52 @@
 \usage{
 mx_report(
   meta_result,
-  studies,
   de_results,
+  studies = NULL,
   format = c("html", "pdf"),
   output_dir = ".",
-  output_file = "metaXpress_report"
+  output_file = "metaXpress_report",
+  padj_threshold = 0.05,
+  lfc_threshold = 0
 )
 }
 \arguments{
 \item{meta_result}{A \code{\linkS4class{metaXpressResult}} object from
 \code{\link{mx_meta}}.}
 
-\item{studies}{A named list of \code{\linkS4class{metaXpressStudy}} objects.}
+\item{de_results}{The named list of per-study DE \code{data.frame}s (or
+\code{\linkS4class{metaXpressStudy}} objects) used for the meta-analysis.}
 
-\item{de_results}{A named list of per-study DE \code{data.frame}s from
-\code{\link{mx_de_all}}.}
+\item{studies}{Optional list of \code{\linkS4class{metaXpressStudy}}
+objects (currently unused; kept for API compatibility).}
 
-\item{format}{Character scalar. Output format. One of \code{"html"}
-(default) or \code{"pdf"}.}
+\item{format}{\code{"html"} (default) or \code{"pdf"} (requires LaTeX).}
 
-\item{output_dir}{Character scalar. Directory for the output report.
-Default: current working directory (\code{"."}).}
+\item{output_dir}{Output directory. Default: \code{"."}.}
 
-\item{output_file}{Character scalar. Filename (without extension).
-Default: \code{"metaXpress_report"}.}
+\item{output_file}{File name without extension. Default:
+\code{"metaXpress_report"}.}
+
+\item{padj_threshold, lfc_threshold}{Significance thresholds used in the
+report. Defaults: \code{0.05} and \code{0}.}
 }
 \value{
-The path to the generated report file (invisibly).
+The path to the generated report (invisibly).
 }
 \description{
-Renders a full HTML or PDF report summarising the meta-analysis pipeline,
-including QC metrics, per-study DE summaries, meta-analysis results, and
-pathway enrichment results.
+Renders an HTML (or PDF) report with methods text, study table,
+fold-change concordance, volcano plot, top-gene table with confidence and
+prediction intervals, heterogeneity, forest plots, leave-one-out
+robustness, pathway results (if present) and session information.
 }
 \examples{
-\dontrun{
-  mx_report(meta_result, studies, de_results,
-            format = "html", output_dir = "results/")
+\donttest{
+if (rmarkdown::pandoc_available()) {
+  ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+                            package = "metaXpress"))
+  res <- mx_meta(ad$de_results)
+  mx_report(res, ad$de_results, output_dir = tempdir())
+}
 }
 
 }

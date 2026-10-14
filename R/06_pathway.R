@@ -181,9 +181,12 @@ mx_pathway_meta <- function(meta_result,
 #'   \code{\linkS4class{metaXpressStudy}} objects after
 #'   \code{\link{mx_de_all}}.
 #' @inheritParams mx_pathway_meta
-#' @param weights Per-study weights for the Stouffer combination. Default:
-#'   square root of the per-study sample size when \code{n_case} /
-#'   \code{n_control} columns are present, otherwise equal.
+#' @param weights Per-study weights for the Stouffer combination:
+#'   \code{"equal"} (default), \code{"sample_size"} (square root of the
+#'   per-study sample size from \code{n_case} / \code{n_control}), or a
+#'   numeric vector with one weight per study. Equal weights are the default
+#'   because GSEA p-values of a large cohort are already far more extreme,
+#'   and sample-size weights would let one cohort dominate.
 #'
 #' @return A \code{data.frame} with one row per gene set: \code{pathway_id},
 #'   \code{n_studies}, \code{mean_NES}, \code{n_up} / \code{n_down}
@@ -232,7 +235,7 @@ mx_pathway_studies <- function(de_results,
                                gene_sets = NULL,
                                min_size = 15,
                                max_size = 500,
-                               weights = NULL,
+                               weights = "equal",
                                seed = 1L,
                                ...) {
   de_results <- .extract_de_results(de_results)
@@ -243,14 +246,19 @@ mx_pathway_studies <- function(de_results,
   all_ids <- unique(unlist(lapply(de_results, `[[`, "gene_id")))
   gene_sets <- .resolve_gene_sets(gene_sets, match.arg(db), all_ids)
 
-  w <- if (!is.null(weights)) {
+  w <- if (is.numeric(weights)) {
     if (length(weights) != k) stop("'weights' must have length ", k)
     as.numeric(weights)
-  } else {
+  } else if (identical(weights, "sample_size")) {
     n <- vapply(de_results, function(d)
       if (all(c("n_case", "n_control") %in% names(d)))
         as.numeric(d$n_case[1] + d$n_control[1]) else NA_real_, numeric(1))
-    if (anyNA(n)) rep(1, k) else sqrt(n)
+    if (anyNA(n)) stop("'sample_size' weights need n_case/n_control columns")
+    sqrt(n)
+  } else if (identical(weights, "equal")) {
+    rep(1, k)
+  } else {
+    stop("'weights' must be 'equal', 'sample_size' or a numeric vector")
   }
 
   message("Running per-study GSEA on ", k, " studies...")

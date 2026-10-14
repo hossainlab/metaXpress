@@ -267,7 +267,8 @@ mx_de_summary <- function(studies, padj_threshold = 0.05, lfc_threshold = 1) {
 # Resolve case/control levels, relevel condition so control is the reference,
 # and build the model matrix shared by edgeR and limma.
 .prepare_design <- function(samples, formula, contrast) {
-  cond <- .make_condition_factor(samples$condition)
+  cond <- if (is.null(contrast)) .make_condition_factor(samples$condition)
+          else factor(samples$condition)
   if (is.null(contrast)) {
     control <- levels(cond)[1]
     case    <- levels(cond)[2]

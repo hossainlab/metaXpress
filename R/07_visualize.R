@@ -201,7 +201,7 @@ mx_forest <- function(gene, de_results, meta_result = NULL) {
     labels <- c(labels, sprintf("Pooled (%s)", meta_result@method))
     breaks <- c(breaks, 0.6)
     caption <- sprintf(
-      "Pooled log2FC = %.2f [%.2f, %.2f]; meta FDR = %.2g; I² = %.0f%%; tau² = %.3f%s",
+      "Pooled log2FC = %.2f [%.2f, %.2f]; meta FDR = %.2g; I\u00b2 = %.0f%%; tau\u00b2 = %.3f%s",
       est, lo, hi, mt_row$meta_padj, mt_row$i_squared,
       if ("tau2" %in% names(mt_row)) mt_row$tau2 else NA_real_,
       if ("pi_lower" %in% names(mt_row) && !is.na(mt_row$pi_lower))
@@ -211,7 +211,7 @@ mx_forest <- function(gene, de_results, meta_result = NULL) {
   p +
     ggplot2::scale_y_continuous(breaks = breaks, labels = labels) +
     ggplot2::labs(title = paste0("Forest plot: ", gene),
-                  x = "log₂ fold change (95% CI)", y = NULL,
+                  x = "log\u2082 fold change (95% CI)", y = NULL,
                   caption = caption) +
     ggplot2::theme_bw() +
     ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
