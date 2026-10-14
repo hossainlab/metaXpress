@@ -16,8 +16,7 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE,
                       warning = FALSE, fig.width = 7, fig.height = 4.5,
                       fig.align = "center")
-has_gsea <- requireNamespace("fgsea", quietly = TRUE) &&
-  requireNamespace("msigdbr", quietly = TRUE)
+has_gsea <- requireNamespace("fgsea", quietly = TRUE)
 ```
 
 This vignette is a complete, executable meta-analysis of published bulk
@@ -297,7 +296,11 @@ mx_funnel("GFAP", de, res)
 ## Enrichment of the meta-signature
 
 ```{r gsea, eval = has_gsea}
-res <- mx_pathway_meta(res, db = "Hallmarks", method = "GSEA")
+# MSigDB Hallmarks (CC BY 4.0) shipped with metaXpress; for other
+# collections use mx_gene_sets("Reactome"), which downloads via msigdbr
+hallmarks <- readRDS(system.file("extdata", "hallmark_gene_sets.rds",
+                                 package = "metaXpress"))
+res <- mx_pathway_meta(res, gene_sets = hallmarks, method = "GSEA")
 head(res@pathway_result[, c("pathway_id", "NES", "padj")], 10)
 ```
 
@@ -308,7 +311,7 @@ pathway-level evidence. Pathways enriched in opposite directions cancel
 out, and the `n_up` and `n_down` columns show the direction in each study.
 
 ```{r pathway-studies, eval = has_gsea}
-ps <- mx_pathway_studies(de, db = "Hallmarks")
+ps <- mx_pathway_studies(de, gene_sets = hallmarks)
 head(ps[, c("pathway_id", "mean_NES", "n_up", "n_down", "n_sig",
             "meta_padj")], 10)
 mx_pathway_heatmap(attr(ps, "per_study"), top_n = 15, value = "NES")
