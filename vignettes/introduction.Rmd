@@ -1,0 +1,471 @@
+---
+title: "An introduction to bulk RNA-seq meta-analysis"
+author: "Md. Jubayer Hossain"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+    fig_caption: true
+bibliography: introduction.bib
+link-citations: true
+vignette: >
+  %\VignetteIndexEntry{An introduction to bulk RNA-seq meta-analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
+                      fig.align = "center", fig.width = 7, fig.height = 4,
+                      dpi = 110)
+library(metaXpress)
+library(ggplot2)
+theme_set(theme_minimal(base_size = 12) +
+            theme(panel.grid.minor = element_blank(),
+                  plot.title = element_text(face = "bold")))
+blue <- "#377EB8"; red <- "#E41A1C"; grey <- "grey55"
+ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+                          package = "metaXpress"))
+de <- ad$de_results
+res <- suppressMessages(mx_meta(de, method = "random_effects",
+                                tau_method = "REML"))
+mt <- res@meta_table
+```
+
+This article is for researchers who are new to combining gene expression
+studies. It explains:
+
+- what bulk RNA-seq measures and why it is still widely used;
+- why single studies are often not enough;
+- what a meta-analysis adds, and how its main statistical ideas work;
+- the decisions that make a meta-analysis credible.
+
+Every real-data figure is computed when this article is built. It uses four
+published Alzheimer's disease (AD) brain cohorts that ship with metaXpress.
+Figures that illustrate a concept are labelled as such. For hands-on code,
+continue with `vignette("quickstart")` after reading.
+
+# 1. What is bulk RNA-seq?
+
+**RNA sequencing (RNA-seq)** measures which genes are active in a sample,
+and how strongly, by sequencing its RNA molecules [@wang2009rnaseq;
+@mortazavi2008mapping].
+
+In *bulk* RNA-seq, the RNA of many thousands to millions of cells is
+extracted together. The result is one expression profile per sample (a piece
+of tissue, a blood draw, a cell culture). Each gene's value is the average
+over all cells in that sample.
+
+```{r workflow, fig.width = 8.5, fig.height = 2.4, fig.cap = "**Figure 1. The bulk RNA-seq workflow.** Reads from each sample are aligned or pseudo-aligned to a reference and counted per gene. The resulting count matrix (genes × samples) is the input to differential expression (DE) analysis. Schematic."}
+steps <- data.frame(
+  x = seq(1, by = 1.5, length.out = 6),
+  label = c("Tissue /\ncells", "RNA\nextraction", "Library\npreparation",
+            "Sequencing", "Alignment\n& counting", "Count\nmatrix"),
+  tool = c("biopsy, blood,\ncell culture", "poly(A) or\nrRNA depletion",
+           "cDNA,\nadapters", "Illumina,\n20-50 M reads",
+           "STAR, HISAT2,\nSalmon,\nfeatureCounts", "genes × samples\n-> DESeq2, edgeR,\nlimma-voom"))
+ggplot(steps) +
+  geom_segment(aes(x = x + 0.55, xend = x + 0.95, y = 1, yend = 1),
+               data = steps[-6, ], colour = grey,
+               arrow = arrow(length = unit(0.18, "cm"))) +
+  geom_label(aes(x, 1, label = label), fill = "#EAF1F8", colour = "#1F3A5F",
+             label.size = 0, size = 3.3, label.padding = unit(0.45, "lines"),
+             fontface = "bold") +
+  geom_text(aes(x, 0.72, label = tool), size = 2.7, colour = "grey30",
+            vjust = 1, lineheight = 0.9) +
+  scale_x_continuous(limits = c(0.4, 8.6)) +
+  scale_y_continuous(limits = c(0.35, 1.2)) +
+  theme_void()
+```
+
+The main processing steps have well-established tools and published best
+practices [@conesa2016survey; @stark2019teenage]:
+
+- **Read alignment or quantification:** STAR [@dobin2013star], HISAT2
+  [@kim2019hisat2] or Salmon [@patro2017salmon].
+- **Gene-level counting:** featureCounts [@liao2014featurecounts].
+- **Statistical testing:** DESeq2 [@love2014deseq2], edgeR
+  [@robinson2010edger] or limma-voom [@law2014voom; @ritchie2015limma]. These
+  use count-based models, and their output is a list of differentially
+  expressed (DE) genes with a log2 fold change and a p-value for each gene.
+
+## Why bulk, when single-cell RNA-seq exists?
+
+Single-cell RNA-seq resolves individual cell types, but bulk RNA-seq remains
+the workhorse of clinical and translational research
+[@haque2017practical; @stark2019teenage]:
+
+| | Bulk RNA-seq | Single-cell RNA-seq |
+|---|---|---|
+| Measures | Average expression of a sample | Expression in each cell |
+| Cost per sample | Low | High |
+| Genes detected per sample | ~15,000–20,000 | ~1,000–5,000 per cell |
+| Typical cohort size | Tens to thousands | A few to tens of donors |
+| Works on archived / degraded tissue | Often | Rarely |
+| Public data available | Very large (GEO, SRA, TCGA, GTEx) | Growing |
+| Best for | Disease vs control, biomarkers, cohorts, clinical samples | Cell types, cell states, development |
+
+Bulk RNA-seq is also one of the largest public data resources in biology:
+
+- **Large reference projects:** The Cancer Genome Atlas
+  [@tcga2013pancancer] and the Genotype-Tissue Expression project
+  [@lonsdale2013gtex].
+- **Public archives:** many thousands of smaller studies in GEO
+  [@clough2024geo].
+- **Uniformly reprocessed collections:** recount2/3
+  [@collado2017recount2; @wilks2021recount3] and ARCHS4
+  [@lachmann2018archs4]. These make the archived data reusable at scale.
+
+This archive is what makes meta-analysis possible.
+
+# 2. Why one study is usually not enough
+
+Most bulk RNA-seq studies are small. A typical design has 3 to 10 samples
+per group. Each study also tests about 20,000 genes at once and must correct
+for multiple testing, usually with the false discovery rate (FDR)
+[@benjamini1995fdr]. This has two consequences [@schurch2016replicates]:
+
+1. **Many true effects are missed.** A gene that changes by 40% may not
+   reach FDR significance with 5 samples per group.
+2. **Many reported effects do not replicate.** Effects can come from:
+   - the particular cohort, tissue sampling or laboratory protocol;
+   - batch effects [@leek2010batch];
+   - chance.
+
+   Small studies with many tests are especially prone to false findings
+   [@ioannidis2005false].
+
+The four AD cohorts in metaXpress show the problem clearly. They study the
+same disease, with the same NCBI processing pipeline, but report very
+different numbers of DE genes:
+
+```{r per-study, fig.height = 3.2, fig.cap = "**Figure 2. The same disease, very different results.** Genes at FDR ≤ 0.05 in four independent AD brain cohorts (DESeq2), and the number at meta-analysis FDR ≤ 0.05 when the four are combined with a random-effects model. Real data."}
+st <- ad$studies
+bars <- rbind(
+  data.frame(what = sprintf("%s\n%s (%d vs %d)", st$accession, st$region,
+                            st$n_AD, st$n_control),
+             n = st$n_DEG_fdr05, type = "Single study"),
+  data.frame(what = "Meta-analysis\n(4 studies)", n = sum(mt$meta_padj <= 0.05),
+             type = "Meta-analysis"))
+bars$what <- factor(bars$what, levels = rev(bars$what))
+ggplot(bars, aes(n, what, fill = type)) +
+  geom_col(width = 0.7) +
+  geom_text(aes(label = format(n, big.mark = ",")), hjust = -0.1, size = 3.3) +
+  scale_fill_manual(values = c("Single study" = grey, "Meta-analysis" = blue)) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.15))) +
+  labs(x = "Genes at FDR ≤ 0.05", y = NULL, fill = NULL) +
+  theme(legend.position = "bottom")
+```
+
+The counts in Figure 2 vary mainly with sample size. The largest cohort,
+218 AD vs 70 controls, finds over 10,000 genes. The smallest, 6 vs 6, finds
+one. None of the four on its own tells us which changes are general features
+of AD.
+
+# 3. What a meta-analysis adds
+
+A **meta-analysis** combines the results of several independent studies
+that address the same question [@ramasamy2008key; @tseng2012review]. For
+gene expression, each study is first analysed on its own (the same DE
+analysis as above). The per-gene results are then combined.
+
+Combining results, rather than pooling raw counts into one large dataset,
+means that differences between studies do not bias the per-study estimates.
+These include platforms, depth, library protocols and laboratory batch
+effects. The combination then provides:
+
+- **Power.** Several modest, consistent effects add up.
+- **Reproducibility.** A gene is reported because it changes in several
+  independent cohorts, not because of one lucky study
+  [@sweeney2017methods].
+- **Generality.** Effects are estimated across populations, tissues and
+  protocols, together with how much they vary.
+
+The fold changes of independent cohorts are already related. The figure
+below compares the two largest AD cohorts gene by gene:
+
+```{r concordance, fig.width = 5, fig.height = 4.2, fig.cap = "**Figure 3. Independent studies agree more than their gene lists suggest.** Log2 fold changes (AD vs control) of genes significant in either of the two cohorts. Points are coloured by whether the gene is significant in the meta-analysis. Real data."}
+a <- de$GSE125583; b <- de$GSE173955
+g <- intersect(a$gene_id, b$gene_id)
+d <- data.frame(x = a$log2FC[match(g, a$gene_id)],
+                y = b$log2FC[match(g, b$gene_id)],
+                pa = a$padj[match(g, a$gene_id)],
+                pb = b$padj[match(g, b$gene_id)],
+                meta = mt$meta_padj[match(g, mt$gene_id)] <= 0.05)
+d <- d[(d$pa <= 0.05 | d$pb <= 0.05) & !is.na(d$meta), ]
+r <- cor(d$x, d$y, method = "spearman")
+ggplot(d, aes(x, y, colour = meta)) +
+  geom_hline(yintercept = 0, colour = "grey80") +
+  geom_vline(xintercept = 0, colour = "grey80") +
+  geom_point(size = 0.6, alpha = 0.5) +
+  scale_colour_manual(values = c(`TRUE` = blue, `FALSE` = "grey75"),
+                      labels = c("not significant", "meta FDR ≤ 0.05")) +
+  coord_cartesian(xlim = c(-3, 3), ylim = c(-3, 3)) +
+  annotate("text", x = -2.9, y = 2.8, hjust = 0,
+           label = sprintf("Spearman r = %.2f", r)) +
+  labs(x = "log2FC, GSE125583 (fusiform gyrus)",
+       y = "log2FC, GSE173955 (hippocampus)", colour = NULL) +
+  theme(legend.position = "bottom")
+```
+
+`mx_study_concordance()` computes these correlations for every pair of
+studies. A *negative* correlation is a warning sign: it usually means that
+one study's case/control contrast is the wrong way round.
+
+## How much power does combining studies give?
+
+The next figure is a simple illustration, not real data. It shows a gene
+with a true log2 fold change of 0.5 and a within-group standard deviation of
+1 (log2 scale). The curves give the chance of detecting this gene at a
+significance level typical of genome-wide FDR control.
+
+```{r power, fig.height = 3.4, fig.cap = "**Figure 4. Illustration: combining studies increases power.** Probability of detecting a log2 fold change of 0.5 (SD = 1) at α = 10⁻⁴, as a function of samples per group in each study, for one study and for an inverse-variance meta-analysis of 2, 4 or 8 equally sized studies with no between-study heterogeneity. Theoretical (normal approximation)."}
+n <- 3:40
+pw <- function(k) {
+  se <- sqrt(2 / n) / sqrt(k)
+  z  <- qnorm(1 - 1e-4 / 2)
+  pnorm(0.5 / se - z) + pnorm(-0.5 / se - z)
+}
+pdat <- do.call(rbind, lapply(c(1, 2, 4, 8), function(k)
+  data.frame(n = n, power = pw(k),
+             studies = factor(ifelse(k == 1, "1 study", paste(k, "studies")),
+                              levels = c("1 study", "2 studies", "4 studies",
+                                         "8 studies")))))
+ggplot(pdat, aes(n, power, colour = studies)) +
+  geom_line(linewidth = 1) +
+  scale_colour_manual(values = c(grey, "#9ECAE1", "#4292C6", "#08306B")) +
+  scale_y_continuous(labels = function(x) paste0(x * 100, "%")) +
+  labs(x = "Samples per group in each study", y = "Power", colour = NULL)
+```
+
+There is a caveat. Real studies differ from one another, and these
+differences reduce the gain, which is why heterogeneity matters (Section 4).
+
+# 4. Key statistical ideas
+
+## Two ways to combine studies
+
+Meta-analysis methods fall into two families, which answer different
+questions:
+
+1. **Effect-size methods** combine each study's log2 fold change
+   $y_i$, weighting it by its precision (1 / squared standard error). They
+   estimate *how large* the change is.
+2. **P-value combination methods** combine each study's evidence for a
+   change. Examples are Fisher's and Stouffer's methods, and order-statistic
+   methods such as rOP [@song2014rop] and AW-Fisher
+   [@li2011awfisher; @hu2026awmeta]. They answer *whether* a gene changes in
+   one, several or all studies, without estimating one common effect
+   [@rau2014metarnaseq; @tseng2012review].
+
+## Fixed effect versus random effects
+
+A **fixed (common) effect** model assumes that every study measures the
+same true effect, and that the studies differ only by sampling error.
+
+A **random-effects** model assumes that the true effect itself varies
+between studies: different tissues, populations and protocols have
+genuinely different effects. It estimates the *average* effect and the
+between-study variance $\tau^2$ [@dersimonian1986meta;
+@borenstein2010basic].
+
+For combining independent public cohorts, random effects is usually the
+honest choice. metaXpress estimates $\tau^2$ by restricted maximum
+likelihood (REML), which performs better than the classical
+DerSimonian–Laird estimator [@viechtbauer2005bias; @langan2019comparison].
+
+## Heterogeneity and the prediction interval
+
+Two numbers describe how much studies disagree:
+
+- **$I^2$** is the percentage of variation between studies that is due to
+  real differences rather than chance [@higgins2002quantifying].
+- **The 95% prediction interval** gives the range in which the effect in a
+  *new* study is expected to fall [@higgins2009reevaluation].
+
+If the prediction interval excludes zero, the change is expected to
+reproduce in new cohorts. If it crosses zero, the change is significant on
+average but not reliably present everywhere.
+
+The two forest plots below show both situations in real data:
+
+```{r forest, fig.height = 6.3, fig.cap = "**Figure 5. Reading a forest plot.** Each square is one study's log2 fold change, with its 95% confidence interval; square size reflects the study's weight. The red diamond is the pooled random-effects estimate and its 95% CI, and the dotted line is the 95% prediction interval. GFAP (astrocyte marker) is consistent across all cohorts. SST (somatostatin interneurons) is lost strongly in two cohorts but not in the others: high I² and a wide prediction interval. Real data."}
+patchwork::wrap_plots(mx_forest("GFAP", de, res), mx_forest("SST", de, res),
+                      ncol = 1)
+```
+
+```{r het-summary}
+sig <- mt$meta_padj <= 0.05
+pi_excl <- sig & (mt$pi_lower > 0 | mt$pi_upper < 0)
+```
+
+In the AD meta-analysis, `r format(sum(sig), big.mark = ",")` genes are
+significant at meta FDR ≤ 0.05. For
+`r format(sum(pi_excl, na.rm = TRUE), big.mark = ",")` of them the
+prediction interval excludes zero. These are the changes most likely to
+transfer to a new AD cohort.
+
+## Robustness: does one study drive the result?
+
+A meta-analysis can be dominated by its largest study. **Leave-one-out**
+analysis repeats the meta-analysis once without each study in turn.
+
+```{r loo, fig.height = 3, fig.cap = "**Figure 6. Leave-one-out analysis.** Genes at meta FDR ≤ 0.05 with all four AD cohorts and with each cohort removed in turn. The dashed line marks the robust core: genes that stay significant, in the same direction, whichever study is removed. Real data."}
+loo <- suppressMessages(mx_sensitivity(de, tau_method = "REML"))
+rob <- attr(loo, "robustness")
+core <- sum(rob$full_padj <= 0.05 & rob$frac_loo_sig == 1)
+ld <- data.frame(
+  analysis = c("All 4 studies", paste("without", names(loo))),
+  n = c(sum(sig), vapply(loo, function(r)
+    sum(r@meta_table$meta_padj <= 0.05), integer(1))))
+ld$analysis <- factor(ld$analysis, levels = rev(ld$analysis))
+ggplot(ld, aes(n, analysis)) +
+  geom_col(fill = blue, width = 0.7) +
+  geom_vline(xintercept = core, linetype = "dashed", colour = red) +
+  annotate("text", x = core, y = 0.55, label = paste("robust core:", core),
+           hjust = -0.05, colour = red, size = 3.3) +
+  labs(x = "Genes at meta FDR ≤ 0.05", y = NULL)
+```
+
+Removing the large fusiform-gyrus cohort removes most significant genes,
+because much of the evidence comes from that one study. The robust core is
+the most defensible result to report.
+
+# 5. What meta-analysis is used for
+
+Gene-expression meta-analysis has produced results that single studies
+could not:
+
+- **Diagnostic signatures.** Multi-cohort analyses have identified small
+  gene sets that diagnose a condition in new, independent cohorts:
+  - sepsis and sterile inflammation [@sweeney2015sepsis];
+  - active tuberculosis [@sweeney2016tb].
+- **Shared disease mechanisms.** A "common rejection module" of genes is
+  up-regulated in acute rejection of several transplanted organs. It pointed
+  to existing drugs as candidate therapies [@khatri2013transplant].
+- **Drug repurposing.** Disease signatures from public data can be matched
+  against drug-induced expression profiles to find compounds that reverse
+  them [@lamb2006cmap; @sirota2011drug; @subramanian2017l1000]. See
+  `vignette("downstream_biology")`.
+- **Neurodegeneration and other complex diseases.** Meta-analysis
+  distinguishes consistent changes from cohort- and region-specific ones
+  [@heberle2024ad].
+- **Reuse of public data.** Uniformly processed resources make it possible
+  to reanalyse thousands of existing studies [@collado2017recount2;
+  @lachmann2018archs4; @clough2024geo].
+- **Clinical translation.** Robust expression signatures are a step towards
+  RNA-based diagnostics [@byron2016translating].
+
+# 6. A checklist for a credible meta-analysis
+
+```{r checklist, fig.height = 4.6, fig.cap = "**Figure 7. The analysis workflow and the metaXpress functions for each step.** Schematic."}
+wf <- data.frame(
+  y = 7:1,
+  step = c("1. Define the question", "2. Select & check studies",
+           "3. Uniform counts & QC", "4. Per-study DE",
+           "5. Combine (meta-analysis)", "6. Heterogeneity & robustness",
+           "7. Interpret & report"),
+  fun = c("disease, tissue, comparison, model chosen in advance",
+          "independent donors; mx_study_concordance()",
+          "mx_fetch_geo() (NCBI pipeline); mx_qc_study()",
+          "mx_de_all(): DESeq2 / edgeR / limma, covariates, contrast",
+          "mx_meta(): random effects (REML), p-value methods",
+          "I², prediction interval, mx_sensitivity(), mx_small_study()",
+          "mx_pathway_meta(), mx_pathway_studies(), mx_report()"))
+ggplot(wf) +
+  geom_segment(aes(x = 0.2, xend = 0.2, y = y - 0.32, yend = y - 0.68),
+               data = wf[-7, ], colour = grey,
+               arrow = arrow(length = unit(0.15, "cm"))) +
+  geom_label(aes(0.2, y, label = step), hjust = 0.5, fill = "#EAF1F8",
+             colour = "#1F3A5F", label.size = 0, size = 3.4,
+             fontface = "bold", label.padding = unit(0.4, "lines")) +
+  geom_text(aes(0.62, y, label = fun), hjust = 0, size = 3.1,
+            colour = "grey25", family = "mono") +
+  scale_x_continuous(limits = c(-0.1, 2.3)) +
+  theme_void()
+```
+
+The following practices come from the gene-expression meta-analysis
+literature [@ramasamy2008key; @tseng2012review; @sweeney2017methods] and from
+general meta-analysis methodology.
+
+1. **Choose the question and the method before seeing results.** Random
+   effects estimates an average effect. maxP or rOP ask whether a gene
+   changes in all or most studies. Picking whichever method gives the most
+   genes inflates false findings.
+2. **Make sure studies are independent.** Two GEO series from the same lab
+   or brain bank may contain the same donors, which would count them twice.
+   Check donor and case identifiers.
+3. **Harmonise the comparison.** Every study must compare the same groups
+   in the same direction (case / control). Check with fold-change
+   concordance.
+4. **Start from raw counts.** Run DE within each study, adjusting for
+   known covariates such as sex or batch. Do not feed batch-corrected values
+   into count models [@nygaard2016batch].
+5. **Report more than p-values.** Report:
+   - the pooled effect with its confidence interval;
+   - $I^2$ and $\tau^2$;
+   - the prediction interval;
+   - which genes survive leave-one-out analysis.
+6. **Be cautious with few studies.** With fewer than about five studies,
+   $\tau^2$ is imprecise. Small-sample adjustments such as HKSJ
+   [@inthout2014hksj] give better-calibrated confidence intervals, but can
+   make genome-wide significance impossible. Tests for publication bias
+   (e.g. Egger's test [@egger1997bias]) need about ten studies
+   [@sterne2011recommendations].
+7. **Interpret pathways at the right level.** Gene-set enrichment
+   [@subramanian2005gsea; @korotkevich2016fgsea; @liberzon2015hallmark] can
+   be run on the meta-signature, or within each study and then combined
+   [@shen2010mape].
+8. **Remember tissue composition.** In bulk data, a change in cell-type
+   proportions looks like a change in gene expression. Check cell-type
+   marker scores [@becht2016mcpcounter].
+
+# 7. Glossary
+
+**log2 fold change (log2FC)**
+: Difference in expression between groups on a log2 scale. +1 means
+  twice as high in cases; −1 means half.
+
+**Standard error (SE)**
+: Uncertainty of a study's log2FC. Smaller SE means more weight in the
+  meta-analysis.
+
+**FDR / adjusted p-value**
+: Expected proportion of false discoveries among the genes called
+  significant [@benjamini1995fdr].
+
+**Fixed effect**
+: Model assuming one true effect shared by all studies.
+
+**Random effects**
+: Model assuming true effects vary between studies around an average.
+
+**$\tau^2$ (tau-squared)**
+: Between-study variance of the true effects.
+
+**$I^2$**
+: Share of total variation due to between-study differences
+  (0–100%).
+
+**Prediction interval**
+: Expected range of the effect in a new study.
+
+**Leave-one-out**
+: Re-running the meta-analysis without each study in turn.
+
+**Concordance**
+: Agreement of fold changes between two studies.
+
+# 8. Where to go next
+
+1. `vignette("quickstart")`: run your first meta-analysis in five minutes.
+2. `vignette("case_study")`: the full AD analysis, step by step, with every
+   decision explained.
+3. `vignette("full_workflow")`: from GEO accession numbers to an HTML
+   report.
+4. `vignette("downstream_biology")`: transcription-factor activity, cell
+   composition, co-expression modules and drug reversal.
+
+# References

@@ -26,6 +26,8 @@ navbar:
     articles:
       text: Articles
       menu:
+        - text: "Introduction to bulk RNA-seq meta-analysis"
+          href: articles/introduction.html
         - text: "Getting started"
           href: articles/quickstart.html
         - text: "Case study: Alzheimer's disease brain meta-analysis"
