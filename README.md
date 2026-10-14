@@ -286,7 +286,7 @@ mx_fetch_geo() ──► metaXpressStudy ──► mx_de() ──► mx_meta() �
 
 | Function | Description |
 |---|---|
-| `mx_reannotate(studies, org, target_id)` | Standardize gene ID namespace |
+| `mx_reannotate(studies, org, target_id)` | Human / mouse / rat or custom mapping; strips Ensembl versions; collapses duplicates (max-mean / sum / drop) |
 | `mx_normalize(study, method)` | TMM / VST / CPM / TPM / quantile into a new assay (raw counts kept) |
 | `mx_correct_library_type(studies)` | polyA vs rRNA-depleted correction |
 | `mx_remove_batch(studies, method)` | ComBat-seq / ComBat / limma, preserving `condition`; new assay, for pooled visualisation only |

@@ -8,45 +8,89 @@ mx_reannotate(
   studies,
   org = "Homo sapiens",
   target_id = c("SYMBOL", "ENSEMBL", "ENTREZID"),
-  BPPARAM = BiocParallel::bpparam()
+  from_id = NULL,
+  mapping = NULL,
+  duplicates = c("max_mean", "sum", "drop"),
+  BPPARAM = BiocParallel::SerialParam()
 )
 }
 \arguments{
-\item{studies}{A named list of \code{\linkS4class{metaXpressStudy}} objects.}
+\item{studies}{A named list of \code{\linkS4class{metaXpressStudy}}
+objects, or a single study.}
 
-\item{org}{Character scalar. Target organism. Currently only
-\code{"Homo sapiens"} is supported. Default: \code{"Homo sapiens"}.}
+\item{org}{Organism: \code{"Homo sapiens"} (default; \pkg{org.Hs.eg.db}),
+\code{"Mus musculus"} (\pkg{org.Mm.eg.db}) or \code{"Rattus norvegicus"}
+(\pkg{org.Rn.eg.db}). Ignored when \code{mapping} is given.}
 
-\item{target_id}{Character scalar. Target gene identifier type.
-One of \code{"SYMBOL"} (default), \code{"ENSEMBL"}, or
-\code{"ENTREZID"}.}
+\item{target_id}{Target identifier: \code{"SYMBOL"} (default),
+\code{"ENSEMBL"} or \code{"ENTREZID"}.}
 
-\item{BPPARAM}{A \code{\link[BiocParallel]{BiocParallelParam}} object
-controlling parallelization. Default: \code{BiocParallel::bpparam()}.
-Set to \code{BiocParallel::SerialParam()} for sequential execution.}
+\item{from_id}{Source identifier type, or \code{NULL} (default) to detect
+it per study.}
+
+\item{mapping}{Optional \code{data.frame} with columns \code{from} and
+\code{to} giving the ID mapping to use instead of an \code{org.*.eg.db}
+package.}
+
+\item{duplicates}{How to collapse several source IDs mapping to one
+target: \code{"max_mean"} (default), \code{"sum"} or \code{"drop"}.}
+
+\item{BPPARAM}{A \code{\link[BiocParallel]{BiocParallelParam}}. Default:
+\code{BiocParallel::SerialParam()}.}
 }
 \value{
-The input list of studies with \code{counts} rownames translated
-  to the target namespace.
+The studies with translated rownames (same type as the input: a
+  list or a single study). A per-study mapping summary is printed.
 }
 \description{
-Converts gene identifiers in one or more studies to a unified namespace
-(Ensembl gene ID, gene symbol, or Entrez ID) using \pkg{AnnotationDbi}.
-Genes that cannot be mapped are dropped with a warning. Harmonising gene
-identifiers across studies is a prerequisite for any cross-study comparison.
+Converts the gene identifiers of one or more studies to a single
+namespace (gene symbol, Ensembl gene ID or Entrez ID) so that studies can
+be compared gene by gene.
+}
+\details{
+Processing steps for each study:
+\enumerate{
+  \item Ensembl version suffixes are removed (\code{ENSG00000141510.17}
+    becomes \code{ENSG00000141510}), as are Ensembl \code{_PAR_Y}
+    pseudo-autosomal duplicates.
+  \item The source identifier type is detected from \emph{all} IDs by
+    majority (Ensembl, Entrez or symbol), or set with \code{from_id}.
+  \item IDs are mapped with the organism's \code{org.*.eg.db} package, or
+    with a user-supplied \code{mapping} table (any organism, offline).
+  \item Unmapped IDs are dropped and reported.
+  \item When several source IDs map to the same target ID, they are
+    collapsed with \code{duplicates}: \code{"max_mean"} keeps the most
+    highly expressed source row (default, as in WGCNA's
+    \code{collapseRows}); \code{"sum"} adds counts (appropriate when the
+    source rows are disjoint features of one gene); \code{"drop"}
+    removes all ambiguous genes.
+}
+The original identifier of every retained row is stored in
+\code{rowData(study)$source_id}.
 }
 \examples{
-\dontrun{
-  studies <- mx_reannotate(studies, org = "Homo sapiens",
-                            target_id = "SYMBOL")
-}
+counts <- matrix(c(10, 20, 30, 5, 1, 2, 3, 4, 7, 7, 7, 7),
+                 nrow = 3, byrow = TRUE,
+                 dimnames = list(c("ENSG00000141510.17", "ENSG00000012048.23",
+                                   "ENSG00000999999.1"),
+                                 paste0("S", 1:4)))
+meta  <- data.frame(condition = c("control", "control", "case", "case"))
+study <- metaXpressStudy(counts, meta, accession = "local")
+map   <- data.frame(from = c("ENSG00000141510", "ENSG00000012048"),
+                    to   = c("TP53", "BRCA1"))
+out <- mx_reannotate(study, mapping = map)
+rownames(out)
+SummarizedExperiment::rowData(out)$source_id
 
 }
 \references{
-Pagès, H. et al. (2024) AnnotationDbi: manipulation of SQLite-based
-annotations in Bioconductor. R package version 1.66.0.
-\url{https://bioconductor.org/packages/AnnotationDbi}
+Pages, H. et al. AnnotationDbi: manipulation of SQLite-based annotations
+in Bioconductor. \url{https://bioconductor.org/packages/AnnotationDbi}
+
+Miller, J.A. et al. (2011) Strategies for aggregating gene expression data:
+the collapseRows R function. \emph{BMC Bioinformatics}, \strong{12}, 322.
+\doi{10.1186/1471-2105-12-322}
 }
 \seealso{
-\code{\link{mx_normalize}}, \code{\link{mx_align_genes}}
+\code{\link{mx_align_genes}}, \code{\link{mx_gene_sets}}
 }
