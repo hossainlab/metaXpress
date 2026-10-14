@@ -114,6 +114,12 @@ NULL
 #' different questions (any vs. all vs. most studies) and should be chosen
 #' a priori, not by comparing numbers of significant genes.
 #'
+#' A study contributes to a gene only when it reports \code{log2FC} and
+#' \code{pvalue} (plus \code{lfcSE} for effect-size methods). DESeq2 sets
+#' \code{pvalue} to \code{NA} for count outliers flagged by Cook's distance,
+#' so such genes are treated as not measured in that study. (DESeq2's
+#' independent filtering affects only \code{padj}, which is not used.)
+#'
 #' All methods assume studies are independent. Fold-change direction must be
 #' harmonised across studies (same case/control orientation); check with
 #' \code{\link{mx_study_concordance}}.

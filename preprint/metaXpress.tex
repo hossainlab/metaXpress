@@ -37,7 +37,7 @@
     citecolor=green!50!black,
     urlcolor=blue!80!black,
     pdfauthor={Md. Jubayer Hossain},
-    pdftitle={metaXpress: An End-to-End Bioconductor Framework for Quality Control, Harmonization, and Multi-Cohort Bulk RNA-seq Meta-Analysis}
+    pdftitle={metaXpress: reproducible, validated meta-analysis of bulk RNA-seq studies}
 ]{hyperref}
 
 % Header and Footer styling
@@ -71,7 +71,7 @@
 % ------------------------------------------------------------------------------
 % Document Information
 % ------------------------------------------------------------------------------
-\title{\vspace{-1.5cm}\Large\textbf{metaXpress: An End-to-End Bioconductor Framework for Quality Control, Harmonization, and Multi-Cohort Bulk RNA-seq Meta-Analysis}\vspace{0.4cm}}
+\title{\vspace{-1.5cm}\Large\textbf{metaXpress: reproducible and validated meta-analysis of bulk RNA-seq studies in R}\vspace{0.4cm}}
 
 \author{
     \textbf{Md. Jubayer Hossain}$^{1, 2, *}$\\[0.3cm]
@@ -90,311 +90,378 @@
 \maketitle
 
 \begin{abstract}
-\noindent\textbf{Background:} Bulk RNA sequencing (RNA-seq) has become a cornerstone of biomedical research and functional genomics across diverse disease conditions. However, individual RNA-seq studies frequently suffer from limited sample sizes, technical cohort biases, and severe statistical power penalties following genome-wide multiple hypothesis testing. While multi-cohort meta-analysis can significantly augment statistical power and isolate conserved disease signatures, existing software packages are fragmented, often omitting automated quality control (QC), gene identifier reconciliation, or flexible differential expression modeling within a single reproducible pipeline.\\
-\textbf{Methods:} We introduce \textbf{\texttt{metaXpress}}, an open-source, Bioconductor-compliant R framework that provides an end-to-end architecture for transcriptomic meta-analysis. \texttt{metaXpress} unifies: (i) standardized 10-point cohort-level QC scoring following the Heberle et al. (2025) benchmark; (ii) automated gene space harmonization across diverse annotation schemes; (iii) integrated negative binomial generalized linear modeling (via DESeq2, edgeR, and limma-voom); (iv) five rigorous meta-analytic pooling engines (including DerSimonian--Laird random effects, inverse-variance fixed effects, Fisher's, Stouffer's, and RankProd); and (v) publication-grade diagnostic visualizations.\\
-\textbf{Results:} To demonstrate the utility, statistical power amplification, and biological fidelity of \texttt{metaXpress}, we benchmarked the framework on a multi-cohort case study integrating three independent NCBI Gene Expression Omnibus (GEO) datasets across solid epithelial tumors (colorectal adenocarcinoma GSE130688, $n = 30$; pancreatic ductal adenocarcinoma GSE136569, $n = 10$; and clear cell renal cell carcinoma GSE171485, $n = 12$) spanning 52 patient specimens and 39,376 aligned genes. All three cohorts achieved perfect QC scores ($10/10$). In underpowered individual cohorts (such as ccRCC, which yielded only 18 significant DEGs alone), \texttt{metaXpress} amplified statistical power to identify \textbf{558 conserved multi-cohort Meta-DEGs} ($\text{FDR} < 0.05, |\log_2\text{FC}| \ge 1.0$) with 100\% directional concordance. Across the conserved signature, between-study heterogeneity was virtually eliminated (median $I^2 = 0.0\%$). Canonical shared drivers discovered include \textit{MST1R} ($\log_2\text{FC} = +2.14, p_{\text{adj}} = 5.50 \times 10^{-7}, I^2 = 0.0\%$), \textit{MUC4} ($\log_2\text{FC} = +3.21, p_{\text{adj}} = 5.50 \times 10^{-7}, I^2 = 0.0\%$), \textit{IGF2BP3} ($\log_2\text{FC} = +3.00, p_{\text{adj}} = 5.50 \times 10^{-7}, I^2 = 0.0\%$), and \textit{CDCP1} ($\log_2\text{FC} = +1.63, p_{\text{adj}} = 1.02 \times 10^{-5}, I^2 = 0.0\%$), alongside conserved suppressors such as \textit{FAM107A} ($\log_2\text{FC} = -1.94, p_{\text{adj}} = 2.39 \times 10^{-5}, I^2 = 0.0\%$).\\
-\textbf{Conclusions:} \texttt{metaXpress} bridges the gap between disparate transcriptomic pipelines and rigorous meta-epidemiological modeling, empowering researchers across biomedical disciplines to derive high-confidence biomarker signatures from public and proprietary bulk RNA-seq data.\\
-\textbf{Availability:} The package is freely available under the MIT license at \url{https://github.com/hossainlab/metaXpress}.
+\noindent\textbf{Background:} Meta-analysis of independent bulk RNA-seq studies increases power and separates reproducible signals from study-specific effects. In practice it requires many separate steps: data retrieval, quality control, identifier harmonisation, per-study differential expression (DE), statistical pooling, heterogeneity and robustness assessment, and pathway interpretation. Each hand-off between tools is a source of error.\\
+\textbf{Methods:} \texttt{metaXpress} is an R package that implements this workflow on Bioconductor data structures. It retrieves uniformly processed raw counts from the NCBI GEO RNA-seq pipeline. It records data-level quality criteria as pass, fail or not evaluable, and runs per-study DE with DESeq2, edgeR or limma-voom using covariates and explicit contrasts. Results are combined with nine gene-level methods:
+\begin{itemize}[noitemsep,topsep=1pt]
+    \item random effects with REML, Paule--Mandel or DerSimonian--Laird $\tau^2$, optionally with the Hartung--Knapp--Sidik--Jonkman (HKSJ) adjustment, reporting confidence and prediction intervals;
+    \item a fixed (common) effect model;
+    \item directional Fisher, Stouffer and weighted inverse-normal combination;
+    \item minP, maxP and the $r$-th ordered p-value (rOP);
+    \item AWmeta.
+\end{itemize}
+The package also provides leave-one-out robustness analysis, small-study tests, gene-set enrichment of the meta-signature, cross-study pathway meta-analysis and downstream analyses (transcription-factor activity, cell composition, consensus co-expression, drug-signature reversal).\\
+\textbf{Results:} On 300 genes from real data, random-effects estimates, standard errors, $\tau^2$ and p-values agreed with \texttt{metafor} to within $1.6\times10^{-10}$, and per-study DE reproduced native DESeq2 exactly.
+\begin{itemize}[noitemsep,topsep=1pt]
+    \item \emph{Alzheimer's disease (AD).} Four independent post-mortem brain cohorts (340 brains; two donor-overlapping series excluded) gave 7,491 genes at FDR $\le 0.05$. These recover established glial up-regulation (GFAP, C4B) and neuronal/neuropeptide loss (VIP, VGF, BDNF, CRH, NPTX2). For 2,133 genes the 95\% prediction interval excludes zero, and 1,239 remain significant after removing any single cohort. Pathways show loss of oxidative phosphorylation and gain of inflammatory signalling.
+    \item \emph{Pancreatic ductal adenocarcinoma (PDAC).} Three cohorts implicate NF-$\kappa$B/AP-1 activity, myeloid and fibroblast enrichment, and an MST1R-centred epithelial module. Among 5,425 compounds, TGF-$\beta$ receptor inhibitors and erlotinib are top reversers of the tumour signature.
+\end{itemize}
+The case studies also show practical limits. With four studies, HKSJ-adjusted tests cannot reach genome-wide significance, and a single large cohort dominates many findings.\\
+\textbf{Availability:} MIT-licensed at \url{https://github.com/hossainlab/metaXpress}, with executable vignettes on the data analysed here.
 \end{abstract}
 
 \vspace{0.2cm}
-\noindent\textbf{Keywords:} Bulk RNA-seq, Meta-Analysis, Differential Expression, Quality Control, Random-Effects Model, Bioconductor, Gene Harmonization.
+\noindent\textbf{Keywords:} Bulk RNA-seq, meta-analysis, differential expression, random-effects model, heterogeneity, prediction interval, Bioconductor.
 
 \vspace{0.4cm}
 
 % ==============================================================================
 \section{Introduction}
 % ==============================================================================
-High-throughput transcriptomic profiling via bulk RNA sequencing (RNA-seq) has revolutionized our understanding of complex pathological mechanisms across human disease, ranging from infectious and autoimmune disorders to neurodegeneration and cancer \cite{love2014deseq2}. Nevertheless, individual transcriptomic studies routinely operate under substantial logistical and financial constraints, frequently resulting in limited sample sizes ($n \le 15$ per condition). When tens of thousands of genes are simultaneously assessed, genome-wide multiple testing corrections (e.g., Benjamini--Hochberg false discovery rate, FDR) inflict severe statistical penalties \cite{love2014deseq2, robinson2010edger}. Consequently, genuine biological drivers exhibiting modest fold-changes often fail to cross stringent statistical significance thresholds in individual small cohorts, generating false-negative omissions. Conversely, cohort-specific technical artifacts, such as batch effects, differences in library preparation protocols, and patient demographic stratification, can produce spurious differentially expressed genes (DEGs) that fail to replicate across independent laboratories.
+Individual bulk RNA-seq studies are often small, and genome-wide multiple-testing correction then leaves many true effects undetected. Results also depend on cohort, tissue sampling and laboratory protocol. Combining independent studies can increase power and, more importantly, can distinguish effects that replicate from those that do not \cite{rau2014metarnaseq}.
 
-Multi-cohort meta-analysis represents a principled statistical solution to these challenges. By pooling effect sizes and standard errors across independent studies, meta-analysis substantially amplifies statistical power, enhances sample diversity, and isolates invariant disease signals from idiosyncratic cohort-specific noise \cite{dersimonian1986meta, higgins2003measuring}. Across diverse biomedical domains---including immunology, infection, neurogenomics, and oncology---multi-cohort meta-analysis is essential for identifying conserved disease mechanisms and overcoming cohort-specific idiosyncratic noise.
+Several R packages address parts of this task:
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item \texttt{MetaDE} provides quality control and DE meta-analysis for microarray data \cite{wang2012metade}.
+    \item \texttt{metaRNASeq} combines per-study p-values from RNA-seq \cite{rau2014metarnaseq}.
+    \item \texttt{DExMA} addresses genes missing from some studies \cite{villatorogarcia2022dexma}.
+    \item \texttt{metafor} implements general effect-size meta-analysis \cite{viechtbauer2010metafor}.
+    \item \texttt{AWFisher} provides adaptive weighting \cite{huo2020awfisher}.
+\end{itemize}
+A complete analysis still requires the user to assemble data retrieval, quality control, identifier mapping, per-study DE, the choice of pooling model, heterogeneity and robustness checks, and pathway interpretation. Each step has known pitfalls:
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item fold changes with inconsistent contrast orientation;
+    \item standard errors on mixed logarithmic scales;
+    \item donors shared between studies;
+    \item batch-corrected values fed into count models;
+    \item p-value combinations that accumulate evidence from opposite directions;
+    \item significance reported without regard to between-study heterogeneity.
+\end{itemize}
 
-Despite these established advantages, existing software tools for transcriptomic meta-analysis suffer from critical workflow bottlenecks:
-\begin{enumerate}[noitemsep,topsep=2pt]
-    \item \textbf{Absence of Automated Quality Control (QC):} Standardized QC is crucial prior to data pooling. The inclusion of degraded libraries or misannotated samples distorts pooled effect sizes. Although comprehensive 10-point QC guidelines have been articulated \cite{heberle2025}, no existing meta-analysis package programmatically scores and filters datasets according to these criteria.
-    \item \textbf{Annotation Disparities and Missing Gene Handling:} Independent cohorts frequently employ disparate annotation conventions (Entrez IDs, Ensembl gene IDs, or HGNC Symbols). Harmonizing these identifier spaces and profiling gene coverage across studies is frequently left to ad-hoc, error-prone user scripts.
-    \item \textbf{Decoupled Differential Expression Modeling:} Many meta-analysis tools (e.g., MetaDE \cite{wang2012metade}, MetaVolcanoR \cite{metavolcanor2021}) require users to externally perform differential expression and manually assemble summary statistics, precluding end-to-end execution and unified variance estimation.
-    \item \textbf{Limited Meta-Analytic Paradigms:} Existing packages frequently support only $p$-value combination (such as Fisher's or Stouffer's methods), which neglect effect size magnitudes, or fixed-effect inverse-variance models that unrealistically assume zero inter-study heterogeneity ($\tau^2 = 0$) \cite{raupp2014metarnaseq, babur2019crossmeta}.
-\end{enumerate}
-
-To address these critical limitations, we engineered \textbf{\texttt{metaXpress}}, an integrated, modular, and Bioconductor-compliant R framework for bulk RNA-seq multi-cohort meta-analysis. The package implements an end-to-end pipeline spanning raw count ingestion, 10-point QC scoring, gene alignment, negative binomial generalized linear model (GLM) differential expression, multi-method meta-analysis pooling, and publication-ready diagnostic visualizations. Here, we describe the system design of \texttt{metaXpress} and demonstrate its utility through a real-world multi-cohort case study integrating 52 patient samples across three solid tumor malignancies from the NCBI Gene Expression Omnibus (GEO).
+\texttt{metaXpress} implements the whole workflow on Bioconductor \texttt{SummarizedExperiment} objects \cite{huber2015orchestrating, morgan_se}. It makes these decisions explicit and tests its statistical core against reference implementations. Here we describe its design and validation, and apply it to two public datasets: AD brain tissue and PDAC.
 
 % ==============================================================================
-\section{Design and Implementation}
+\section{Design and implementation}
 % ==============================================================================
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.88\linewidth]{figures/case_study_architecture_workflow.pdf}
-    \caption{\textbf{Schematic architecture of the \texttt{metaXpress} pipeline.} The framework provides an end-to-end, modular workflow organized across four sequential stages: \textbf{Stage~1 (Cohort Ingestion \& Standardized QC Filtering)}: Ingestion from NCBI GEO, recount3, or local counts with programmatic 10-point QC scoring and cohort filtering against the Heberle et al. (2025) benchmark; \textbf{Stage~2 (Identifier Alignment \& Differential Expression Modeling)}: Automated gene space harmonization across Entrez, Ensembl, and HGNC Symbol annotations, negative binomial GLM modeling (DESeq2, edgeR, limma-voom), and gene completeness matrix auditing; \textbf{Stage~3 (Statistical Meta-Analysis Pooling)}: Multi-paradigm meta-analysis engines (\texttt{mx\_meta()}) including DerSimonian--Laird random effects, inverse-variance fixed effects, Fisher's and Stouffer's $p$-value combination, and non-parametric Rank Product; and \textbf{Stage~4 (Diagnostics, Visualization \& Bioconductor Export)}: Automated generation of publication-grade diagnostic plots (volcano, multi-cohort forest, and heterogeneity profiles) alongside seamless export to Bioconductor S4 \texttt{SummarizedExperiment} objects.}
+    \includegraphics[width=0.86\linewidth]{figures/fig1_architecture.pdf}
+    \caption{\textbf{Architecture of \texttt{metaXpress}.} Studies enter as \texttt{metaXpressStudy} objects (a \texttt{SummarizedExperiment} subclass) holding raw counts and sample annotation. They are quality-controlled and harmonised, and differential expression is computed separately in each study from raw counts. The per-study results are pooled into a \texttt{metaXpressResult}, which feeds robustness checks, pathway and downstream analyses, figures and reports.}
     \label{fig:workflow}
 \end{figure}
 
-The \texttt{metaXpress} software architecture is structured around two core S4 classes conforming to Bioconductor software standards: \texttt{metaXpressStudy}, which encapsulates count matrices, sample metadata, organism metadata, QC scores, and per-study differential expression results; and \texttt{metaXpressResult}, which encapsulates combined effect sizes, $p$-values, false discovery rates, heterogeneity statistics ($I^2$, $Q$, $\tau^2$), and cross-cohort directional consistency metrics. The overall analytical workflow is illustrated in \textbf{Figure~\ref{fig:workflow}}.
+\subsection{Data ingestion and quality control}
+\texttt{mx\_fetch\_geo()} retrieves raw counts generated by the NCBI GEO RNA-seq pipeline \cite{clough2024geo}. This pipeline re-processes the SRA reads of eligible human and mouse series with a single alignment (HISAT2 to GRCh38.p13 or GRCm39) and gene counting (featureCounts on RefSeq) protocol. Using these counts removes differences in aligner, annotation and count definition between studies. Series without NCBI counts fall back to author-supplied files. Count matrices from local files, \texttt{recount3} or any \texttt{SummarizedExperiment} are also accepted. The case/control phenotype column is specified explicitly; automatic detection is only a fallback.
 
-\subsection{1. Multi-Cohort Ingestion and 10-Point QC Scoring}
-\texttt{metaXpress} accepts count matrices and metadata directly from local delimited files, the \texttt{recount3} compendium \cite{wilks2021recount3}, or NCBI GEO accessions. Ingestion is paired with an automated 10-point quality scoring algorithm based on Heberle et al. (2025) \cite{heberle2025}. Points are awarded across five essential criteria:
+\texttt{mx\_qc\_study()} records ten data-level criteria as \emph{pass}, \emph{fail} or \emph{not evaluable}:
 \begin{itemize}[noitemsep,topsep=2pt]
-    \item \textbf{Sequencing Depth (2 pts):} Adequate library size ($\ge 10$M reads for 1 point; $\ge 20$M reads for 2 points, following ENCODE standards).
-    \item \textbf{Gene Detection Breadth (2 pts):} Number of unique expressed genes ($\ge 10,000$ genes for 1 pt; $\ge 15,000$ genes for 2 pts).
-    \item \textbf{Sample Group Representation (2 pts):} Replicate balance per experimental condition ($n \ge 3$ per group for 1 pt; $n \ge 5$ for 2 pts).
-    \item \textbf{Data Structure Integrity (2 pts):} Non-negative integer count matrix structure and absence of corrupted fields.
-    \item \textbf{Metadata Completeness (2 pts):} Validation of sample identifiers, experimental condition contrasts, and platform descriptions.
+    \item at least three samples per group \cite{schurch2016replicates};
+    \item median assigned reads;
+    \item alignment, rRNA and duplicate rates (if supplied);
+    \item gene detection;
+    \item complete condition labels;
+    \item a two-group contrast;
+    \item batch--condition aliasing \cite{leek2010batch};
+    \item untransformed integer counts.
 \end{itemize}
-Studies achieving a cumulative score $\ge 7/10$ are retained by default via \texttt{mx\_filter\_studies()}, ensuring that poor-quality libraries do not compromise meta-analytic pooling.
+The score is the number of criteria passed and is never rescaled over the evaluable criteria, so missing information cannot inflate it. \texttt{mx\_filter\_studies()} excludes studies that fail criteria required for valid count-based DE: replicates, labels and raw counts. These checks complement, and do not replace, an assessment of study-level reporting quality \cite{heberle2024ad}.
 
-\subsection{2. Gene Space Harmonization and Alignment}
-Multi-cohort studies frequently measure genes using non-identical annotation sets. \texttt{metaXpress} provides \texttt{mx\_align\_genes()}, which harmonizes gene identifiers across Entrez Gene IDs, Ensembl Stable IDs, and HGNC Gene Symbols using built-in annotation dictionaries and alias resolution tables. Genes present across user-specified study coverage thresholds are retained in a synchronized count space.
+\subsection{Identifier harmonisation and pre-pooling checks}
+\texttt{mx\_reannotate()} maps gene symbols, Ensembl and Entrez identifiers using organism annotation packages (human, mouse, rat) or a user-supplied table. It removes Ensembl version suffixes and detects the identifier type from all IDs. When several source IDs map to one gene, it keeps the most highly expressed row (or sums or drops them), so gene names are unique \cite{miller2011collapserows}.
 
-\subsection{3. Integrated Differential Expression Modeling}
-Rather than expecting precomputed summary statistics, \texttt{metaXpress} fits negative binomial generalized linear models (GLMs) or linear models directly on raw count data using \texttt{mx\_de\_all()}. Users can select between three gold-standard statistical engines:
+Before pooling, \texttt{mx\_study\_concordance()} computes pairwise fold-change correlations between studies. A negative correlation almost always indicates a reversed case/control contrast. Genes not measured in a study are treated as missing, not as zero effects, and each gene is pooled over the studies that measured it. Imputation from other studies is discouraged because it inflates the apparent number of studies and deflates heterogeneity.
+
+\subsection{Per-study differential expression}
+\texttt{mx\_de()} fits DESeq2 \cite{love2014deseq2}, edgeR quasi-likelihood \cite{robinson2010edger, chen2016edgerql} or limma-voom \cite{law2014voom, ritchie2015limma} models to raw counts. The design formula may include covariates, and an explicit contrast fixes the orientation of every fold change (case/control).
+
+All engines return a common table: log$_2$ fold change $y_i$, its standard error $s_i$ on the log$_2$ scale, a signed z-statistic, p-values and group sizes.
 \begin{itemize}[noitemsep,topsep=2pt]
-    \item \textbf{DESeq2} \cite{love2014deseq2}: Empirical Bayes shrinkage of dispersion and logarithmic fold changes ($\log_2\text{FC}$), yielding robust estimates in small cohorts.
-    \item \textbf{edgeR} \cite{robinson2010edger}: Quasi-likelihood negative binomial GLMs with trimmed mean of M-values (TMM) normalization.
-    \item \textbf{limma-voom} \cite{ritchie2015limma}: Precision-weighted linear modeling with empirical Bayes variance moderation.
+    \item \emph{DESeq2:} the unshrunken maximum-likelihood estimate and its standard error are retained, because inverse-variance pooling requires them. Shrunken estimates \cite{zhu2019apeglm} are stored separately for ranking.
+    \item \emph{edgeR:} the GLM coefficients are on the natural-log scale, so $s_i$ is obtained from the quasi-likelihood test as $|y_i|/|z_i|$ with $z_i = \Phi^{-1}(1-p_i/2)$.
+    \item \emph{limma:} $s_i$ is the moderated standard error.
 \end{itemize}
+Normalisation and between-study batch correction (ComBat-seq, ComBat, \texttt{removeBatchEffect}, with the condition effect preserved) write new assays and never overwrite raw counts \cite{zhang2020combatseq}. Because DE is computed within studies, between-study batch effects do not enter the per-study estimates. Batch correction is therefore reserved for pooled visualisation \cite{nygaard2016batch}.
 
-\subsection{4. Missing Gene Profiling and Completeness Auditing}
-Biological or platform variations can result in certain genes being undetected in a subset of cohorts. \texttt{metaXpress} provides \texttt{mx\_missing\_summary()}, which generates a boolean gene-by-study completeness matrix and reports the exact percentage of multi-cohort coverage. Downstream pooling can be configured to require complete presence ($k = K$) or partial presence ($k \ge k_{\min}$).
+\subsection{Gene-level meta-analysis}
+\texttt{mx\_meta()} implements two families of methods, which answer different questions (Table~\ref{tab:methods}).
 
-\subsection{5. Multi-Paradigm Meta-Analysis Engines}
-\texttt{metaXpress} implements five distinct meta-analytic methods via \texttt{mx\_meta()}:
-\begin{enumerate}[noitemsep,topsep=2pt]
-    \item \textbf{DerSimonian--Laird Random Effects Model:} The primary recommended model \cite{dersimonian1986meta}. It explicitly incorporates between-study variance ($\tau^2$) alongside within-study variance ($s_i^2$). The study weights $w_i^*$ and summary effect size $\hat{\theta}_{\text{RE}}$ are computed as:
-    \begin{equation}
-        w_i^* = \frac{1}{s_i^2 + \tau^2}, \quad \hat{\theta}_{\text{RE}} = \frac{\sum_{i=1}^K w_i^* \hat{\theta}_i}{\sum_{i=1}^K w_i^*}
-    \end{equation}
-    where $\tau^2 = \max\left(0, \frac{Q - (K - 1)}{C}\right)$, $Q = \sum w_i (\hat{\theta}_i - \hat{\theta}_{\text{FE}})^2$, and $C = \sum w_i - \frac{\sum w_i^2}{\sum w_i}$.
-    \item \textbf{Inverse-Variance Fixed Effects Model:} Assumes a single underlying effect size across all cohorts ($\tau^2 = 0$), with weights $w_i = 1 / s_i^2$.
-    \item \textbf{Fisher's Combined Probability Test:} Non-directional pooling of independent $p$-values based on the chi-squared distribution:
-    \begin{equation}
-        X^2 = -2 \sum_{i=1}^K \ln(p_i) \sim \chi^2_{2K}
-    \end{equation}
-    \item \textbf{Stouffer's Weighted Z-Score Method:} Directional $p$-value combination weighted by sample size $N_i$:
-    \begin{equation}
-        Z = \frac{\sum_{i=1}^K \sqrt{N_i} \Phi^{-1}(1 - p_i)}{\sqrt{\sum_{i=1}^K N_i}}
-    \end{equation}
-    \item \textbf{Rank Product (RankProd) Engine:} A non-parametric permutation approach based on Breitling et al. (2004) \cite{breitwieser2012rankprod}, robust to severe outliers and non-normal effect distributions.
-\end{enumerate}
-
-\subsection{6. Heterogeneity Quantification and Diagnostic Visualizations}
-Between-study inconsistency is quantified via Cochran's $Q$ test and Higgins $I^2$ index \cite{higgins2003measuring}:
+\paragraph{Effect-size models.} The fixed (common) effect estimate is $\hat\theta_{\mathrm{FE}} = \sum w_i y_i/\sum w_i$ with $w_i = 1/s_i^2$. The random-effects model assumes $y_i \sim N(\theta, s_i^2 + \tau^2)$:
 \begin{equation}
-    I^2 = \max\left(0, \frac{Q - (K - 1)}{Q}\right) \times 100\%
+    \hat\theta_{\mathrm{RE}} = \frac{\sum_i w_i^* y_i}{\sum_i w_i^*}, \qquad w_i^* = \frac{1}{s_i^2 + \hat\tau^2}, \qquad \mathrm{SE}(\hat\theta_{\mathrm{RE}}) = \Big(\sum_i w_i^*\Big)^{-1/2}.
 \end{equation}
-$I^2$ values of 25\%, 50\%, and 75\% delineate low, moderate, and high heterogeneity, respectively. Directional concordance is also computed as the percentage of cohorts sharing the dominant sign of expression change.
-
-For reporting, \texttt{metaXpress} provides automated, publication-ready visualizations:
+The between-study variance $\tau^2$ is estimated per gene by one of three methods \cite{veroniki2016methods, langan2019comparison}:
 \begin{itemize}[noitemsep,topsep=2pt]
-    \item \textbf{Volcano plots} (\texttt{mx\_volcano()}): Displaying pooled effect sizes against $-\log_{10}(P_{\text{adj}})$ with automated non-overlapping driver gene callouts \cite{li2012volcano}.
-    \item \textbf{Forest plots} (\texttt{mx\_forest()}): Multi-cohort forest plots displaying individual cohort effect sizes, 95\% confidence intervals (CIs), study weights, and the pooled DerSimonian--Laird summary diamond \cite{lewis2001forest}.
-    \item \textbf{Heterogeneity profiles} (\texttt{mx\_heterogeneity\_plot()}): Genome-wide $I^2$ distribution histograms and compositional breakdowns benchmarked against Higgins criteria.
-    \item \textbf{Study overview dashboards} (\texttt{mx\_study\_overview()}): Multi-panel quality control dashboards displaying sample allocations, library depths, and gene detection rates.
+    \item restricted maximum likelihood (REML; Fisher scoring) \cite{viechtbauer2005bias}, the default;
+    \item Paule--Mandel, solving $\sum_i w_i^*(y_i-\hat\theta)^2 = k-1$ \cite{paule1982consensus};
+    \item DerSimonian--Laird \cite{dersimonian1986meta}.
 \end{itemize}
+The HKSJ adjustment replaces the standard error by
+\[
+\big[\sum_i w_i^*(y_i-\hat\theta)^2/\{(k-1)\sum_i w_i^*\}\big]^{1/2}
+\]
+and uses a $t_{k-1}$ reference \cite{hartung2001refined, inthout2014hksj}. Each gene receives Cochran's $Q$, $I^2 = \max\{0, (Q-k+1)/Q\}$ \cite{higgins2002quantifying}, $\hat\tau^2$, a 95\% confidence interval and a 95\% prediction interval
+\[
+\hat\theta \pm t_{k-2}\sqrt{\hat\tau^2 + \mathrm{SE}^2},
+\]
+which is the expected range of the effect in a new study \cite{higgins2009reevaluation}.
 
-% ==============================================================================
-\section{Demonstration Case Study: Multi-Cohort Solid Tumor Transcriptomics}
-% ==============================================================================
-
-To empirically demonstrate the utility, statistical power amplification, and biological accuracy of \texttt{metaXpress} on real-world transcriptomic data, we executed a benchmark integrating three independent public bulk RNA-seq cohorts from NCBI GEO representing distinct solid epithelial carcinomas compared to matched healthy tissues:
-\begin{enumerate}[noitemsep,topsep=2pt]
-    \item \textbf{GSE130688:} Colorectal Adenocarcinoma (CRC) vs matched normal mucosa ($n = 15$ tumor, $n = 15$ normal; total $n = 30$). Sequenced on Illumina HiSeq 2500.
-    \item \textbf{GSE136569:} Pancreatic Ductal Adenocarcinoma (PDAC) vs normal pancreas ($n = 5$ tumor, $n = 5$ normal; total $n = 10$). Sequenced on Illumina NovaSeq 6000.
-    \item \textbf{GSE171485:} Clear Cell Renal Cell Carcinoma (ccRCC) vs normal kidney ($n = 6$ tumor, $n = 6$ normal; total $n = 12$). Sequenced on Illumina HiSeq 4000.
-\end{enumerate}
-The unified benchmark encompassed \textbf{52 patient transcriptomes} and \textbf{39,376 aligned genes} across three distinct anatomical systems (gastrointestinal, hepatobiliary-pancreatic, and urological).
-
-\subsection{1. Quality Control Benchmarking and Study Characteristics}
-Each cohort was ingested and evaluated against the 10-point Heberle et al. (2025) QC standard. As summarized in \textbf{Table~\ref{tab:cohorts}} and depicted in \textbf{Figure~\ref{fig:overview}}, all three cohorts attained a maximum QC score of \textbf{10 / 10 (100\%)}:
+\paragraph{Combination of evidence.} Two-sided p-values are converted to one-sided values using the sign of $y_i$. The combination methods are:
 \begin{itemize}[noitemsep,topsep=2pt]
-    \item \textbf{QC Scores (Fig.~\ref{fig:overview}A):} All cohorts comfortably exceeded the $\ge 7/10$ threshold and were retained.
-    \item \textbf{Sample Composition (Fig.~\ref{fig:overview}B):} Strict 1:1 balance between solid tumor and matched adjacent normal tissues was maintained across all cohorts.
-    \item \textbf{Sequencing Depth (Fig.~\ref{fig:overview}C):} Median library sizes were exceptionally high: 42.1 million reads (GSE130688), 50.2 million reads (GSE136569), and 36.8 million reads (GSE171485), well above the 20M ENCODE benchmark.
-    \item \textbf{Alignment Coverage (Fig.~\ref{fig:overview}D):} Exactly 39,376 common genes were detected with non-zero expression across all three cohorts, confirming complete inter-study orthology.
+    \item \emph{Directional Fisher} combines the two one-sided Fisher tests (Pearson's test; \cite{owen2009pearson}), so evidence in opposite directions does not accumulate.
+    \item \emph{Stouffer and weighted inverse-normal} combine signed z-scores, the latter with $\sqrt{n_i}$ weights \cite{marot2009moderated, rau2014metarnaseq}.
+    \item \emph{minP, maxP and rOP} test whether a gene is DE in at least one, all, or at least $r$ studies, using $p_{(r)} \sim \mathrm{Beta}(r, k-r+1)$ \cite{song2014rop}.
+    \item \emph{AWmeta} \cite{hu2026awmeta} selects, for each gene, the subset of studies that minimises the Fisher statistic. The resulting AW-Fisher p-value \cite{li2011awfisher} is calibrated with \texttt{AWFisher} \cite{huo2020awfisher}, and the effect is estimated by REML random effects over the selected studies. The selected studies are reported for each gene.
 \end{itemize}
-
-\begin{table}[t!]
-\centering
-\small
-\caption{\textbf{Characteristics and 10-Point Quality Control Scoring of Ingested Public Cohorts.} All datasets passed the inclusion threshold ($\ge 7/10$) and were retained for downstream meta-analysis.}
-\label{tab:cohorts}
-\begin{tabularx}{\textwidth}{l >{\raggedright\arraybackslash}X l c c c c c}
-\toprule
-\textbf{Accession} & \textbf{Cancer Type} & \textbf{Platform} & \textbf{Normal} & \textbf{Tumor} & \textbf{Total} & \textbf{Depth} & \textbf{QC} \\
-\midrule
-GSE130688 & Colorectal Adenocarcinoma & HiSeq 2500 & 15 & 15 & 30 & 42.1M & \textbf{10 / 10} \\
-GSE136569 & Pancreatic Ductal Carcinoma & NovaSeq 6000 & 5 & 5 & 10 & 50.2M & \textbf{10 / 10} \\
-GSE171485 & Clear Cell Renal Cell Carcinoma & HiSeq 4000 & 6 & 6 & 12 & 36.8M & \textbf{10 / 10} \\
-\midrule
-\textbf{Total} & \textbf{3 Epithelial Malignancies} & \textbf{Multi-Platform} & \textbf{26} & \textbf{26} & \textbf{52} & \textbf{42.1M} & \textbf{Passed} \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-\begin{figure}[!htbp]
-    \centering
-    \includegraphics[width=0.80\linewidth]{figures/case_study_study_overview.pdf}
-    \caption{\textbf{Multi-cohort quality control benchmarking and sequencing architecture.} (A) 10-point QC scores evaluated against the Heberle et al. (2025) standard (dashed red line indicates passing cutoff $\ge 7/10$). (B) Sample allocation across matched adjacent normal and solid tumor tissues ($N = 52$ total). (C) Median aligned library depth per cohort compared against ENCODE guidelines (dashed line: 20M reads). (D) Transcriptome-wide aligned gene detection count ($39,376$ genes in common across all cohorts).}
-    \label{fig:overview}
-\end{figure}
-
-\subsection{2. Power Amplification and DEG Yield Comparison}
-Independent negative binomial GLMs were fit for each cohort using DESeq2 within \texttt{metaXpress}. As illustrated in \textbf{Table~\ref{tab:power}}, single-cohort analysis revealed drastic disparities in statistical power driven primarily by sample size:
-\begin{itemize}[noitemsep,topsep=2pt]
-    \item GSE130688 ($n = 30$, CRC) identified \textbf{4,246 significant DEGs} ($\text{FDR} < 0.05$).
-    \item GSE136569 ($n = 10$, PDAC) identified \textbf{146 significant DEGs}.
-    \item GSE171485 ($n = 12$, ccRCC) suffered from severe multiple-testing penalties, yielding only \textbf{18 significant DEGs} (0 up-regulated, 18 down-regulated).
-\end{itemize}
+For all methods, p-values are adjusted across genes by the Benjamini--Hochberg procedure.
 
 \begin{table}[!htbp]
 \centering
 \small
-\caption{\textbf{Statistical Power Comparison: Per-Cohort Differential Expression vs Multi-Cohort Meta-Analysis.} Small-sample cohorts suffer from profound false-negative penalties that are rescued by \texttt{metaXpress} random-effects pooling.}
-\label{tab:power}
-\begin{tabularx}{\textwidth}{l >{\raggedright\arraybackslash}X c c c c}
+\caption{\textbf{Gene-level meta-analysis methods in \texttt{mx\_meta()}.} Methods answer different questions and should be chosen a priori.}
+\label{tab:methods}
+\begin{tabularx}{\textwidth}{l l >{\raggedright\arraybackslash}X}
 \toprule
-\textbf{Analytical Strategy} & \textbf{Cohort / Malignancy} & \textbf{Tested Genes} & \textbf{Sig. Up} & \textbf{Sig. Down} & \textbf{Total DEGs} \\
+\textbf{Method} & \textbf{\texttt{method =}} & \textbf{Hypothesis / estimand} \\
 \midrule
-Single-Study GLM & GSE130688 (Colorectal) & 39,376 & 2,345 & 1,901 & 4,246 \\
-Single-Study GLM & GSE136569 (Pancreatic) & 39,376 & 140 & 6 & 146 \\
-Single-Study GLM & GSE171485 (Renal ccRCC) & 39,376 & 0 & 18 & 18 \\
-\midrule
-\textbf{\texttt{metaXpress} Pooling} & \textbf{Multi-Cohort Random Effects} & \textbf{29,560} & \textbf{377} & \textbf{181} & \textbf{558} \\
+Random effects (REML / PM / DL, optional HKSJ) & \texttt{random\_effects} & Average log$_2$FC across populations, with $\tau^2$, $I^2$, CI and prediction interval \\
+Fixed (common) effect & \texttt{fixed\_effects} & A single shared log$_2$FC (studies are replicates) \\
+Directional Fisher & \texttt{fisher} & Same-direction effect in at least one study \\
+Stouffer & \texttt{stouffer} & Signed evidence, equal weights \\
+Weighted inverse-normal & \texttt{inverse\_normal} & Signed evidence, $\sqrt{n}$ weights \\
+minP / maxP / rOP & \texttt{minp}, \texttt{maxp}, \texttt{rop} & DE in $\ge 1$, all, or $\ge r$ studies \\
+AWmeta & \texttt{awmeta} & DE in an adaptively selected subset of studies \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-When effect sizes and standard errors were pooled using the DerSimonian--Laird Random Effects model in \texttt{metaXpress}, the meta-analytic framework evaluated 29,560 genes with non-zero counts across all studies. \texttt{metaXpress} identified \textbf{558 high-confidence conserved Meta-DEGs} ($\text{FDR} < 0.05, |\log_2\text{FC}| \ge 1.0$), comprising \textbf{377 significantly up-regulated} and \textbf{181 significantly down-regulated} genes. Remarkably, 100\% of the identified Meta-DEGs exhibited complete directional concordance across all three independent malignancies.
+\subsection{Robustness, small-study effects and visualisation}
+\texttt{mx\_sensitivity()} repeats the analysis leaving out each study in turn. For every gene it reports the fraction of runs that remain significant with the same direction.
 
-\subsection{3. Conserved Multi-Cohort Biological Drivers}
-The volcano plot in \textbf{Figure~\ref{fig:volcano}} illustrates the global landscape of multi-cohort differential expression, highlighting the most statistically significant drivers. Specific statistical parameters and biological functions are detailed in \textbf{Table~\ref{tab:drivers}}.
+\texttt{mx\_small\_study()} runs per-gene Egger regression \cite{egger1997bias} and Begg--Mazumdar rank-correlation tests \cite{begg1994operating}. It warns that both tests have little power with fewer than ten studies \cite{sterne2011recommendations}.
+
+Forest plots show the pooled confidence interval and prediction interval. Funnel, volcano, heterogeneity and UpSet plots, an HTML report with generated methods text, and tabular export are provided.
+
+\subsection{Pathway and downstream analyses}
+\texttt{mx\_pathway\_meta()} runs pre-ranked GSEA (\texttt{fgsea} \cite{korotkevich2016fgsea, subramanian2005gsea}) on the signed meta-analysis z-score with MSigDB collections \cite{liberzon2015hallmark}. It can instead run over-representation analysis separately for up- and down-regulated genes against the tested universe.
+
+\texttt{mx\_pathway\_studies()} runs GSEA in each study and combines the pathway p-values with a directional Stouffer test, in the spirit of MAPE \cite{shen2010mape}.
+
+Module 9 provides four downstream analyses:
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item transcription-factor activity from the meta z-score with CollecTRI regulons and a univariate linear model \cite{muellerdott2023collectri, badiaimompel2022decoupler};
+    \item cell-type composition shifts from MCP-counter markers \cite{becht2016mcpcounter}, pooled as Hedges' $g$ across studies;
+    \item consensus co-expression modules, whose co-expression must hold in every study \cite{langfelder2008wgcna};
+    \item drug-signature reversal against LINCS L1000 consensus signatures \cite{subramanian2017l1000, lamb2006cmap}.
+\end{itemize}
+
+\subsection{Software validation}
+The test suite checks the statistical core against reference implementations:
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item random- and fixed-effect results (all $\tau^2$ estimators, with and without HKSJ) against \texttt{metafor::rma()} \cite{viechtbauer2010metafor};
+    \item Egger and Begg tests against \texttt{metafor::regtest()} and \texttt{ranktest()};
+    \item AWmeta against \texttt{AWFisher} combined with \texttt{metafor};
+    \item p-value combinations against their closed forms;
+    \item per-study DE against native DESeq2 on the airway dataset (GEO GSE52778; \cite{himes2014airway}).
+\end{itemize}
+All numbers and figures in this article are produced by \nolinkurl{scripts/make_preprint_results.R}.
+
+% ==============================================================================
+\section{Results}
+% ==============================================================================
+
+\subsection{Agreement with reference implementations}
+For 300 randomly chosen genes from the AD data, \texttt{metaXpress} and \texttt{metafor} were compared across all six random-effects configurations (DL, REML, PM, each with and without HKSJ). Pooled effects, standard errors, $\tau^2$ and p-values differed by at most $1.6\times10^{-10}$.
+
+This comparison exposed one design decision that matters in practice. DESeq2 reports a fold change but no p-value for count outliers flagged by Cook's distance. \texttt{metaXpress} treats such genes as not measured in that study (191 genes in GSE53697), and identical results are obtained only when the reference analysis does the same.
+
+On airway, \texttt{mx\_de()} with a paired design (donor cell line as a covariate) reproduced native DESeq2 fold changes exactly. Fold changes from DESeq2, edgeR and limma-voom correlated at $r \ge 0.997$.
+
+\subsection{Case study 1: Alzheimer's disease brain tissue}
+
+\paragraph{Study selection and independence.} We selected GEO series of human post-mortem brain bulk RNA-seq comparing AD with non-demented controls, for which NCBI-processed counts were available (Table~\ref{tab:ad}).
+
+Two candidate series were excluded because they share donors with included series:
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item GSE95587 (fusiform gyrus): 89 of its 117 case identifiers also occur in GSE125583;
+    \item GSE159699: built from the same brain-bank donors as GSE104704.
+\end{itemize}
+Pooling these would count the same individuals twice.
+
+Per-study models were DESeq2 with sex as a covariate where available. Genes were restricted to protein-coding genes with $\ge 10$ counts in at least as many samples as the smaller group. The control group of GSE104704 was restricted to aged controls. NCBI processed only 12 of the 17 libraries deposited for GSE53697.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{\textbf{Alzheimer's disease cohorts.} DEGs: per-study genes at FDR $\le 0.05$ (DESeq2).}
+\label{tab:ad}
+\begin{tabular}{l l r r r r}
+\toprule
+\textbf{GEO} & \textbf{Region} & \textbf{AD} & \textbf{Control} & \textbf{Genes} & \textbf{DEGs} \\
+\midrule
+GSE125583 \cite{srinivasan2020gse125583} & Fusiform gyrus & 218 & 70 & 16,126 & 10,164 \\
+GSE104704 \cite{nativio2018gse104704} & Lateral temporal lobe & 12 & 10 & 15,930 & 1,670 \\
+GSE53697 \cite{scheckel2016gse53697} & Dorsolateral prefrontal cortex & 6 & 6 & 16,029 & 1 \\
+GSE173955 \cite{gse173955ref} & Hippocampus & 8 & 10 & 15,905 & 4,149 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Concordance.} Fold changes of the three larger cohorts were strongly correlated (Spearman $r = 0.68$--$0.80$ over genes significant in either study). The small prefrontal cohort correlated weakly but positively ($0.09$--$0.39$), so no contrast was reversed.
+
+\paragraph{Meta-analysis.} A random-effects model with REML $\tau^2$ was chosen a priori, to estimate the average effect across regions and cohorts that are expected to differ.
+
+Of 16,290 genes tested (15,107 measured in all four studies), 7,491 had meta FDR $\le 0.05$ (3,585 up, 3,906 down; Figure~\ref{fig:ad}A), with a median $I^2$ of 15\%. For 2,133 of these genes the 95\% prediction interval excluded zero, so the same direction of change is expected in a new cohort.
+
+The analysis recovered established AD biology (Table~\ref{tab:genes}, Figure~\ref{fig:ad}B):
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item \emph{Up:} the astrocyte marker GFAP was homogeneously up-regulated ($I^2 = 0$, prediction interval excluding zero), as were the complement gene C4B and CD44.
+    \item \emph{Down:} neuronal and neuropeptide genes VIP, VGF, BDNF, CRH and NPTX2 were down-regulated.
+\end{itemize}
+Many of these genes were strongly heterogeneous. The interneuron markers SST and PVALB showed large losses in some cohorts but $I^2 \ge 87\%$ and were not significant on average. This pattern is consistent with region-dependent neuronal loss in the sampled tissue, and it illustrates why significance should be reported together with heterogeneity.
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.68\linewidth]{figures/case_study_volcano_plot.pdf}
-    \caption{\textbf{Multi-cohort transcriptomic meta-analysis differential expression volcano plot.} Combined effect size ($\log_2\text{FC}$) versus statistical significance ($-\log_{10} P_{\text{adj}}$) under the DerSimonian--Laird random effects model across Colorectal, Pancreatic, and Renal carcinoma cohorts (29,560 genes evaluated). Dashed lines indicate significance cutoffs ($|\log_2\text{FC}| \ge 1.0$, $\text{FDR} < 0.05$). The analysis identified 558 shared conserved Meta-DEGs (377 up-regulated, ruby red; 181 down-regulated, deep blue) with 100\% directional concordance. Key canonical cancer drivers are highlighted with non-crossing leader callouts.}
-    \label{fig:volcano}
+    \begin{subfigure}[b]{0.47\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/fig2_ad_volcano.pdf}
+        \caption{}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.50\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/fig3_ad_forest.pdf}
+        \caption{}
+    \end{subfigure}
+    \caption{\textbf{Alzheimer's disease meta-analysis (random effects, REML).} (A) Meta-analysis volcano plot. Dashed lines: meta FDR $= 0.05$ and $|\log_2\mathrm{FC}| = 0.5$. (B) Forest plots for GFAP (homogeneous; the prediction interval, dotted, excludes zero) and SST (heterogeneous, $I^2 = 87\%$; not significant on average). Squares are proportional to inverse-variance weight; diamonds show the pooled 95\% confidence interval.}
+    \label{fig:ad}
 \end{figure}
 
 \begin{table}[!htbp]
 \centering
 \footnotesize
-\caption{\textbf{Top Conserved Biological Drivers Discovered by \texttt{metaXpress}.} Pooled effect sizes ($\log_2\text{FC}$), 95\% confidence intervals, adjusted $p$-values, between-study heterogeneity ($I^2$), directional concordance, and established biological roles.}
-\label{tab:drivers}
-\begin{tabularx}{\textwidth}{ll c c c c >{\raggedright\arraybackslash}X}
+\caption{\textbf{Selected established AD genes.} Pooled log$_2$FC (AD/control) with 95\% confidence interval (CI) and 95\% prediction interval (PI), random effects with REML $\tau^2$.}
+\label{tab:genes}
+\begin{tabular}{l r c c r r}
 \toprule
-\textbf{Symbol} & \textbf{Entrez} & \textbf{Pooled $\log_2\text{FC}$ [95\% CI]} & \textbf{Meta $P_{\text{adj}}$} & \textbf{$I^2$} & \textbf{Conc.} & \textbf{Established Biological / Oncological Role} \\
+\textbf{Gene} & \textbf{log$_2$FC} & \textbf{95\% CI} & \textbf{95\% PI} & \textbf{FDR} & \textbf{$I^2$ (\%)} \\
 \midrule
-\multicolumn{7}{l}{\textbf{\textit{Top Conserved Up-Regulated Drivers (Tumor vs Matched Normal)}}} \\
-\midrule
-\textbf{MST1R} & 4486 & $+2.14$ [$+1.48$, $+2.80$] & $5.50 \times 10^{-7}$ & 0.0\% & 100\% & RON receptor tyrosine kinase; drives motility, EMT, and invasion \cite{wadhwa2020mst1r}. \\
-\textbf{MUC4} & 4585 & $+3.21$ [$+2.15$, $+4.27$] & $5.50 \times 10^{-7}$ & 0.0\% & 100\% & Membrane mucin; promotes anti-apoptosis and HER2 signaling \cite{bafna2010muc4}. \\
-\textbf{IGF2BP3} & 10643 & $+3.00$ [$+2.06$, $+3.94$] & $5.50 \times 10^{-7}$ & 0.0\% & 100\% & Oncofetal RNA-binding protein; stabilizes proliferative transcripts \cite{mancarella2020igf2bp3}. \\
-\textbf{CDCP1} & 64866 & $+1.63$ [$+1.08$, $+2.18$] & $1.02 \times 10^{-5}$ & 0.0\% & 100\% & Transmembrane glycoprotein mediating anoikis resistance and metastasis. \\
-\textbf{XDH} & 7498 & $+2.72$ [$+1.79$, $+3.65$] & $1.02 \times 10^{-5}$ & 0.0\% & 100\% & Xanthine dehydrogenase; regulates ROS in reprogrammed tumor metabolism. \\
-\textbf{C12orf36} & 283422 & $+3.97$ [$+2.86$, $+5.08$] & $1.54 \times 10^{-8}$ & 0.0\% & 100\% & Conserved up-regulated transcript of uncharacterized oncogenic function. \\
-\midrule
-\multicolumn{7}{l}{\textbf{\textit{Top Conserved Down-Regulated Drivers (Tumor vs Matched Normal)}}} \\
-\midrule
-\textbf{FAM107A} & 11170 & $-1.94$ [$-2.63$, $-1.25$] & $2.39 \times 10^{-5}$ & 0.0\% & 100\% & DRR1; microfilament-stabilizing tumor suppressor; lost in cancer \cite{lecka2021fam107a}. \\
-\textbf{BDKRB1} & 623 & $-2.00$ [$-2.71$, $-1.29$] & $2.96 \times 10^{-5}$ & 0.0\% & 100\% & Bradykinin receptor B1; maintains tissue barrier integrity and vascular tone. \\
-\textbf{SYPL2} & 284612 & $-1.54$ [$-2.14$, $-0.94$] & $5.19 \times 10^{-5}$ & 2.7\% & 100\% & Synaptophysin-like junction regulator; lost during epithelial dedifferentiation. \\
-\textbf{TTPA} & 7274 & $-2.32$ [$-3.27$, $-1.37$] & $2.18 \times 10^{-4}$ & 0.0\% & 100\% & $\alpha$-tocopherol transfer protein; maintains antioxidant cellular defense. \\
-\textbf{C8orf34} & 116328 & $-1.90$ [$-2.50$, $-1.30$] & $1.44 \times 10^{-6}$ & 0.0\% & 100\% & Conserved down-regulated marker on chromosome 8q. \\
+GFAP  & $0.67$  & $[0.49, 0.85]$   & $[0.27, 1.07]$   & $3.6\times10^{-11}$ & 0 \\
+C4B   & $0.44$  & $[0.23, 0.64]$   & $[-0.01, 0.88]$  & $1.4\times10^{-4}$ & 31 \\
+CD44  & $0.48$  & $[0.12, 0.85]$   & $[-0.54, 1.51]$  & $0.023$ & 38 \\
+VIP   & $-0.61$ & $[-0.81, -0.41]$ & $[-1.04, -0.18]$ & $2.8\times10^{-8}$ & 0 \\
+VGF   & $-1.47$ & $[-2.29, -0.66]$ & $[-5.19, 2.25]$  & $0.0017$ & 86 \\
+BDNF  & $-0.85$ & $[-1.30, -0.39]$ & $[-2.80, 1.11]$  & $0.0011$ & 73 \\
+CRH   & $-1.54$ & $[-2.34, -0.74]$ & $[-5.05, 1.97]$  & $7.6\times10^{-4}$ & 76 \\
+NPTX2 & $-1.04$ & $[-1.65, -0.42]$ & $[-3.75, 1.68]$  & $0.0033$ & 79 \\
+SST   & $-0.86$ & $[-1.93, 0.21]$  & $[-5.85, 4.12]$  & $0.19$ & 87 \\
+PVALB & $-0.78$ & $[-1.97, 0.40]$  & $[-6.31, 4.74]$  & $0.29$ & 88 \\
 \bottomrule
-\end{tabularx}
+\end{tabular}
 \end{table}
 
-Among the up-regulated candidates, \textbf{\textit{MST1R}} (RON receptor tyrosine kinase, Entrez 4486) exhibited consistent activation across all three solid tumor malignancies ($\log_2\text{FC} = +2.14, 95\%\ \text{CI}: [1.48, 2.80], p_{\text{adj}} = 5.50 \times 10^{-7}$), consistent with its established role in driving epithelial-to-mesenchymal transition (EMT), cellular migration, and therapeutic resistance \cite{wadhwa2020mst1r}. Similarly, \textbf{\textit{MUC4}} (Entrez 4585), a transmembrane mucin that potentiates ERBB2/HER2 phosphorylation and mediates immune evasion \cite{bafna2010muc4}, was markedly elevated ($\log_2\text{FC} = +3.21, p_{\text{adj}} = 5.50 \times 10^{-7}$). Other prominent oncogenic drivers included the oncofetal mRNA-binding protein \textbf{\textit{IGF2BP3}} ($\log_2\text{FC} = +3.00, p_{\text{adj}} = 5.50 \times 10^{-7}$) \cite{mancarella2020igf2bp3} and the transmembrane anoikis regulator \textbf{\textit{CDCP1}} ($\log_2\text{FC} = +1.63, p_{\text{adj}} = 1.02 \times 10^{-5}$).
+\paragraph{Choice of method matters.} Methods that ignore between-study variance call many more genes (Table~\ref{tab:compare}). With one cohort of 288 brains, these calls largely reflect that cohort.
 
-Among the conserved down-regulated markers, \textbf{\textit{FAM107A}} (DRR1, Entrez 11170) emerged as the premier tumor suppressor ($\log_2\text{FC} = -1.94, 95\%\ \text{CI}: [-2.63, -1.25], p_{\text{adj}} = 2.39 \times 10^{-5}$). FAM107A stabilizes actin microfilament bundling, enforces cell cycle checkpoints, and suppresses malignant invasion \cite{lecka2021fam107a}. Conserved repression was likewise observed for tissue barrier regulators including bradykinin receptor B1 (\textbf{\textit{BDKRB1}}, $\log_2\text{FC} = -2.00, p_{\text{adj}} = 2.96 \times 10^{-5}$) and synaptophysin-like junction regulator \textbf{\textit{SYPL2}} ($\log_2\text{FC} = -1.54, p_{\text{adj}} = 5.19 \times 10^{-5}$).
+AWmeta makes this explicit. Of its significant genes, 2,424 were supported by GSE125583 alone and only 381 by all four studies. AWmeta also called SST significant, because it selects the two cohorts with a strong loss and ignores the others. This is a different hypothesis from the average effect estimated by random effects.
 
-\subsection{4. Multi-Cohort Forest Plots and Statistical Resolution}
-To scrutinize the consistency of effect size estimates across cohorts, we constructed forest plots for the top oncogene (\textit{MST1R}) and top tumor suppressor (\textit{FAM107A}) (\textbf{Figure~\ref{fig:forest}}):
-\begin{itemize}[noitemsep,topsep=2pt]
-    \item \textbf{\textit{MST1R} Forest Plot (Fig.~\ref{fig:forest}A):} Effect size estimates were remarkably uniform across Colorectal ($\log_2\text{FC} = +2.30, \text{SE} = 0.46$, weight = 52.2\%), Pancreatic ($\log_2\text{FC} = +2.19, \text{SE} = 0.55$, weight = 36.4\%), and Renal carcinomas ($\log_2\text{FC} = +1.30, \text{SE} = 0.97$, weight = 11.4\%). In ccRCC alone, the gene failed multiple testing significance ($p_{\text{adj}} = 0.725$) due to large standard error ($0.97$). However, \texttt{metaXpress} pooling aggregated statistical evidence, narrowing the 95\% CI to $[+1.48, +2.80]$ and achieving $p_{\text{adj}} = 5.50 \times 10^{-7}$ with $I^2 = 0.0\%$.
-    \item \textbf{\textit{FAM107A} Forest Plot (Fig.~\ref{fig:forest}B):} Concordant suppression was observed across Colorectal ($\log_2\text{FC} = -2.07, \text{SE} = 0.56$, weight = 37.4\%), Pancreatic ($\log_2\text{FC} = -2.34, \text{SE} = 0.59$, weight = 34.3\%), and Renal carcinomas ($\log_2\text{FC} = -1.28, \text{SE} = 0.65$, weight = 28.3\%). While renal ccRCC exhibited borderline single-cohort significance ($p_{\text{adj}} = 0.559$), pooled random-effects modeling resolved the true underlying suppression: pooled $\log_2\text{FC} = -1.94$ ($95\%\ \text{CI}: [-2.63, -1.25], p_{\text{adj}} = 2.39 \times 10^{-5}, I^2 = 0.0\%$).
-\end{itemize}
+The HKSJ adjustment is recommended for few studies \cite{inthout2014hksj}, but with $k = 4$ it uses a $t_3$ reference. The smallest observed p-value was $1.3\times10^{-5}$, above the Benjamini--Hochberg threshold for even a single discovery among 16,290 genes ($3.1\times10^{-6}$), so no gene was significant. With few studies, HKSJ is useful for the confidence intervals of prioritised genes but not for genome-wide discovery.
 
-\begin{figure}[!htbp]
-    \centering
-    \includegraphics[width=0.82\linewidth]{figures/case_study_forest_combined.pdf}
-    \caption{\textbf{Multi-cohort forest plots of representative conserved markers.} (A) Conserved oncogene \textit{MST1R} (Entrez 4486) displaying uniform up-regulation across CRC, PDAC, and ccRCC. (B) Conserved tumor suppressor \textit{FAM107A} (Entrez 11170) displaying uniform down-regulation across cohorts. Square point sizes represent inverse-variance weights; error bars represent 95\% confidence intervals; diamonds represent the pooled DerSimonian--Laird random-effects summary estimates. Dashed vertical lines represent the null effect ($\log_2\text{FC} = 0$). Right-hand panels list numerical effect sizes, 95\% confidence intervals, inverse-variance study weights, and pooled $p$-values.}
-    \label{fig:forest}
-\end{figure}
-
-\subsection{5. Transcriptome-Wide Heterogeneity Profile}
-A central risk in transcriptomic meta-analysis is pooling studies contaminated by extreme inter-cohort heterogeneity. We evaluated Higgins $I^2$ across all 29,560 evaluated genes (\textbf{Figure~\ref{fig:heterogeneity}}):
-\begin{itemize}[noitemsep,topsep=2pt]
-    \item \textbf{Global Transcriptome (Fig.~\ref{fig:heterogeneity}A):} Across all genes, the median $I^2$ was \textbf{0.0\%}, with 17,006 genes (57.5\%) exhibiting zero detectable heterogeneity ($I^2 \le 0\%$). However, 6,440 genes (21.8\%) exhibited substantial-to-high heterogeneity ($I^2 > 50\%$), reflecting tissue-specific expression differences between colon, pancreas, and kidney.
-    \item \textbf{Heterogeneity Depletion in Meta-DEGs (Fig.~\ref{fig:heterogeneity}B):} When examining the 558 significant Meta-DEGs identified by \texttt{metaXpress}, \textbf{95.5\% exhibited low heterogeneity} ($I^2 \le 25\%$), and 100\% of the top 20 candidate drivers exhibited $I^2 = 0.0\%$.
-\end{itemize}
-This dramatic depletion of heterogeneity confirms that \texttt{metaXpress} effectively filters out tissue-specific idiosyncrasies and successfully isolates invariant biological signals across independent patient cohorts.
-
-\begin{figure}[!htbp]
-    \centering
-    \includegraphics[width=0.84\linewidth]{figures/case_study_heterogeneity_plot.pdf}
-    \caption{\textbf{Between-study heterogeneity ($I^2$) distribution and cross-cohort invariance.} (A) Genome-wide distribution of $I^2$ inconsistency across all 29,560 evaluated genes, with dashed lines delineating Higgins et al. (2003) benchmarks (Low $\le 25\%$, Moderate $25-50\%$, Substantial $50-75\%$, High $> 75\%$). (B) Proportion of genes across Higgins classification brackets comparing the entire evaluated transcriptome against the 558 identified conserved Meta-DEGs (Low: $\le 25\%$, Moderate: $25-50\%$, Substantial: $50-75\%$, High: $> 75\%$). 95.5\% of Meta-DEGs exhibit low heterogeneity, demonstrating profound cross-cohort invariance.}
-    \label{fig:heterogeneity}
-\end{figure}
-
-% ==============================================================================
-\section{Benchmarking Against Existing Frameworks}
-% ==============================================================================
-
-To contextualize the capabilities of \texttt{metaXpress}, we systematically compared its feature matrix against prominent R packages in the transcriptomic meta-analysis ecosystem: MetaDE \cite{wang2012metade}, MetaVolcanoR \cite{metavolcanor2021}, metaRNASeq \cite{raupp2014metarnaseq}, and crossmeta \cite{babur2019crossmeta} (\textbf{Table~\ref{tab:comparison}}).
-
-\begin{table}[t!]
+\begin{table}[!htbp]
 \centering
 \small
-\caption{\textbf{Feature Matrix Comparing \texttt{metaXpress} with Existing Transcriptomic Meta-Analysis Packages.} \texttt{metaXpress} provides the only unified framework coupling 10-point QC scoring, integrated negative binomial GLMs, multiple meta-analysis engines, and automated publication diagnostics within a single Bioconductor-compliant workflow.}
-\label{tab:comparison}
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X c c c c}
+\caption{\textbf{Genes at meta FDR $\le 0.05$ in the AD data by method.}}
+\label{tab:compare}
+\begin{tabular}{l l r}
 \toprule
-\textbf{Functional Capability} & \textbf{\texttt{metaXpress}} & \textbf{MetaDE} & \textbf{MetaVolcanoR} & \textbf{metaRNASeq} \\
+\textbf{Method} & \textbf{Question} & \textbf{Genes} \\
 \midrule
-10-Point Automated QC Scoring \cite{heberle2025} & \textbf{Yes} & No & No & No \\
-Automated Study Filtering & \textbf{Yes} & Partial & No & No \\
-Direct Ingestion (GEO / recount3 / Local) & \textbf{Yes} & No & No & No \\
-Gene Identifier Harmonization & \textbf{Yes} & Partial & No & No \\
-Built-in DESeq2 / edgeR / limma GLMs & \textbf{Yes} & No & No & No \\
-Missing Gene Coverage Profiling & \textbf{Yes} & No & No & No \\
-DerSimonian--Laird Random Effects \cite{dersimonian1986meta} & \textbf{Yes} & No & Partial & No \\
-Inverse-Variance Fixed Effects & \textbf{Yes} & No & No & No \\
-Fisher's / Stouffer's / RankProd Engines & \textbf{Yes} & Yes & No & Yes \\
-Higgins $I^2$ and Cochran's $Q$ Testing & \textbf{Yes} & Partial & No & No \\
-Directional Consistency Quantification & \textbf{Yes} & Partial & Yes & No \\
-Publication Volcano Plots (\texttt{ggrepel}) & \textbf{Yes} & No & Yes & No \\
-Publication Forest Plots with Pooled Diamond & \textbf{Yes} & No & No & No \\
-Bioconductor S4 Compliance & \textbf{Yes} & No & No & No \\
+Random effects (REML) & Average effect across cohorts & 7,491 \\
+Random effects (REML) + HKSJ & Same, small-sample adjusted & 0 \\
+Fixed effect & One common effect & 10,861 \\
+Weighted inverse-normal & Signed evidence, $\sqrt{n}$ weights & 10,906 \\
+Directional Fisher & Same-direction effect in $\ge 1$ study & 10,699 \\
+rOP ($r = 2$) & DE in $\ge 2$ of 4 studies & 7,615 \\
+maxP & DE in all 4 studies & 1,622 \\
+AWmeta & DE in an adaptively selected subset & 10,284 \\
 \bottomrule
-\end{tabularx}
+\end{tabular}
 \end{table}
 
-As summarized in \textbf{Table~\ref{tab:comparison}}, \texttt{metaXpress} is the only available solution providing:
+\paragraph{Robustness.} Leaving out GSE125583 reduced the number of significant genes from 7,491 to 1,550. Leaving out any of the other three cohorts left between 5,541 and 8,123 significant genes. A core of 1,239 genes remained significant, with the same direction, after removing any single study. We regard this core as the most defensible AD signature in these data.
+
+Egger tests found no small-study asymmetry among the core genes (0 of 1,239 at FDR $\le 0.05$). With four studies this is not evidence that bias is absent \cite{sterne2011recommendations}.
+
+\paragraph{Pathways.} GSEA of the meta-signature on MSigDB Hallmarks (Figure~\ref{fig:pathways}) showed:
 \begin{itemize}[noitemsep,topsep=2pt]
-    \item Complete end-to-end integration from raw count matrices to publication figures without intermediate manual file reformatting;
-    \item Standardized 10-point Heberle et al. (2025) QC benchmarking \cite{heberle2025};
-    \item Built-in support for both effect size pooling (Random Effects, Fixed Effects) and $p$-value combination (Fisher's, Stouffer's, RankProd);
-    \item Full Bioconductor S4 architecture with direct export to \texttt{SummarizedExperiment} objects~\cite{hubers2015summarizedexperiment}.
+    \item strong loss of oxidative phosphorylation (NES $= -3.08$, FDR $= 4.9\times10^{-31}$) and of MYC targets;
+    \item gain of TNF-$\alpha$/NF-$\kappa$B, IL6/JAK/STAT3, p53 and inflammatory-response genes.
 \end{itemize}
+These match the mitochondrial and neuroinflammatory components of AD pathology. Cross-study pathway meta-analysis gave the same leading themes: oxidative phosphorylation was down-regulated in three of four cohorts. Per-study NES values show that the small prefrontal cohort often diverged from the others.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.66\linewidth]{figures/fig4_ad_pathways.pdf}
+    \caption{\textbf{Per-study pathway enrichment in the AD cohorts.} Normalised enrichment scores (fgsea, MSigDB Hallmarks) for the 15 pathways with the largest mean absolute NES. Pathways are combined across studies by directional Stouffer combination in \texttt{mx\_pathway\_studies()}.}
+    \label{fig:pathways}
+\end{figure}
+
+\subsection{Case study 2: downstream biology in pancreatic ductal adenocarcinoma}
+Three GEO cohorts compare PDAC with adjacent non-tumour pancreas:
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item GSE130688, 15/15 \cite{gse130688ref};
+    \item GSE136569, 5/5 \cite{gse136569ref};
+    \item GSE171485, 6/6 \cite{gse171485ref}.
+\end{itemize}
+Tumour/normal labels were taken from the GEO series records. Per-study DESeq2 analyses found 5,863, 146 and 1,105 genes at FDR $\le 0.05$, and fold changes were concordant across cohorts ($r = 0.58$--$0.73$). Random-effects pooling over 29,679 genes identified 1,787 genes with FDR $\le 0.05$ and $|\log_2\mathrm{FC}| \ge 1$ (1,166 up, 621 down).
+
+The downstream analyses (Figure~\ref{fig:pdac}) gave four results.
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item \emph{Transcription factors.} Of 552 transcription factors scored, 148 were significant. NF-$\kappa$B (RELA, REL, RELB) and AP-1 (JUN) were the most active, followed by E2F, MYC and TP53 targets.
+    \item \emph{Cell composition.} Neutrophil, monocytic, myeloid dendritic-cell and fibroblast scores were higher in tumour (pooled Hedges' $g = 0.77$--$1.06$, FDR $\le 0.017$, $I^2 \le 27\%$). This reflects the desmoplastic, myeloid-rich PDAC stroma, and shows that part of the gene-level signature reflects tissue composition.
+    \item \emph{Co-expression.} The leading consensus module (398 genes; FDR $= 5.8\times10^{-5}$) was centred on MST1R, PLEK2, TSPAN1, B3GNT3 and CDCP1, a tumour-epithelial programme. A module of acinar genes (CELP, PNLIPRP1, RBPJL) tended to be lost (FDR $= 0.056$).
+    \item \emph{Drug reversal.} Among 5,425 LINCS compounds, five of the top eight reversers of the tumour signature inhibit the TGF-$\beta$ type I receptor (SD-208, GW-788388, LY-2109761, LY-364947, SB-525334). The EGFR inhibitor erlotinib, which is approved in combination with gemcitabine for advanced PDAC, ranked fifth.
+\end{itemize}
+Drug-connectivity p-values assume independent genes and are anti-conservative, so they are used for ranking only.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{figures/fig5_pdac_downstream.pdf}
+    \caption{\textbf{Downstream biology of the PDAC meta-signature.} (A) Transcription-factor activity (CollecTRI, univariate linear model). (B) Cell-type composition (MCP-counter markers, pooled Hedges' $g$). (C) Consensus co-expression modules (pooled eigengene effect). (D) Drug-signature reversal (LINCS L1000; negative scores reverse the tumour signature). Dark bars: FDR $\le 0.05$.}
+    \label{fig:pdac}
+\end{figure}
 
 % ==============================================================================
 \section{Discussion}
 % ==============================================================================
-Small sample sizes remain a primary contributor to reproducibility failure in functional genomics. In single-cohort transcriptomic experiments, the necessity of applying multiple hypothesis testing adjustments across $\sim 30,000$ quantified genes inevitably suppresses true biological signals, as demonstrated by the renal cancer cohort (GSE171485, $n = 12$) yielding only 18 significant DEGs despite high sequencing depth ($36.8$M reads). Through the application of the DerSimonian--Laird random effects model, \texttt{metaXpress} pooled effect sizes and weighted variances across 52 patient samples, amplifying statistical power to uncover 558 robust conserved Meta-DEGs.
+\texttt{metaXpress} brings the steps of a bulk RNA-seq meta-analysis into one workflow and validates its statistical core against reference implementations. The case studies illustrate decisions that strongly affect conclusions but are easy to get wrong:
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item excluding studies that share donors;
+    \item fixing contrast orientation and checking it by concordance;
+    \item keeping per-study DE on raw counts;
+    \item choosing the pooling model from the scientific question;
+    \item reporting heterogeneity, prediction intervals and leave-one-out robustness rather than a single list of significant genes.
+\end{itemize}
 
-Importantly, the genes discovered by \texttt{metaXpress} represent fundamental biological mediators of epithelial carcinoma rather than tissue-specific noise. For example, \textit{MST1R} (RON) was consistently elevated by $> 2$-fold ($\log_2\text{FC} = +2.14, p_{\text{adj}} = 5.50 \times 10^{-7}$) across colorectal, pancreatic, and renal cancers with $I^2 = 0.0\%$. RON activation triggers downstream PI3K/AKT and MAPK cascades, driving invasive phenotypes and anoikis resistance \cite{wadhwa2020mst1r}. Similarly, \textit{FAM107A} (DRR1) exhibited uniform down-regulation across all three tumor types ($\log_2\text{FC} = -1.94, p_{\text{adj}} = 2.39 \times 10^{-5}, I^2 = 0.0\%$). Loss of FAM107A dismantles microfilament organization, facilitating cell cycle progression and local invasion \cite{lecka2021fam107a}. The discovery of these canonical drivers demonstrates the fidelity with which \texttt{metaXpress} isolates invariant biological mechanisms.
+The AD analysis shows that a meta-analysis with one large cohort is, to a large extent, a re-analysis of that cohort. Most fixed-effect, p-value-based and AWmeta discoveries depended on GSE125583. Prediction intervals and the leave-one-out core distinguish signals that are likely to transfer to new cohorts.
 
-From a software engineering perspective, \texttt{metaXpress} addresses critical usability bottlenecks. By codifying the Heberle et al. (2025) 10-point QC criteria into automated scoring functions, the package prevents flawed studies from contaminating meta-analyses. Furthermore, by packaging native negative binomial GLMs (DESeq2, edgeR) alongside five distinct pooling engines in an S4-compliant structure, \texttt{metaXpress} ensures full computational reproducibility across any multi-cohort bulk RNA-seq study design, regardless of disease etiology or biological domain.
+The HKSJ adjustment, despite its good calibration for confidence intervals, cannot support genome-wide discovery when only a handful of studies are available. Researchers should state which question their method answers rather than choose the method that yields the most genes.
 
-\subsection{Limitations and Future Directions}
-While \texttt{metaXpress} demonstrates superior performance on bulk RNA-seq data, future versions will expand functionality in three key directions: (1) extending the statistical models to accommodate pseudobulk single-cell RNA-seq (scRNA-seq) datasets; (2) integrating automated cross-species orthology mapping (e.g., murine-human translational meta-analyses); and (3) incorporating gene set enrichment meta-analysis (GSEA) directly on pooled effect sizes.
+\subsection{Limitations}
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item All methods assume independent studies. Donor overlap must be checked by the analyst; metaXpress cannot detect it automatically.
+    \item NCBI uniformly processed counts exist only for eligible human and mouse series. Other data must be harmonised by the user.
+    \item Gene-level random-effects inference is approximate when $k$ is small, and the small-study tests are uninformative below about ten studies.
+    \item Cell-composition differences can drive tissue-level signatures. Downstream analyses describe associations, and drug-connectivity scores generate hypotheses only.
+    \item AWmeta, as originally proposed, does not require the selected studies to agree in direction, so its results should be read together with the reported direction consistency.
+\end{itemize}
 
 % ==============================================================================
-\section{Code and Data Availability}
+\section{Code and data availability}
 % ==============================================================================
-The \texttt{metaXpress} R package is open-source and released under the MIT license. Source code, documentation, test suites, and vignettes are maintained at \url{https://github.com/hossainlab/metaXpress}. All bulk RNA-seq datasets analyzed in this manuscript are publicly available on NCBI GEO under accessions GSE130688, GSE136569, and GSE171485. Full code and instructions to reproduce the multi-cohort benchmark case study are available in the repository's \texttt{scripts/} directory.
+\texttt{metaXpress} is released under the MIT license at \url{https://github.com/hossainlab/metaXpress}. The package includes per-study results for the AD cohorts (\nolinkurl{inst/extdata/ad_brain_de.rds}), built from GEO by \nolinkurl{inst/scripts/make_ad_brain_extdata.R}. Executable vignettes reproduce the analyses.
+
+The PDAC analysis is reproduced by \nolinkurl{scripts/fetch_case_study_data.R} and \nolinkurl{scripts/run_case_study_applications.R}. All values and figures in this article are produced by \nolinkurl{scripts/make_preprint_results.R} (metaXpress 0.99.1, R 4.6.1).
+
+All datasets are public in NCBI GEO under accessions GSE125583, GSE104704, GSE53697, GSE173955, GSE130688, GSE136569, GSE171485 and GSE52778.
 
 % ==============================================================================
 \section*{Acknowledgments}
@@ -404,7 +471,7 @@ The author thanks members of the Center for Health Innovation, Research, Action,
 % ==============================================================================
 \section*{Author Contributions}
 % ==============================================================================
-\textbf{Md. Jubayer Hossain}: Conceptualization, Software Engineering, Methodology, Data Curation, Formal Analysis, Validation, Visualization, Writing -- Original Draft, Writing -- Review \& Editing, Project Administration.
+\textbf{Md. Jubayer Hossain}: Conceptualization, Software, Methodology, Data Curation, Formal Analysis, Validation, Visualization, Writing -- Original Draft, Writing -- Review \& Editing, Project Administration.
 
 % ==============================================================================
 \section*{Conflict of Interest}

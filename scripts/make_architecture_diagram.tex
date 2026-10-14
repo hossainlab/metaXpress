@@ -61,26 +61,26 @@
 ]
 
 % ==============================================================================
-% STAGE 1: INGESTION & 10-POINT QC
+% STAGE 1: INGESTION & QC
 % ==============================================================================
 \node[headerbar, fill=stage1header] (h1) {
-    \textbf{STAGE 1: Cohort Ingestion \& Standardized QC Filtering}
+    \textbf{STAGE 1: Study Ingestion, Quality Control \& Selection}
 };
 
 \node[innercard, text width=6.9cm, minimum height=2.3cm, below=0.25cm of h1.south west, anchor=north west] (c1a) {
-    {\small\bfseries\textcolor{textdark}{Multi-Cohort Ingestion \& Parsing}}\\[3pt]
-    {\scriptsize\textcolor{textgray}{• Direct access from NCBI GEO accessions}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Standardized ingestion via \texttt{recount3}}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Delimited local counts + sample metadata}}\\[3pt]
-    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_read\_counts()} \quad\&\quad \texttt{mx\_read\_metadata()}}}
+    {\small\bfseries\textcolor{textdark}{Uniform Count Ingestion}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• NCBI GEO-generated raw counts (one pipeline)}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• GEO supplementary files, recount3, local files}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Any \texttt{SummarizedExperiment} via \texttt{mx\_from\_se()}}}\\[3pt]
+    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_fetch\_geo()} \quad \texttt{mx\_load\_local()}}}
 };
 
 \node[innercard, text width=6.9cm, minimum height=2.3cm, below=0.25cm of h1.south east, anchor=north east] (c1b) {
-    {\small\bfseries\textcolor{textdark}{Standardized 10-Point QC Scoring}}\\[3pt]
-    {\scriptsize\textcolor{textgray}{• Library Depth ($\ge 10$M, $\ge 20$M target) [2 pts]}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Detection Breadth ($\ge 10$k, $\ge 15$k unique genes) [2 pts]}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Replicate Balance ($n \ge 3, 5$) \& Integrity [6 pts]}}\\[3pt]
-    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_qc\_score()} \quad $\longrightarrow$ \quad \texttt{mx\_filter\_studies($\ge 7$)}}}
+    {\small\bfseries\textcolor{textdark}{Data-Level QC (10 criteria)}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Each criterion: pass / fail / not evaluable}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Replicates, depth, detection, labels, raw counts}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Exclusion on failed required criteria}}\\[3pt]
+    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_qc\_study()} \quad $\longrightarrow$ \quad \texttt{mx\_filter\_studies()}}}
 };
 
 \begin{scope}[on background layer]
@@ -92,30 +92,30 @@
 % STAGE 2: HARMONIZATION & DIFFERENTIAL EXPRESSION
 % ==============================================================================
 \node[headerbar, fill=stage2header, below=0.7cm of box1.south] (h2) {
-    \textbf{STAGE 2: Identifier Alignment \& Per-Cohort Differential Expression Modeling}
+    \textbf{STAGE 2: Identifier Harmonization \& Per-Study Differential Expression}
 };
 
 \node[innercard, text width=4.4cm, minimum height=2.3cm, below=0.25cm of h2.south west, anchor=north west] (c2a) {
     {\small\bfseries\textcolor{textdark}{Gene Harmonization}}\\[3pt]
-    {\scriptsize\textcolor{textgray}{• Entrez Gene ID mapping}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Ensembl Stable ID sync}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• HGNC Symbol aliases}}\\[3pt]
-    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_align\_genes()}}}
+    {\scriptsize\textcolor{textgray}{• Symbol / Ensembl / Entrez}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Version stripping}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Duplicate collapsing}}\\[3pt]
+    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_reannotate()}}}
 };
 
 \node[innercard, text width=4.4cm, minimum height=2.3cm, below=0.25cm of h2.south east, anchor=north east] (c2c) {
-    {\small\bfseries\textcolor{textdark}{Missingness Auditing}}\\[3pt]
-    {\scriptsize\textcolor{textgray}{• Cross-cohort coverage}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Completeness matrix ($k/K$)}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Strict vs partial filters}}\\[3pt]
-    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_missing\_summary()}}}
+    {\small\bfseries\textcolor{textdark}{Pre-Pooling Checks}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Fold-change concordance}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Flipped-contrast detection}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Gene coverage per study}}\\[3pt]
+    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_study\_concordance()}}}
 };
 
 \node[innercard, text width=4.6cm, minimum height=2.3cm] at ($(c2a.east)!0.5!(c2c.west)$) (c2b) {
-    {\small\bfseries\textcolor{textdark}{Per-Study GLMs}}\\[3pt]
-    {\scriptsize\textcolor{textgray}{• \textbf{DESeq2} dispersion shrink}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• \textbf{edgeR} QL / TMM norm}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• \textbf{limma-voom} weights}}\\[3pt]
+    {\small\bfseries\textcolor{textdark}{Per-Study DE (raw counts)}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• \textbf{DESeq2} / \textbf{edgeR}-QL / \textbf{limma-voom}}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Covariates, explicit contrasts}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• log2FC, log2-scale SE, z}}\\[3pt]
     {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_de\_all()}}}
 };
 
@@ -125,42 +125,42 @@
 \end{scope}
 
 % ==============================================================================
-% STAGE 3: META-ANALYSIS POOLING ENGINES
+% STAGE 3: META-ANALYSIS
 % ==============================================================================
 \node[headerbar, fill=stage3header, below=0.7cm of box2.south] (h3) {
-    \textbf{STAGE 3: Statistical Meta-Analysis Pooling Engines (\texttt{mx\_meta()})}
+    \textbf{STAGE 3: Gene-Level Meta-Analysis (\texttt{mx\_meta()})}
 };
 
-\node[innercard, draw=stage3border!60, text width=3.2cm, minimum height=2.3cm, below=0.25cm of h3.south west, anchor=north west] (e1) {
+\node[innercard, draw=stage3border!60, text width=2.9cm, minimum height=2.3cm, below=0.25cm of h3.south west, anchor=north west] (e1) {
     {\small\bfseries\textcolor{textdark}{Random Effects}}\\[2pt]
-    {\scriptsize\textbf{DerSimonian--Laird}}\\[3pt]
-    {\scriptsize\textcolor{textgray}{• Between-study $\tau^2$}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• $w_i^* = 1/(s_i^2 + \tau^2)$}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Conservative CIs}}
+    {\scriptsize\textbf{REML / PM / DL}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Optional HKSJ}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• $\tau^2$, $I^2$, 95\% CI}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Prediction interval}}
 };
 
-\node[innercard, draw=stage3border!60, text width=3.2cm, minimum height=2.3cm, below=0.25cm of h3.south east, anchor=north east] (e4) {
-    {\small\bfseries\textcolor{textdark}{Rank Product}}\\[2pt]
-    {\scriptsize\textbf{Non-Parametric}}\\[3pt]
-    {\scriptsize\textcolor{textgray}{• Geometric mean rank}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Permutation testing}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Robust to outliers}}
+\node[innercard, draw=stage3border!60, text width=2.9cm, minimum height=2.3cm, below=0.25cm of h3.south east, anchor=north east] (e4) {
+    {\small\bfseries\textcolor{textdark}{Adaptive \& Checks}}\\[2pt]
+    {\scriptsize\textbf{AWmeta, rOP, maxP}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Study selection}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Leave-one-out}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Egger / Begg}}
 };
 
-\node[innercard, draw=stage3border!60, text width=3.2cm, minimum height=2.3cm, right=0.35cm of e1] (e2) {
-    {\small\bfseries\textcolor{textdark}{Fixed Effects}}\\[2pt]
+\node[innercard, draw=stage3border!60, text width=2.9cm, minimum height=2.3cm, right=0.35cm of e1] (e2) {
+    {\small\bfseries\textcolor{textdark}{Fixed Effect}}\\[2pt]
     {\scriptsize\textbf{Inverse-Variance}}\\[3pt]
     {\scriptsize\textcolor{textgray}{• Assumes $\tau^2 = 0$}}\\[1pt]
     {\scriptsize\textcolor{textgray}{• Weight $w_i = 1/s_i^2$}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Homogeneous sets}}
+    {\scriptsize\textcolor{textgray}{• Replicate studies}}
 };
 
-\node[innercard, draw=stage3border!60, text width=3.4cm, minimum height=2.3cm, left=0.35cm of e4] (e3) {
+\node[innercard, draw=stage3border!60, text width=2.9cm, minimum height=2.3cm, left=0.35cm of e4] (e3) {
     {\small\bfseries\textcolor{textdark}{P-Value Pooling}}\\[2pt]
-    {\scriptsize\textbf{Fisher \& Stouffer}}\\[3pt]
-    {\scriptsize\textcolor{textgray}{• Fisher: $-2\sum \ln(p_i)$}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Stouffer: $\sqrt{N}$-weighted}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Directional $Z$ score}}
+    {\scriptsize\textbf{Directional}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Fisher (Owen 2009)}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Stouffer, inv.-normal}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• minP}}
 };
 
 \begin{scope}[on background layer]
@@ -169,26 +169,26 @@
 \end{scope}
 
 % ==============================================================================
-% STAGE 4: DIAGNOSTICS & BIOCONDUCTOR EXPORT
+% STAGE 4: INTERPRETATION & REPORTING
 % ==============================================================================
 \node[headerbar, fill=stage4header, below=0.7cm of box3.south] (h4) {
-    \textbf{STAGE 4: Heterogeneity Diagnostics, Visualizations \& Bioconductor Export}
+    \textbf{STAGE 4: Pathways, Downstream Biology, Visualization \& Reporting}
 };
 
 \node[innercard, text width=6.9cm, minimum height=2.45cm, below=0.25cm of h4.south west, anchor=north west] (c4a) {
-    {\small\bfseries\textcolor{textdark}{Publication-Grade Visualizations}}\\[3pt]
-    {\scriptsize\textcolor{textgray}{• \textbf{Volcano plots} with callout labels (\texttt{mx\_volcano()})}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• \textbf{Forest plots} with pooled summary diamonds (\texttt{mx\_forest()})}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• \textbf{Heterogeneity profiles} ($I^2$, Cochran's $Q$) (\texttt{mx\_heterogeneity\_plot()})}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• \textbf{QC dashboards} across sample cohorts (\texttt{mx\_study\_overview()})}}
+    {\small\bfseries\textcolor{textdark}{Pathways \& Biology}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• fgsea GSEA / ORA on the meta-signature (\texttt{mx\_pathway\_meta()})}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Per-study GSEA combined (\texttt{mx\_pathway\_studies()})}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• TF activity, cell composition, co-expression modules}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• Drug-signature reversal (LINCS L1000)}}
 };
 
 \node[innercard, text width=6.9cm, minimum height=2.45cm, below=0.25cm of h4.south east, anchor=north east] (c4b) {
-    {\small\bfseries\textcolor{textdark}{Bioconductor S4 Interoperability}}\\[3pt]
-    {\scriptsize\textcolor{textgray}{• Native S4 classes: \texttt{metaXpressStudy} \& \texttt{metaXpressResult}}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Direct conversion to \texttt{SummarizedExperiment} objects}}\\[1pt]
-    {\scriptsize\textcolor{textgray}{• Full audit provenance tracking \& reproducible reporting}}\\[4pt]
-    {\scriptsize\bfseries\textcolor{codecol}{\texttt{as(meta\_result, "SummarizedExperiment")}}}
+    {\small\bfseries\textcolor{textdark}{Figures \& Reports}}\\[3pt]
+    {\scriptsize\textcolor{textgray}{• Volcano, forest (CI + PI), funnel, heterogeneity}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• S4 classes built on \texttt{SummarizedExperiment}}}\\[1pt]
+    {\scriptsize\textcolor{textgray}{• HTML report with methods text, CSV/Excel export}}\\[4pt]
+    {\scriptsize\bfseries\textcolor{codecol}{\texttt{mx\_report()} \quad \texttt{mx\_export()}}}
 };
 
 \begin{scope}[on background layer]

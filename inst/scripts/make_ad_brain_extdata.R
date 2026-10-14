@@ -8,7 +8,7 @@
 #
 #   GSE125583  fusiform gyrus         AD 219 / control 70  (Srinivasan 2020)
 #   GSE104704  lateral temporal lobe  AD  12 / aged ctrl 10 (Nativio 2018)
-#   GSE53697   dorsolateral PFC       AD   6 / control  6 (Magistri 2015;
+#   GSE53697   dorsolateral PFC       AD   6 / control  6 (Scheckel 2016;
 #              NCBI processed 12 of the 17 deposited libraries)
 #   GSE173955  hippocampus            AD   8 / control 10
 #
