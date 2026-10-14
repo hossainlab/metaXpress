@@ -217,3 +217,36 @@ test_that("mx_study_concordance flags a flipped contrast", {
   expect_true(cc$correlation[cc$study_1 == "A" & cc$study_2 == "B"] > 0.8)
   expect_match(cc$flag[cc$study_2 == "C"][1], "NEGATIVE")
 })
+
+test_that("Egger and Begg tests match metafor::regtest / ranktest", {
+  skip_if_not_installed("metafor")
+  set.seed(11)
+  K <- 12; G <- 5
+  de <- lapply(seq_len(K), function(s) {
+    se <- runif(G, 0.1, 0.8)
+    lfc <- 0.3 + 1.2 * se * (seq_len(G) %% 2) + rnorm(G, 0, se)
+    p <- 2 * pnorm(-abs(lfc / se))
+    data.frame(gene_id = paste0("G", seq_len(G)), log2FC = lfc, lfcSE = se,
+               pvalue = p, padj = p)
+  })
+  ss <- mx_small_study(de, method = "both")
+  for (i in seq_len(G)) {
+    y <- vapply(de, function(d) d$log2FC[i], numeric(1))
+    s <- vapply(de, function(d) d$lfcSE[i], numeric(1))
+    fe <- metafor::rma(yi = y, sei = s, method = "FE")
+    eg <- metafor::regtest(fe, model = "lm", predictor = "sei")
+    expect_equal(ss$egger_pvalue[i], eg$pval, tolerance = 1e-8)
+    rk <- suppressWarnings(metafor::ranktest(fe))
+    expect_equal(ss$begg_tau[i], unname(rk$tau), tolerance = 1e-8)
+    expect_equal(ss$begg_pvalue[i], rk$pval, tolerance = 1e-8)
+  }
+})
+
+test_that("mx_small_study warns with few studies; mx_funnel plots", {
+  ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+                            package = "metaXpress"))
+  expect_warning(ss <- mx_small_study(ad$de_results, genes = c("GFAP", "VGF")),
+                 "low power")
+  expect_equal(nrow(ss), 2)
+  expect_s3_class(mx_funnel("GFAP", ad$de_results), "ggplot")
+})

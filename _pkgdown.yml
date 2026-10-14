@@ -85,6 +85,7 @@ reference:
       - mx_study_concordance
       - mx_heterogeneity
       - mx_sensitivity
+      - mx_small_study
 
   - title: "Module 5: Missing Gene Handling"
     desc: "Identify missingness patterns across studies and apply imputation or coverage filtering."
@@ -111,6 +112,7 @@ reference:
       - mx_heatmap
       - mx_upset
       - mx_heterogeneity_plot
+      - mx_funnel
 
   - title: "Module 8: Reporting & Export"
     desc: "Generate reproducible HTML/PDF reports and export meta-analysis results."

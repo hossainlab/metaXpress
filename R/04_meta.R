@@ -764,3 +764,147 @@ mx_study_concordance <- function(de_results,
   p_r <- sorted[cbind(seq_len(nrow(pv)), pmax(1L, r))]
   list(stat = p_r, p = pbeta(p_r, r, k - r + 1))
 }
+
+#' Small-study effects and publication bias tests
+#'
+#' Tests, gene by gene, whether smaller (less precise) studies report
+#' systematically larger effects, the pattern produced by publication bias
+#' or by other small-study effects. Two standard tests are provided:
+#' Egger's regression test and Begg and Mazumdar's rank correlation test.
+#'
+#' @inheritParams mx_meta
+#' @param genes Optional character vector of genes to test (e.g. the
+#'   significant genes of \code{\link{mx_meta}}). Default: all genes measured
+#'   in at least \code{min_studies} studies.
+#' @param method \code{"egger"} (default), \code{"begg"} or \code{"both"}.
+#' @param min_studies Minimum number of studies with a standard error for a
+#'   gene to be tested. Default \code{3} (the minimum for Egger's test).
+#'
+#' @return A \code{data.frame} with \code{gene_id}, \code{n_studies} and, for
+#'   Egger, \code{egger_intercept}, \code{egger_se}, \code{egger_pvalue};
+#'   for Begg, \code{begg_tau}, \code{begg_pvalue}. BH-adjusted columns
+#'   (\code{*_padj}) are added across the genes tested.
+#'
+#' @details
+#' \strong{Egger's test} regresses the standardized effect
+#' \eqn{y_i / s_i} on precision \eqn{1/s_i} by ordinary least squares; an
+#' intercept different from zero indicates funnel-plot asymmetry
+#' (t-test with \eqn{k - 2} df). \strong{Begg's test} computes Kendall's
+#' \eqn{\tau} between the standardized deviates from the fixed-effect
+#' estimate and their variances.
+#'
+#' Both tests have low power with few studies. The Cochrane Handbook advises
+#' against them with fewer than 10 studies, and a warning is issued in that
+#' case; a non-significant result then is not evidence of absence of bias.
+#' In transcriptomic meta-analyses of public data, genome-wide summary
+#' statistics are reported for all genes, so classical publication bias
+#' (selective reporting of genes) does not apply; asymmetry instead points to
+#' small-study differences in design, tissue or platform.
+#'
+#' @references
+#' Egger, M., Davey Smith, G., Schneider, M. & Minder, C. (1997) Bias in
+#' meta-analysis detected by a simple, graphical test. \emph{BMJ},
+#' \strong{315}(7109), 629--634. \doi{10.1136/bmj.315.7109.629}
+#'
+#' Begg, C.B. & Mazumdar, M. (1994) Operating characteristics of a rank
+#' correlation test for publication bias. \emph{Biometrics}, \strong{50}(4),
+#' 1088--1101. \doi{10.2307/2533446}
+#'
+#' Sterne, J.A.C. et al. (2011) Recommendations for examining and
+#' interpreting funnel plot asymmetry in meta-analyses of randomised
+#' controlled trials. \emph{BMJ}, \strong{343}, d4002.
+#' \doi{10.1136/bmj.d4002}
+#'
+#' @examples
+#' ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+#'                           package = "metaXpress"))
+#' ss <- suppressWarnings(mx_small_study(ad$de_results,
+#'                                       genes = c("GFAP", "VGF", "SST")))
+#' ss
+#'
+#' @seealso \code{\link{mx_funnel}}, \code{\link{mx_meta}}
+#' @importFrom stats pt cor.test
+#' @export
+mx_small_study <- function(de_results, genes = NULL,
+                           method = c("egger", "begg", "both"),
+                           min_studies = 3) {
+  de_results <- .extract_de_results(de_results)
+  .validate_de_list(de_results)
+  method <- match.arg(method)
+  if (min_studies < 3) stop("'min_studies' must be >= 3")
+
+  mats <- .build_gene_matrices(de_results)
+  y  <- mats$lfc_mat
+  se <- mats$se_mat
+  se[!is.finite(se) | se <= 0] <- NA_real_
+  y[is.na(se)] <- NA_real_
+  if (all(is.na(se)))
+    stop("Small-study tests need an 'lfcSE' column in the DE results")
+
+  k <- rowSums(!is.na(y))
+  keep <- k >= min_studies
+  if (!is.null(genes)) keep <- keep & rownames(y) %in% genes
+  if (!any(keep)) stop("No genes measured with SE in >= ", min_studies,
+                       " studies")
+  y <- y[keep, , drop = FALSE]; se <- se[keep, , drop = FALSE]
+  k <- k[keep]
+  if (max(k) < 10)
+    warning("Only ", max(k), " studies: small-study tests have very low ",
+            "power with fewer than 10 studies (Sterne et al. 2011). ",
+            "Interpret non-significant results with caution.")
+
+  out <- data.frame(gene_id = rownames(y), n_studies = as.integer(k),
+                    stringsAsFactors = FALSE)
+
+  if (method %in% c("egger", "both")) {
+    eg <- .egger(y, se)
+    out$egger_intercept <- eg$intercept
+    out$egger_se        <- eg$se
+    out$egger_pvalue    <- eg$p
+    out$egger_padj      <- stats::p.adjust(eg$p, "BH")
+  }
+  if (method %in% c("begg", "both")) {
+    bg <- t(vapply(seq_len(nrow(y)), function(i) .begg(y[i, ], se[i, ]),
+                   numeric(2)))
+    out$begg_tau    <- bg[, 1]
+    out$begg_pvalue <- bg[, 2]
+    out$begg_padj   <- stats::p.adjust(bg[, 2], "BH")
+  }
+  out
+}
+
+# Vectorized Egger regression: z = y/se on x = 1/se (OLS), test intercept
+.egger <- function(y, se) {
+  z <- y / se
+  x <- 1 / se
+  ok <- !is.na(z)
+  k  <- rowSums(ok)
+  xbar <- rowSums(x, na.rm = TRUE) / k
+  zbar <- rowSums(z, na.rm = TRUE) / k
+  dx <- x - xbar; dz <- z - zbar
+  sxx <- rowSums(dx^2, na.rm = TRUE)
+  sxz <- rowSums(dx * dz, na.rm = TRUE)
+  b <- sxz / sxx
+  a <- zbar - b * xbar
+  res <- z - (a + b * x)
+  s2  <- rowSums(res^2, na.rm = TRUE) / (k - 2)
+  se_a <- sqrt(s2 * (1 / k + xbar^2 / sxx))
+  t <- a / se_a
+  p <- 2 * pt(-abs(t), df = k - 2)
+  p[k < 3 | !is.finite(p)] <- NA_real_
+  list(intercept = a, se = se_a, p = p)
+}
+
+# Begg & Mazumdar rank correlation for one gene
+.begg <- function(y, se) {
+  ok <- !is.na(y) & !is.na(se)
+  y <- y[ok]; v <- se[ok]^2
+  if (length(y) < 3) return(c(NA_real_, NA_real_))
+  w  <- 1 / v
+  mu <- sum(w * y) / sum(w)
+  vstar <- v - 1 / sum(w)
+  zs <- (y - mu) / sqrt(vstar)
+  ct <- suppressWarnings(cor.test(zs, v, method = "kendall",
+                                  exact = length(y) < 50))
+  c(unname(ct$estimate), ct$p.value)
+}

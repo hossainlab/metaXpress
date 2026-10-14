@@ -466,3 +466,69 @@ mx_heterogeneity_plot <- function(meta_result) {
                   caption = "Dashed lines: 25% (low) and 75% (high) thresholds") +
     ggplot2::theme_bw()
 }
+
+#' Funnel plot for one gene
+#'
+#' Plots each study's log2 fold change against its standard error, with the
+#' pooled estimate and pseudo 95\% confidence limits. Asymmetry suggests
+#' small-study effects; see \code{\link{mx_small_study}} for formal tests.
+#'
+#' @param gene Gene identifier.
+#' @param de_results Named list of per-study DE \code{data.frame}s or
+#'   \code{\linkS4class{metaXpressStudy}} objects.
+#' @param meta_result Optional \code{\linkS4class{metaXpressResult}}; its
+#'   pooled estimate is used as the funnel centre. Otherwise the
+#'   inverse-variance fixed-effect estimate is used.
+#'
+#' @return A \code{ggplot2} object.
+#'
+#' @references
+#' Sterne, J.A.C. & Egger, M. (2001) Funnel plots for detecting bias in
+#' meta-analysis: guidelines on choice of axis. \emph{Journal of Clinical
+#' Epidemiology}, \strong{54}(10), 1046--1055.
+#' \doi{10.1016/S0895-4356(01)00377-8}
+#'
+#' @examples
+#' ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+#'                           package = "metaXpress"))
+#' mx_funnel("GFAP", ad$de_results)
+#'
+#' @seealso \code{\link{mx_small_study}}, \code{\link{mx_forest}}
+#' @export
+mx_funnel <- function(gene, de_results, meta_result = NULL) {
+  de_results <- .extract_de_results(de_results)
+  if (is.null(names(de_results)))
+    names(de_results) <- paste0("study_", seq_along(de_results))
+  df <- do.call(rbind, lapply(names(de_results), function(nm) {
+    d <- de_results[[nm]]
+    i <- match(gene, d$gene_id)
+    if (is.na(i) || !"lfcSE" %in% names(d)) return(NULL)
+    data.frame(study = nm, log2FC = d$log2FC[i], se = d$lfcSE[i])
+  }))
+  df <- df[!is.na(df$se) & df$se > 0, , drop = FALSE]
+  if (is.null(df) || nrow(df) == 0)
+    stop("Gene '", gene, "' has no study with log2FC and lfcSE")
+
+  centre <- NA_real_
+  if (!is.null(meta_result)) {
+    mt <- meta_result@meta_table
+    centre <- mt$meta_log2FC[match(gene, mt$gene_id)]
+  }
+  if (is.na(centre)) centre <- sum(df$log2FC / df$se^2) / sum(1 / df$se^2)
+
+  se_max <- max(df$se) * 1.1
+  tri <- data.frame(x = c(centre - 1.96 * se_max, centre,
+                          centre + 1.96 * se_max),
+                    y = c(se_max, 0, se_max))
+  ggplot2::ggplot(df, ggplot2::aes(x = log2FC, y = se)) +
+    ggplot2::geom_polygon(data = tri, ggplot2::aes(x = x, y = y),
+                          fill = "grey92", colour = "grey60",
+                          linetype = "dashed", inherit.aes = FALSE) +
+    ggplot2::geom_vline(xintercept = centre, colour = "#E41A1C") +
+    ggplot2::geom_point(size = 3, colour = "#377EB8") +
+    ggrepel::geom_text_repel(ggplot2::aes(label = study), size = 3) +
+    ggplot2::scale_y_reverse() +
+    ggplot2::labs(title = paste0("Funnel plot: ", gene),
+                  x = "log₂ fold change", y = "Standard error") +
+    ggplot2::theme_bw()
+}

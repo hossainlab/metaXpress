@@ -314,6 +314,7 @@ mx_fetch_geo() ──► metaXpressStudy ──► mx_de() ──► mx_meta() �
 | `mx_study_concordance(de_results)` | Pairwise fold-change concordance; flags flipped contrasts |
 | `mx_heterogeneity(de_results)` | I², Q-stat, τ² per gene |
 | `mx_sensitivity(de_results)` | Leave-one-out analysis with a robustness table |
+| `mx_small_study(de_results)` | Per-gene Egger / Begg small-study (publication bias) tests |
 
 </details>
 
