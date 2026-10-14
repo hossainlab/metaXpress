@@ -8,6 +8,7 @@ mx_de_all(
   studies,
   method = "DESeq2",
   formula = ~condition,
+  contrast = NULL,
   BPPARAM = BiocParallel::SerialParam(),
   ...
 )
@@ -18,7 +19,13 @@ mx_de_all(
 \item{method}{Character scalar. DE method passed to \code{\link{mx_de}}.
 Default: \code{"DESeq2"}.}
 
-\item{formula}{A formula specifying the design. Default: \code{~ condition}.}
+\item{formula}{A design formula (see \code{\link{mx_de}}), or a list of
+formulas with one entry per study when covariates differ between studies.
+Default: \code{~ condition}.}
+
+\item{contrast}{\code{NULL}, a length-2 character vector
+\code{c(case, control)} applied to every study, or a list with one such
+vector per study (labels often differ between GEO series).}
 
 \item{BPPARAM}{A \code{\link[BiocParallel]{BiocParallelParam}} object
 controlling parallelization. Defaults to

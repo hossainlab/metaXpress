@@ -158,10 +158,12 @@ de_results <- mx_filter_coverage(de_results, min_studies = 2)
 
 ## 5a. Model Selection Guide
 
-- **2 cohorts:** `"fisher"` (Fisher's combined probability) or `"stouffer"` (Z-score weighting).
-- **3+ cohorts, low heterogeneity ($I^2 < 25\%$):** `"fixed_effects"` (Inverse-variance).
-- **3+ cohorts, moderate-to-high heterogeneity ($I^2 \ge 25\%$):** `"random_effects"` (DerSimonian-Laird, recommended default).
-- **Mixed heterogeneity:** `"awmeta"` (Adaptive weighting).
+Choose the method a priori from the question being asked:
+
+- **Consensus signature (recommended):** `"random_effects"` with REML estimation of tau². Report I², tau² and the 95% prediction interval. With few studies, add `hksj = TRUE`.
+- **Studies are near-replicates:** `"fixed_effects"`.
+- **Only p-values available:** `"inverse_normal"` (sample-size weighted) or `"stouffer"`.
+- **DE in all, or in at least r, studies:** `"maxp"` or `"rop"`.
 
 ```{r meta-analysis, purl=FALSE}
 meta_result <- mx_meta(de_results, method = "random_effects", min_studies = 2)

@@ -6,34 +6,76 @@
 \usage{
 mx_sensitivity(
   de_results,
-  method = c("random_effects", "fisher", "stouffer", "inverse_normal", "fixed_effects",
-    "awmeta")
+  method = c("random_effects", "fixed_effects", "fisher", "stouffer", "inverse_normal",
+    "minp", "maxp", "rop"),
+  padj_threshold = 0.05,
+  ...
 )
 }
 \arguments{
-\item{de_results}{A named list of \code{data.frame} objects from
-\code{\link{mx_de_all}}.}
+\item{de_results}{A named list of \code{data.frame} objects (the
+\code{de_result} slots produced by \code{\link{mx_de}}), or a named list
+of \code{\linkS4class{metaXpressStudy}} objects after
+\code{\link{mx_de_all}}. Required columns: \code{gene_id},
+\code{log2FC}, \code{pvalue}, \code{padj}; effect-size methods also need
+\code{lfcSE}.}
 
-\item{method}{Character scalar. Meta-analysis method. Default:
-\code{"random_effects"}.}
+\item{method}{Character scalar. One of:
+\describe{
+  \item{\code{"random_effects"}}{(default) Inverse-variance random-effects
+    model; between-study variance \eqn{\tau^2} estimated by
+    \code{tau_method}. Estimates the \emph{average} effect across
+    populations and reports a prediction interval.}
+  \item{\code{"fixed_effects"}}{Inverse-variance common-effect model.
+    Appropriate only when studies are near-replicates (low \eqn{I^2}).}
+  \item{\code{"fisher"}}{Fisher's sum of \eqn{-2\log p}. With
+    \code{directional = TRUE} (default) the two one-sided Fisher tests
+    are computed and combined as in Owen (2009), so evidence in
+    opposite directions does not accumulate. Like all Fisher-type tests
+    it can still be driven by one extreme study; check
+    \code{direction_consistency}.}
+  \item{\code{"stouffer"}}{Unweighted Stouffer Z on signed z-scores.}
+  \item{\code{"inverse_normal"}}{Weighted inverse-normal (Stouffer)
+    combination with weights \eqn{\sqrt{n_s}}, as in Marot et al. (2009)
+    and Rau et al. (2014).}
+  \item{\code{"minp"}}{Tippett's minimum p: DE in \emph{at least one}
+    study. Non-directional.}
+  \item{\code{"maxp"}}{Wilkinson's maximum p: DE in \emph{all} studies.
+    Non-directional.}
+  \item{\code{"rop"}}{r-th ordered p-value (Song & Tseng 2014): DE in
+    at least \code{r} studies. Non-directional.}
+}}
+
+\item{padj_threshold}{Numeric. FDR threshold used to call genes in the
+robustness summary. Default: \code{0.05}.}
+
+\item{...}{Further arguments passed to \code{\link{mx_meta}} (e.g.
+\code{tau_method}, \code{hksj}).}
 }
 \value{
-A list of \code{\linkS4class{metaXpressResult}} objects, one per
-  leave-one-out iteration. Names correspond to the excluded study.
+A named list of \code{\linkS4class{metaXpressResult}} objects, one
+  per excluded study. The attribute \code{"robustness"} holds a
+  \code{data.frame} with, for every gene, the number and fraction of
+  leave-one-out runs in which it remained significant
+  (\code{meta_padj <= padj_threshold}) with the same direction as in the
+  full analysis.
 }
 \description{
-Reruns the meta-analysis iteratively, each time excluding one study, to
-assess whether any single study drives the overall result. This is the
-standard sensitivity analysis recommended by the Cochrane Handbook
-(Higgins et al. 2019, Section 10.14).
+Reruns the meta-analysis \eqn{k} times, each time excluding one study, to
+assess whether any single study drives the result (Cochrane Handbook,
+Section 10.14).
 }
 \examples{
-\dontrun{
-  loo <- mx_sensitivity(de_results, method = "random_effects")
-  # Compare n significant genes across LOO runs
-  vapply(loo, function(r) sum(r@meta_table$meta_padj <= 0.05, na.rm = TRUE),
-         integer(1))
-}
+set.seed(1)
+de <- lapply(1:4, function(s) {
+  lfc <- rnorm(100, c(rep(1, 10), rep(0, 90)), 0.2); se <- rep(0.25, 100)
+  p <- 2 * pnorm(-abs(lfc / se))
+  data.frame(gene_id = paste0("G", 1:100), log2FC = lfc, lfcSE = se,
+             pvalue = p, padj = p.adjust(p, "BH"))
+})
+names(de) <- paste0("S", 1:4)
+loo <- mx_sensitivity(de, method = "random_effects")
+head(attr(loo, "robustness"))
 
 }
 \references{

@@ -10,8 +10,7 @@ NULL
 #' Converts gene identifiers in one or more studies to a unified namespace
 #' (Ensembl gene ID, gene symbol, or Entrez ID) using \pkg{AnnotationDbi}.
 #' Genes that cannot be mapped are dropped with a warning. Harmonising gene
-#' identifiers across studies is a prerequisite for any cross-study comparison
-#' (Stokholm et al. 2024).
+#' identifiers across studies is a prerequisite for any cross-study comparison.
 #'
 #' @param studies A named list of \code{\linkS4class{metaXpressStudy}} objects.
 #' @param org Character scalar. Target organism. Currently only
@@ -24,11 +23,6 @@ NULL
 #'   to the target namespace.
 #'
 #' @references
-#' Stokholm, A., Rabaglino, M.B. & Kadarmideen, H.N. (2024) A protocol for
-#' cross-platform meta-analysis of microarray and RNA-seq data.
-#' \emph{Current Protocols}, \strong{4}(12), e70046.
-#' \doi{10.1002/cpz1.70046}
-#'
 #' Pagès, H. et al. (2024) AnnotationDbi: manipulation of SQLite-based
 #' annotations in Bioconductor. R package version 1.66.0.
 #' \url{https://bioconductor.org/packages/AnnotationDbi}
@@ -148,9 +142,9 @@ mx_normalize <- function(study,
 #' @return The input list of studies with library type bias corrected.
 #'
 #' @references
-#' Bush, S.J. et al. (2017) Cross-species inference of long non-coding RNAs
-#' greatly expands the ruminant transcriptome. \emph{Genetics Selection
-#' Evolution}, \strong{50}(1), 20. \doi{10.1186/s12859-017-1714-9}
+#' Bush, S.J. et al. (2017) Integration of quantitated expression estimates
+#' from polyA-selected and rRNA-depleted RNA-seq libraries. \emph{BMC
+#' Bioinformatics}, \strong{18}, 301. \doi{10.1186/s12859-017-1714-9}
 #'
 #' @examples
 #' \dontrun{

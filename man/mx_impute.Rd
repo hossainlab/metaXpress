@@ -37,8 +37,8 @@ imputation strategies before meta-analysis.
 
 }
 \references{
-Villatoro-García, J.A. et al. (2022) Missing gene expression data
-imputation for gene-study meta-analysis. \emph{Mathematics},
+Villatoro-García, J.A. et al. (2022) DExMA: an R package for performing
+gene expression meta-analysis with missing genes. \emph{Mathematics},
 \strong{10}(18), 3376. \doi{10.3390/math10183376}
 }
 \seealso{

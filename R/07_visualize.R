@@ -120,7 +120,7 @@ mx_volcano <- function(meta_result, padj_threshold = 0.05,
 #'
 #' @seealso \code{\link{mx_volcano}}, \code{\link{mx_heterogeneity_plot}}
 #'
-#' @importFrom ggplot2 ggplot aes geom_point geom_errorbarh geom_vline
+#' @importFrom ggplot2 ggplot aes geom_point geom_errorbar geom_vline
 #'   geom_polygon annotate scale_y_discrete labs theme_bw theme
 #' @export
 mx_forest <- function(gene, de_results, meta_result = NULL) {
@@ -144,7 +144,7 @@ mx_forest <- function(gene, de_results, meta_result = NULL) {
     se <- if ("lfcSE" %in% colnames(row) && !is.na(row$lfcSE[1]))
       row$lfcSE[1]
     else
-      abs(row$log2FC[1]) / qnorm(1 - row$pvalue[1] / 2 + .Machine$double.eps)
+      abs(row$log2FC[1]) / stats::qnorm(row$pvalue[1] / 2, lower.tail = FALSE)
     data.frame(study = study_names[i], log2FC = row$log2FC[1], se = se,
                stringsAsFactors = FALSE)
   })
@@ -155,53 +155,67 @@ mx_forest <- function(gene, de_results, meta_result = NULL) {
   if (nrow(plot_df) == 0)
     stop("Gene '", gene, "' not found in any study.")
 
-  plot_df$ci_lo <- plot_df$log2FC - 1.96 * plot_df$se
-  plot_df$ci_hi <- plot_df$log2FC + 1.96 * plot_df$se
-  plot_df$study <- factor(plot_df$study, levels = rev(plot_df$study))
+  k <- nrow(plot_df)
+  plot_df$ci_lo <- plot_df$log2FC - stats::qnorm(0.975) * plot_df$se
+  plot_df$ci_hi <- plot_df$log2FC + stats::qnorm(0.975) * plot_df$se
+  plot_df$y     <- rev(seq_len(k)) + 1
+  plot_df$w     <- 1 / plot_df$se^2
 
-  pooled_lfc  <- NA_real_
-  i_sq_label  <- ""
+  labels  <- plot_df$study
+  breaks  <- plot_df$y
+  caption <- NULL
+  mt_row  <- NULL
 
   if (!is.null(meta_result) && is(meta_result, "metaXpressResult")) {
-    idx <- which(meta_result@meta_table$gene_id == gene)
-    if (length(idx) == 1) {
-      pooled_lfc <- meta_result@meta_table$meta_log2FC[idx]
-      i_sq <- meta_result@meta_table$i_squared[idx]
-      if (!is.na(i_sq))
-        i_sq_label <- sprintf("I\u00b2 = %.1f%%", i_sq)
-    }
+    mt <- meta_result@meta_table
+    idx <- which(mt$gene_id == gene)
+    if (length(idx) == 1) mt_row <- mt[idx, , drop = FALSE]
   }
 
-  p <- ggplot2::ggplot(plot_df,
-                        ggplot2::aes(x = log2FC, y = study)) +
-    ggplot2::geom_point(size = 3, colour = "#377EB8") +
-    ggplot2::geom_errorbar(
-      ggplot2::aes(xmin = ci_lo, xmax = ci_hi),
-      width = 0.2, colour = "#377EB8"
-    ) +
+  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = log2FC, y = y)) +
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed",
                         colour = "grey40") +
-    ggplot2::labs(title = paste0("Forest plot: ", gene),
-                  x = "log\u2082 fold change (95% CI)",
-                  y = NULL,
-                  caption = i_sq_label) +
-    ggplot2::theme_bw() +
-    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+    ggplot2::geom_errorbar(ggplot2::aes(xmin = ci_lo, xmax = ci_hi),
+                           width = 0.2, orientation = "y",
+                           colour = "grey20") +
+    ggplot2::geom_point(ggplot2::aes(size = w), shape = 15,
+                        colour = "#377EB8", show.legend = FALSE) +
+    ggplot2::scale_size_area(max_size = 6)
 
-  if (!is.na(pooled_lfc)) {
-    half_h <- 0.4
-    ymax   <- nrow(plot_df)
-    diamond_df <- data.frame(
-      x = c(pooled_lfc - 0.1, pooled_lfc, pooled_lfc + 0.1, pooled_lfc),
-      y = c(0, half_h, 0, -half_h) + ymax + 1.2
-    )
-    p <- p +
-      ggplot2::geom_polygon(data = diamond_df,
-                             ggplot2::aes(x = x, y = y),
-                             fill = "#E41A1C", inherit.aes = FALSE)
+  if (!is.null(mt_row) && !is.na(mt_row$meta_log2FC)) {
+    est <- mt_row$meta_log2FC
+    lo  <- if ("ci_lower" %in% names(mt_row)) mt_row$ci_lower else NA_real_
+    hi  <- if ("ci_upper" %in% names(mt_row)) mt_row$ci_upper else NA_real_
+    if (is.na(lo) || is.na(hi)) { lo <- est; hi <- est }
+    diamond_df <- data.frame(x = c(lo, est, hi, est),
+                             y = c(0.6, 0.85, 0.6, 0.35))
+    p <- p + ggplot2::geom_polygon(data = diamond_df,
+                                   ggplot2::aes(x = x, y = y),
+                                   fill = "#E41A1C", inherit.aes = FALSE)
+    if (all(c("pi_lower", "pi_upper") %in% names(mt_row)) &&
+        !is.na(mt_row$pi_lower))
+      p <- p + ggplot2::annotate("segment", x = mt_row$pi_lower,
+                                 xend = mt_row$pi_upper, y = 0.6, yend = 0.6,
+                                 colour = "#E41A1C", linewidth = 0.4,
+                                 linetype = "dotted")
+    labels <- c(labels, sprintf("Pooled (%s)", meta_result@method))
+    breaks <- c(breaks, 0.6)
+    caption <- sprintf(
+      "Pooled log2FC = %.2f [%.2f, %.2f]; meta FDR = %.2g; I² = %.0f%%; tau² = %.3f%s",
+      est, lo, hi, mt_row$meta_padj, mt_row$i_squared,
+      if ("tau2" %in% names(mt_row)) mt_row$tau2 else NA_real_,
+      if ("pi_lower" %in% names(mt_row) && !is.na(mt_row$pi_lower))
+        "\nDotted line: 95% prediction interval" else "")
   }
 
-  p
+  p +
+    ggplot2::scale_y_continuous(breaks = breaks, labels = labels) +
+    ggplot2::labs(title = paste0("Forest plot: ", gene),
+                  x = "log₂ fold change (95% CI)", y = NULL,
+                  caption = caption) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5),
+                   panel.grid.minor = ggplot2::element_blank())
 }
 
 #' Heatmap of top DEGs across studies

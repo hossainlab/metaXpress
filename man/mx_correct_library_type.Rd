@@ -26,7 +26,7 @@ by Bush et al. (2017).
 
 }
 \references{
-Bush, S.J. et al. (2017) Cross-species inference of long non-coding RNAs
-greatly expands the ruminant transcriptome. \emph{Genetics Selection
-Evolution}, \strong{50}(1), 20. \doi{10.1186/s12859-017-1714-9}
+Bush, S.J. et al. (2017) Integration of quantitated expression estimates
+from polyA-selected and rRNA-depleted RNA-seq libraries. \emph{BMC
+Bioinformatics}, \strong{18}, 301. \doi{10.1186/s12859-017-1714-9}
 }

@@ -6,98 +6,205 @@
 \usage{
 mx_meta(
   de_results,
-  method = c("random_effects", "fisher", "stouffer", "inverse_normal", "fixed_effects",
-    "awmeta"),
+  method = c("random_effects", "fixed_effects", "fisher", "stouffer", "inverse_normal",
+    "minp", "maxp", "rop"),
   min_studies = 2,
+  tau_method = c("REML", "PM", "DL"),
+  hksj = FALSE,
+  directional = TRUE,
+  weights = NULL,
+  r = NULL,
   alpha = 0.05,
   n_samples = NULL,
   ...
 )
 }
 \arguments{
-\item{de_results}{A named list of \code{data.frame} objects from
-\code{\link{mx_de_all}} (i.e., the \code{de_result} slots extracted from
-each study), or a list of \code{\linkS4class{metaXpressStudy}} objects.}
+\item{de_results}{A named list of \code{data.frame} objects (the
+\code{de_result} slots produced by \code{\link{mx_de}}), or a named list
+of \code{\linkS4class{metaXpressStudy}} objects after
+\code{\link{mx_de_all}}. Required columns: \code{gene_id},
+\code{log2FC}, \code{pvalue}, \code{padj}; effect-size methods also need
+\code{lfcSE}.}
 
-\item{method}{Character scalar. Meta-analysis method. One of:
+\item{method}{Character scalar. One of:
 \describe{
-  \item{\code{"fisher"}}{Fisher's combined p-value (Rau et al. 2013)}
-  \item{\code{"stouffer"}}{Stouffer's Z-score weighted by sample size}
-  \item{\code{"inverse_normal"}}{Fused inverse-normal (Prasad & Li 2021)}
-  \item{\code{"fixed_effects"}}{Fixed effects, inverse-variance weighting}
-  \item{\code{"random_effects"}}{DerSimonian-Laird random effects (default)}
-  \item{\code{"awmeta"}}{Adaptive weighting (Hu et al. 2025)}
+  \item{\code{"random_effects"}}{(default) Inverse-variance random-effects
+    model; between-study variance \eqn{\tau^2} estimated by
+    \code{tau_method}. Estimates the \emph{average} effect across
+    populations and reports a prediction interval.}
+  \item{\code{"fixed_effects"}}{Inverse-variance common-effect model.
+    Appropriate only when studies are near-replicates (low \eqn{I^2}).}
+  \item{\code{"fisher"}}{Fisher's sum of \eqn{-2\log p}. With
+    \code{directional = TRUE} (default) the two one-sided Fisher tests
+    are computed and combined as in Owen (2009), so evidence in
+    opposite directions does not accumulate. Like all Fisher-type tests
+    it can still be driven by one extreme study; check
+    \code{direction_consistency}.}
+  \item{\code{"stouffer"}}{Unweighted Stouffer Z on signed z-scores.}
+  \item{\code{"inverse_normal"}}{Weighted inverse-normal (Stouffer)
+    combination with weights \eqn{\sqrt{n_s}}, as in Marot et al. (2009)
+    and Rau et al. (2014).}
+  \item{\code{"minp"}}{Tippett's minimum p: DE in \emph{at least one}
+    study. Non-directional.}
+  \item{\code{"maxp"}}{Wilkinson's maximum p: DE in \emph{all} studies.
+    Non-directional.}
+  \item{\code{"rop"}}{r-th ordered p-value (Song & Tseng 2014): DE in
+    at least \code{r} studies. Non-directional.}
 }}
 
-\item{min_studies}{Integer. Minimum number of studies a gene must appear in
-to be included. Default: \code{2}.}
+\item{min_studies}{Integer. Minimum number of studies in which a gene must
+be measured. Default: \code{2}.}
 
-\item{alpha}{Numeric. Significance level for the BH FDR correction.
-Default: \code{0.05}.}
+\item{tau_method}{Estimator of the between-study variance for
+\code{"random_effects"}: \code{"REML"} (default; restricted maximum
+likelihood), \code{"PM"} (Paule-Mandel) or \code{"DL"}
+(DerSimonian-Laird). REML and PM are preferred over DL, which
+underestimates \eqn{\tau^2} (Veroniki et al. 2016; Langan et al. 2019).}
 
-\item{n_samples}{Integer vector. Sample sizes (total n per study) used for
-Stouffer weighting. If \code{NULL}, uniform weights are used.}
+\item{hksj}{Logical. Apply the Hartung-Knapp-Sidik-Jonkman adjustment to
+the random-effects standard error and use a \eqn{t_{k-1}} reference
+distribution. Recommended when few studies are pooled because the
+standard Wald test is anti-conservative (IntHout et al. 2014). Default:
+\code{FALSE}.}
 
-\item{...}{Additional arguments (currently unused).}
+\item{directional}{Logical. For \code{"fisher"}, combine one-sided
+p-values in each direction (default \code{TRUE}). \code{FALSE} gives the
+classical Fisher test on two-sided p-values, which ignores sign.}
+
+\item{weights}{For \code{"stouffer"}-type methods and the effect estimate
+reported by p-value methods: \code{NULL} (default) uses per-study sample
+sizes from the \code{n_case}/\code{n_control} columns written by
+\code{\link{mx_de}} for \code{"inverse_normal"} and equal weights for
+\code{"stouffer"}. A numeric vector (one per study) overrides this.}
+
+\item{r}{Integer. Order statistic for \code{"rop"}. Default:
+\code{ceiling(k / 2)} for a gene measured in \code{k} studies.}
+
+\item{alpha}{Numeric. Confidence level is \code{1 - alpha} for confidence
+and prediction intervals. Default: \code{0.05}.}
+
+\item{n_samples}{Deprecated alias for \code{weights} supplied as total
+sample sizes; its square root is used.}
+
+\item{...}{Unused.}
 }
 \value{
-A \code{\linkS4class{metaXpressResult}} object.
+A \code{\linkS4class{metaXpressResult}}. Its \code{meta_table} has
+  one row per gene with columns:
+  \describe{
+    \item{gene_id}{Gene identifier.}
+    \item{meta_log2FC, meta_se}{Pooled log2 fold change and its standard
+      error. For p-value methods this is the inverse-variance common-effect
+      estimate, reported as a descriptive effect size.}
+    \item{ci_lower, ci_upper}{\code{1 - alpha} confidence interval.}
+    \item{pi_lower, pi_upper}{Random-effects prediction interval for the
+      effect in a new study (Higgins et al. 2009); requires \eqn{k \ge 3}.}
+    \item{meta_stat}{Test statistic (Z, t or \eqn{\chi^2} as appropriate).}
+    \item{meta_pvalue, meta_padj}{Combined p-value and its
+      Benjamini-Hochberg adjustment across genes.}
+    \item{tau2, i_squared, q_stat, q_pvalue}{Between-study variance,
+      \eqn{I^2} (\%), Cochran's Q and its p-value.}
+    \item{n_studies, n_up, n_down}{Studies measuring the gene, and those
+      with positive / negative log2FC.}
+    \item{direction_consistency}{Fraction of studies whose log2FC sign
+      agrees with \code{meta_log2FC}.}
+  }
 }
 \description{
 Integrates per-study differential expression results from
-\code{\link{mx_de_all}} into a single meta-analysis result using one of
-six statistical methods.
+\code{\link{mx_de_all}} into a single gene-level meta-analysis. Two
+families of methods are available: \emph{effect-size} models, which pool
+the per-study log2 fold changes weighted by their sampling variance, and
+\emph{p-value combination} methods, which combine per-study evidence
+without pooling effects.
 }
 \details{
-\strong{CRITICAL:} Use \code{meta_padj} (BH-adjusted meta p-value) for
-significance filtering, not \code{meta_pvalue}. Default significance
-threshold: \code{meta_padj <= 0.05} AND \code{|meta_log2FC| >= 1}.
+Use \code{meta_padj} (BH-adjusted) for significance. For a typical
+disease-signature meta-analysis we recommend \code{"random_effects"} with
+\code{tau_method = "REML"}, and reporting \eqn{I^2} and the prediction
+interval alongside the pooled effect. P-value combination methods answer
+different questions (any vs. all vs. most studies) and should be chosen
+a priori, not by comparing numbers of significant genes.
+
+All methods assume studies are independent. Fold-change direction must be
+harmonised across studies (same case/control orientation); check with
+\code{\link{mx_study_concordance}}.
 }
 \examples{
-\dontrun{
-  de_list <- lapply(studies, function(s) s@de_result)
-  result  <- mx_meta(de_list, method = "random_effects")
-  head(result@meta_table[order(result@meta_table$meta_padj), ])
-}
+# Three per-study results in the format written by mx_de()
+set.seed(1)
+genes <- paste0("G", 1:200)
+de <- lapply(1:3, function(s) {
+  lfc <- rnorm(200, c(rep(1, 20), rep(0, 180)), 0.3)
+  se  <- runif(200, 0.2, 0.4)
+  p   <- 2 * pnorm(-abs(lfc / se))
+  data.frame(gene_id = genes, log2FC = lfc, lfcSE = se, pvalue = p,
+             padj = p.adjust(p, "BH"), n_case = 5, n_control = 5)
+})
+names(de) <- c("S1", "S2", "S3")
+res <- mx_meta(de, method = "random_effects", tau_method = "REML")
+head(res@meta_table[order(res@meta_table$meta_pvalue), ])
 
 }
 \references{
-Fisher, R.A. (1932) \emph{Statistical Methods for Research Workers}.
-4th edn. Edinburgh: Oliver & Boyd.
-
-Stouffer, S.A. et al. (1949) \emph{The American Soldier: Adjustment During
-Army Life}. Princeton University Press.
-
 DerSimonian, R. & Laird, N. (1986) Meta-analysis in clinical trials.
 \emph{Controlled Clinical Trials}, \strong{7}(3), 177--188.
 \doi{10.1016/0197-2456(86)90046-2}
 
-Cochran, W.G. (1954) The combination of estimates from different
-experiments. \emph{Biometrics}, \strong{10}(1), 101--129.
-\doi{10.2307/3001666}
+Viechtbauer, W. (2005) Bias and efficiency of meta-analytic variance
+estimators in the random-effects model. \emph{Journal of Educational and
+Behavioral Statistics}, \strong{30}(3), 261--293.
+\doi{10.3102/10769986030003261}
+
+Paule, R.C. & Mandel, J. (1982) Consensus values and weighting factors.
+\emph{Journal of Research of the National Bureau of Standards},
+\strong{87}(5), 377--385. \doi{10.6028/jres.087.022}
+
+Hartung, J. & Knapp, G. (2001) A refined method for the meta-analysis of
+controlled clinical trials with binary outcome. \emph{Statistics in
+Medicine}, \strong{20}(24), 3875--3889. \doi{10.1002/sim.1009}
+
+IntHout, J., Ioannidis, J.P.A. & Borm, G.F. (2014) The
+Hartung-Knapp-Sidik-Jonkman method for random effects meta-analysis is
+straightforward and considerably outperforms the standard
+DerSimonian-Laird method. \emph{BMC Medical Research Methodology},
+\strong{14}, 25. \doi{10.1186/1471-2288-14-25}
+
+Higgins, J.P.T., Thompson, S.G. & Spiegelhalter, D.J. (2009) A
+re-evaluation of random-effects meta-analysis. \emph{Journal of the Royal
+Statistical Society: Series A}, \strong{172}(1), 137--159.
+\doi{10.1111/j.1467-985X.2008.00552.x}
 
 Higgins, J.P.T. & Thompson, S.G. (2002) Quantifying heterogeneity in a
 meta-analysis. \emph{Statistics in Medicine}, \strong{21}(11), 1539--1558.
 \doi{10.1002/sim.1186}
 
-Rau, A., Marot, G. & Jaffrézic, F. (2014) Differential meta-analysis of
+Veroniki, A.A. et al. (2016) Methods to estimate the between-study
+variance and its uncertainty in meta-analysis. \emph{Research Synthesis
+Methods}, \strong{7}(1), 55--79. \doi{10.1002/jrsm.1164}
+
+Langan, D. et al. (2019) A comparison of heterogeneity variance
+estimators in simulated random-effects meta-analyses. \emph{Research
+Synthesis Methods}, \strong{10}(1), 83--98. \doi{10.1002/jrsm.1316}
+
+Owen, A.B. (2009) Karl Pearson's meta-analysis revisited. \emph{Annals of
+Statistics}, \strong{37}(6B), 3867--3892. \doi{10.1214/09-AOS697}
+
+Marot, G., Foulley, J.-L., Mayer, C.-D. & Jaffrezic, F. (2009) Moderated
+effect size and P-value combinations for microarray meta-analyses.
+\emph{Bioinformatics}, \strong{25}(20), 2692--2699.
+\doi{10.1093/bioinformatics/btp444}
+
+Rau, A., Marot, G. & Jaffrezic, F. (2014) Differential meta-analysis of
 RNA-seq data from multiple studies. \emph{BMC Bioinformatics},
 \strong{15}, 91. \doi{10.1186/1471-2105-15-91}
 
-Prasad, A. & Li, Q. (2022) Fused inverse-normal method for integrated
-differential expression analysis of RNA-seq data. \emph{BMC
-Bioinformatics}, \strong{23}, 371. \doi{10.1186/s12859-022-04859-9}
-
-Keel, B.N. & Lindholm-Perry, A.K. (2022) Recent developments and future
-directions in meta-analysis of differential gene expression.
-\emph{Frontiers in Genetics}, \strong{13}, 983043.
-\doi{10.3389/fgene.2022.983043}
-
-Hu, J. et al. (2025) AWmeta: adaptive weighting meta-analysis for
-combining heterogeneous genomic studies. \emph{bioRxiv}.
-\doi{10.1101/2025.05.06.650408}
+Song, C. & Tseng, G.C. (2014) Hypothesis setting and order statistic for
+robust genomic meta-analysis. \emph{Annals of Applied Statistics},
+\strong{8}(2), 777--800. \doi{10.1214/13-AOAS683}
 }
 \seealso{
 \code{\link{mx_heterogeneity}}, \code{\link{mx_sensitivity}},
-  \code{\link{mx_forest}}
+  \code{\link{mx_study_concordance}}, \code{\link{mx_forest}}
 }

@@ -28,9 +28,9 @@ NULL
 #' Expression Omnibus (GEO) and BioConductor. \emph{Bioinformatics},
 #' \strong{23}(14), 1846--1847. \doi{10.1093/bioinformatics/btm254}
 #'
-#' Heberle, H. et al. (2025) A comprehensive framework for quality control
-#' and meta-analysis of bulk RNA-seq data. \emph{Alzheimer's & Dementia},
-#' \strong{21}(1), e70025. \doi{10.1002/alz.70025}
+#' Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
+#' RNAseq studies in human Alzheimer's disease brain tissue. \emph{bioRxiv}.
+#' \doi{10.1101/2024.11.07.622520}
 #'
 #' @examples
 #' \dontrun{
@@ -284,7 +284,7 @@ mx_load_local <- function(count_paths, metadata_paths,
 
 #' Score a study against the 10-point QC checklist
 #'
-#' Applies each of the 10 QC criteria defined by Heberle et al. (2025) and
+#' Applies 10 data-level QC criteria and
 #' stores the total score in the \code{qc_score} slot. Criteria that cannot
 #' be evaluated (e.g., alignment rate not in metadata) are scored \code{NA}
 #' and do not penalise the total.
@@ -323,9 +323,9 @@ mx_load_local <- function(count_paths, metadata_paths,
 #'   A \code{qc_details} attribute is attached with a per-criterion breakdown.
 #'
 #' @references
-#' Heberle, H. et al. (2025) A comprehensive framework for quality control
-#' and meta-analysis of bulk RNA-seq data. \emph{Alzheimer's & Dementia},
-#' \strong{21}(1), e70025. \doi{10.1002/alz.70025}
+#' Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
+#' RNAseq studies in human Alzheimer's disease brain tissue. \emph{bioRxiv}.
+#' \doi{10.1101/2024.11.07.622520}
 #'
 #' Schurch, N.J. et al. (2016) How many biological replicates are needed in an
 #' RNA-seq experiment and which differential expression tool should you use?
@@ -459,7 +459,7 @@ mx_qc_study <- function(study) {
 #' Automatically cluster samples by metadata
 #'
 #' Uses text mining on metadata fields to assign samples to case/control groups,
-#' mimicking the \code{sampleclusteR} approach for automated group assignment from
+#' as a heuristic for automated group assignment from
 #' GEO metadata. It computes string distances between sample descriptions and
 #' uses hierarchical clustering to partition them into two groups.
 #'
@@ -469,10 +469,6 @@ mx_qc_study <- function(study) {
 #'   in \code{metadata}.
 #'
 #' @references
-#' Coke, T., Niranjan, M. & Ewing, R.M. (2025) sampleclusteR: automated
-#' case/control group assignment from GEO metadata. \emph{bioRxiv}.
-#' \doi{10.1101/2025.04.10.648129}
-#'
 #' @examples
 #' \dontrun{
 #'   study <- mx_cluster_samples(study)

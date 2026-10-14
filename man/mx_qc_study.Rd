@@ -14,7 +14,7 @@ The input \code{study} with the \code{qc_score} slot filled.
   A \code{qc_details} attribute is attached with a per-criterion breakdown.
 }
 \description{
-Applies each of the 10 QC criteria defined by Heberle et al. (2025) and
+Applies 10 data-level QC criteria and
 stores the total score in the \code{qc_score} slot. Criteria that cannot
 be evaluated (e.g., alignment rate not in metadata) are scored \code{NA}
 and do not penalise the total.
@@ -56,9 +56,9 @@ The 10 criteria are:
 
 }
 \references{
-Heberle, H. et al. (2025) A comprehensive framework for quality control
-and meta-analysis of bulk RNA-seq data. \emph{Alzheimer's & Dementia},
-\strong{21}(1), e70025. \doi{10.1002/alz.70025}
+Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
+RNAseq studies in human Alzheimer's disease brain tissue. \emph{bioRxiv}.
+\doi{10.1101/2024.11.07.622520}
 
 Schurch, N.J. et al. (2016) How many biological replicates are needed in an
 RNA-seq experiment and which differential expression tool should you use?

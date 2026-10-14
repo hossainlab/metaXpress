@@ -15,7 +15,7 @@ The input \code{study} with the \code{condition} column updated
 }
 \description{
 Uses text mining on metadata fields to assign samples to case/control groups,
-mimicking the \code{sampleclusteR} approach for automated group assignment from
+as a heuristic for automated group assignment from
 GEO metadata. It computes string distances between sample descriptions and
 uses hierarchical clustering to partition them into two groups.
 }
@@ -24,9 +24,4 @@ uses hierarchical clustering to partition them into two groups.
   study <- mx_cluster_samples(study)
 }
 
-}
-\references{
-Coke, T., Niranjan, M. & Ewing, R.M. (2025) sampleclusteR: automated
-case/control group assignment from GEO metadata. \emph{bioRxiv}.
-\doi{10.1101/2025.04.10.648129}
 }

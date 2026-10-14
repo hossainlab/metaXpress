@@ -146,9 +146,9 @@ packageVersion("metaXpress")
 Combining bulk RNA-seq studies is usually a patchwork: one package to download GEO data, ad-hoc scripts for QC and gene ID mapping, a separate DE run per study, another package for the meta-statistics, and yet another for pathways and plots. Each hand-off is a chance to silently drop genes, mix identifiers, or lose track of which study failed QC. **metaXpress** replaces that patchwork with one reproducible pipeline built on two S4 objects that pass cleanly from step to step.
 
 - **One workflow, end to end.** GEO ingestion → QC → harmonization → per-study DE → meta-analysis → pathways → figures → report, all through `mx_*` functions that chain directly.
-- **Study quality is explicit.** A 10-point QC checklist (derived from Heberle et al., 2025) scores every study, so weak cohorts are filtered on documented criteria rather than intuition.
+- **Study quality is explicit.** A 10-point data-level QC checklist scores every study, so weak cohorts are filtered on documented criteria rather than intuition.
 - **Statistically sound by design.** DE is always run independently per study (DESeq2, edgeR or limma-voom) before combining — never pooled — avoiding batch-confounded inference.
-- **Choose the right meta-method.** Six methods (Fisher, Stouffer, inverse-normal, fixed effects, DerSimonian–Laird random effects, AWmeta) behind a single `method` argument, with I² heterogeneity reported for every gene.
+- **Choose the right meta-method.** Eight methods (random effects with REML/PM/DL and optional HKSJ, fixed effect, directional Fisher, Stouffer, weighted inverse-normal, minP, maxP, rOP) behind one `method` argument. Every gene gets tau², I², a 95% CI and a prediction interval. Results are validated against `metafor`.
 - **Missing genes are handled, not hidden.** Genes absent from some studies are reported and either imputed or filtered by coverage, instead of disappearing in an intersect.
 - **Biology, not just gene lists.** Cross-study ORA/GSEA, transcription factor activity, cell-composition meta-analysis, consensus co-expression modules and drug-reversal ranking turn meta-signatures into testable hypotheses.
 - **Publication-ready and reproducible.** Volcano, forest, heatmap, UpSet and heterogeneity plots, plus HTML/PDF reports and CSV/Excel export with captured session info.
@@ -222,22 +222,27 @@ mx_export(meta_result, format = "csv", output_dir = "results/")
 
 ## Meta-Analysis Statistical Methods
 
-metaXpress implements six statistical methods selectable via the `method` argument in `mx_meta()`:
+`mx_meta()` implements two families of methods. Effect-size models pool per-study log2 fold changes weighted by their sampling variance; p-value combination methods pool evidence without pooling effects and answer different hypotheses. The random-effects estimates (DL, REML, Paule-Mandel, with optional Hartung-Knapp-Sidik-Jonkman adjustment) are tested to agree with `metafor::rma()` to within 1e-7.
 
-| Method | `method =` | Effect Size | Handles Heterogeneity | Min Studies | Reference |
-|---|---|:---:|:---:|:---:|---|
-| Fisher's combined p-value | `"fisher"` | ❌ | ❌ | 2 | Rau et al. 2013 |
-| Stouffer's Z-score | `"stouffer"` | ❌ | ❌ | 2 | Rau et al. 2013 |
-| Fused inverse-normal | `"inverse_normal"` | ❌ | Partial | 2 | Prasad & Li 2021 |
-| Fixed effects (Inverse-variance) | `"fixed_effects"` | ✅ | ❌ | 2 | Keel & Lindholm-Perry 2022 |
-| **Random effects** *(default)* | `"random_effects"` | ✅ | ✅ | 3 | Keel & Lindholm-Perry 2022 |
-| Adaptive weighting (AWmeta) | `"awmeta"` | ✅ | ✅ | 3 | Hu et al. 2025 |
+| Method | `method =` | Hypothesis / estimand | Reference |
+|---|---|---|---|
+| **Random effects** *(default)* | `"random_effects"` | Average log2FC across populations; reports tau², I², 95% CI and prediction interval | DerSimonian & Laird 1986; Viechtbauer 2005; IntHout et al. 2014 |
+| Fixed (common) effect | `"fixed_effects"` | Single shared log2FC (studies are near-replicates) | Borenstein et al. 2010 |
+| Fisher (directional) | `"fisher"` | Effect in a common direction in ≥1 study | Fisher 1932; Owen 2009 |
+| Stouffer | `"stouffer"` | Signed Z-score combination, equal weights | Stouffer et al. 1949 |
+| Weighted inverse-normal | `"inverse_normal"` | Signed Z-score combination weighted by √n | Marot et al. 2009; Rau et al. 2014 |
+| Tippett minP | `"minp"` | DE in at least one study | Tippett 1931 |
+| Wilkinson maxP | `"maxp"` | DE in all studies | Wilkinson 1951 |
+| r-th ordered p (rOP) | `"rop"` | DE in at least *r* studies | Song & Tseng 2014 |
 
-**Method Selection Guide:**
-- **2 studies:** use `"fisher"` or `"stouffer"`
-- **3+ studies, $I^2 < 25\%$:** use `"fixed_effects"`
-- **3+ studies, $I^2 \ge 25\%$:** use `"random_effects"` (default)
-- **Mixed or unknown heterogeneity:** use `"awmeta"`
+**Choosing a method.** Pick the method a priori from the scientific question, not from the number of significant genes it returns:
+
+- **Consensus disease signature (most common):** `"random_effects"` with `tau_method = "REML"`. Report I², tau² and the prediction interval. With fewer than ~5 studies consider `hksj = TRUE`, which gives better-calibrated confidence intervals.
+- **Studies are technical replicates of one design:** `"fixed_effects"`.
+- **No usable standard errors (e.g. only p-values published):** `"inverse_normal"` (with sample sizes) or `"stouffer"`.
+- **Genes changed in all, or in most, studies:** `"maxp"` or `"rop"`.
+
+Before pooling, run `mx_study_concordance()`. A negative fold-change correlation between two studies almost always means their case/control contrast is flipped. After pooling, run `mx_sensitivity()` for a leave-one-out robustness table.
 
 ---
 
@@ -257,7 +262,7 @@ mx_fetch_geo() ──► metaXpressStudy ──► mx_de() ──► mx_meta() �
 
 ## 10-Point Study QC Scoring
 
-`mx_qc_study()` benchmarks each study against 10 objective criteria (Heberle et al. 2025):
+`mx_qc_study()` scores each study against 10 data-level criteria. The thresholds are metaXpress defaults, informed by Schurch et al. (2016) and ENCODE RNA-seq guidelines; study-level reporting quality should additionally be assessed as in Heberle et al. (2024):
 
 | # | Criterion | Threshold |
 |---|---|---|
@@ -427,14 +432,15 @@ If you use `metaXpress` in your research, academic applications, or benchmarking
 
 | Method | Reference |
 |---|---|
-| Fisher / Stouffer meta-analysis | Rau, Marot & Jaffrézic (2013) *BMC Bioinformatics* |
-| Fused inverse-normal | Prasad & Li (2021) *BMC Bioinformatics* |
-| Random effects (DerSimonian-Laird) | Keel & Lindholm-Perry (2022) *Front. Genetics* |
-| AWmeta adaptive weighting | Hu et al. (2025) *bioRxiv* |
-| Missing gene imputation | Villatoro-García et al. (2022) *Mathematics* (DExMA) |
-| Library-type correction | Bush et al. (2017) *BMC Bioinformatics* |
-| Study QC criteria | Heberle et al. (2025) *Alzheimer's & Dementia* |
-| Sample clustering from GEO | Coke, Niranjan & Ewing (2025) *bioRxiv* |
+| RNA-seq differential meta-analysis | Rau, Marot & Jaffrézic (2014) *BMC Bioinformatics* 15:91 |
+| Random effects / tau² estimators | DerSimonian & Laird (1986); Viechtbauer (2005); Veroniki et al. (2016) |
+| Hartung-Knapp-Sidik-Jonkman | IntHout, Ioannidis & Borm (2014) *BMC Med Res Methodol* 14:25 |
+| Prediction intervals | Higgins, Thompson & Spiegelhalter (2009) *JRSS A* 172:137 |
+| Directional Fisher (Pearson) test | Owen (2009) *Ann Stat* 37:3867 |
+| r-th ordered p-value | Song & Tseng (2014) *Ann Appl Stat* 8:777 |
+| Missing gene handling | Villatoro-García et al. (2022) *Mathematics* 10:3376 (DExMA) |
+| Library-type correction | Bush et al. (2017) *BMC Bioinformatics* 18:301 |
+| Study-quality assessment | Heberle et al. (2024) *bioRxiv* doi:10.1101/2024.11.07.622520 |
 
 ---
 

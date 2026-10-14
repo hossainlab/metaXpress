@@ -89,20 +89,22 @@
 #'
 #' Heuristically identifies which condition level represents the control/
 #' normal/healthy group. This is critical for ensuring consistent fold-change
-#' direction across studies in a meta-analysis.
+#' direction across studies in a meta-analysis. Patterns are matched as whole
+#' tokens so that, e.g., \code{"abnormal"} is not mistaken for
+#' \code{"normal"}.
 #'
 #' @param condition_levels Character vector of unique condition levels.
 #' @return Character scalar: the reference level.
 #' @noRd
 .identify_reference_level <- function(condition_levels) {
-  # Common control/reference labels (lowercase)
-  ref_patterns <- c("normal", "control", "healthy", "wt", "wildtype",
-                     "wild-type", "wild_type", "untreated", "baseline",
-                     "non-diseased", "nondiseased", "sham", "vehicle",
-                     "benign", "adjacent")
-  levels_lower <- tolower(condition_levels)
+  # Common control/reference labels (lowercase), in priority order
+  ref_patterns <- c("control", "ctrl", "normal", "healthy", "wt", "wildtype",
+                    "wild-type", "wild_type", "untreated", "untrt",
+                    "baseline", "non-diseased", "nondiseased", "sham",
+                    "vehicle", "mock", "benign", "adjacent", "nc", "hc")
+  levels_lower <- tolower(as.character(condition_levels))
   for (pat in ref_patterns) {
-    match_idx <- grep(pat, levels_lower, fixed = TRUE)
+    match_idx <- grep(paste0("(^|[^a-z])", pat, "($|[^a-z])"), levels_lower)
     if (length(match_idx) > 0)
       return(condition_levels[match_idx[1]])
   }
@@ -110,18 +112,21 @@
   warning("Could not auto-detect the reference/control condition from levels: ",
           paste(condition_levels, collapse = ", "),
           ". Using '", sort(condition_levels)[1],
-          "' as reference. Set factor levels explicitly if incorrect.")
+          "' as reference. Pass 'contrast' or set factor levels explicitly.")
   sort(condition_levels)[1]
 }
 
 #' Create a condition factor with the reference level set to the control group
+#'
+#' An existing factor is respected as-is (its first level is the reference);
+#' character vectors go through \code{.identify_reference_level()}.
 #' @noRd
 .make_condition_factor <- function(condition_vec) {
-  lvls <- unique(condition_vec)
+  if (is.factor(condition_vec)) return(droplevels(condition_vec))
+  lvls <- unique(as.character(condition_vec))
   ref  <- .identify_reference_level(lvls)
   # Put reference level first (R convention: first level = reference in model)
-  lvls_ordered <- c(ref, setdiff(lvls, ref))
-  factor(condition_vec, levels = lvls_ordered)
+  factor(condition_vec, levels = c(ref, setdiff(lvls, ref)))
 }
 
 #' Build multiple aligned gene x studies matrices in a single pass
@@ -176,7 +181,7 @@ if (getRversion() >= "2.15.1") {
     "pathway", "qc_score", "n_samples", "median_lib", "n_genes",
     "n_degs", "ci_lo", "ci_hi", "study", "sig", "neg_log10_padj",
     "gene_id", "meta_log2FC", "i_squared", "is_pooled",
-    "label", "score", "direction", "significant"
+    "label", "score", "direction", "significant", "x", "y", "w"
   ))
 }
 
