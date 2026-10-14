@@ -62,7 +62,7 @@ GEO / SRA / Local files
          │
          ▼
 ┌──────────────────────┐
-│  Module 4: Meta-     │  mx_meta  (8 statistical methods)
+│  Module 4: Meta-     │  mx_meta  (9 statistical methods)
 │  Analysis Statistics │
 └────────┬─────────────┘
          │
@@ -155,7 +155,7 @@ Combining bulk RNA-seq studies is usually a patchwork: one package to download G
 - **Study quality is explicit.** A data-level QC checklist and a fold-change concordance check (which catches flipped contrasts) run before pooling.
 - **Uniform quantification.** By default, counts come from NCBI's GEO RNA-seq pipeline, so every study shares the same aligner, annotation and counting.
 - **Statistically sound by design.** DE is always run independently per study (DESeq2, edgeR or limma-voom) before combining — never pooled — avoiding batch-confounded inference.
-- **Choose the right meta-method.** Eight methods (random effects with REML/PM/DL and optional HKSJ, fixed effect, directional Fisher, Stouffer, weighted inverse-normal, minP, maxP, rOP) behind one `method` argument. Every gene gets tau², I², a 95% CI and a prediction interval. Results are validated against `metafor`.
+- **Choose the right meta-method.** Nine methods (random effects with REML/PM/DL and optional HKSJ, fixed effect, directional Fisher, Stouffer, weighted inverse-normal, minP, maxP, rOP, AWmeta) behind one `method` argument. Every gene gets tau², I², a 95% CI and a prediction interval. Results are validated against `metafor`.
 - **Missing genes are handled, not hidden.** Each gene is pooled over the studies that measured it, and `n_studies` is reported. Genes are never silently dropped in an intersect.
 - **Biology, not just gene lists.** fgsea GSEA/ORA on the meta-signature, per-study GSEA combined across studies, transcription factor activity, cell-composition meta-analysis, consensus co-expression modules and drug-reversal ranking turn meta-signatures into testable hypotheses.
 - **Publication-ready and reproducible.** Volcano, forest, heatmap, UpSet and heterogeneity plots, plus HTML/PDF reports and CSV/Excel export with captured session info.
@@ -220,6 +220,7 @@ res <- mx_meta(ad$de_results)
 | Tippett minP | `"minp"` | DE in at least one study | Tippett 1931 |
 | Wilkinson maxP | `"maxp"` | DE in all studies | Wilkinson 1951 |
 | r-th ordered p (rOP) | `"rop"` | DE in at least *r* studies | Song & Tseng 2014 |
+| AWmeta | `"awmeta"` | AW-Fisher p-value with per-gene study selection + REML effect over selected studies | Li & Tseng 2011; Huo et al. 2020; Hu et al. 2026 |
 
 **Choosing a method.** Pick the method a priori from the scientific question, not from the number of significant genes it returns:
 
@@ -227,6 +228,7 @@ res <- mx_meta(ad$de_results)
 - **Studies are technical replicates of one design:** `"fixed_effects"`.
 - **No usable standard errors (e.g. only p-values published):** `"inverse_normal"` (with sample sizes) or `"stouffer"`.
 - **Genes changed in all, or in most, studies:** `"maxp"` or `"rop"`.
+- **Which studies drive each gene:** `"awmeta"` reports the AW-selected studies per gene (`aw_studies`).
 
 Before pooling, run `mx_study_concordance()`. A negative fold-change correlation between two studies almost always means their case/control contrast is flipped. After pooling, run `mx_sensitivity()` for a leave-one-out robustness table.
 
@@ -310,7 +312,7 @@ mx_fetch_geo() ──► metaXpressStudy ──► mx_de() ──► mx_meta() �
 
 | Function | Description |
 |---|---|
-| `mx_meta(de_results, method, tau_method, hksj)` | Random/fixed effects, directional Fisher, Stouffer, inverse-normal, minP, maxP, rOP |
+| `mx_meta(de_results, method, tau_method, hksj)` | Random/fixed effects, directional Fisher, Stouffer, inverse-normal, minP, maxP, rOP, AWmeta |
 | `mx_study_concordance(de_results)` | Pairwise fold-change concordance; flags flipped contrasts |
 | `mx_heterogeneity(de_results)` | I², Q-stat, τ² per gene |
 | `mx_sensitivity(de_results)` | Leave-one-out analysis with a robustness table |
@@ -406,7 +408,8 @@ If you use `metaXpress` in your research, academic applications, or benchmarking
 - [x] Module 1: GEO ingestion + 10-point QC
 - [x] Module 2: Normalization & batch correction
 - [x] Module 3: DESeq2 / edgeR / limma-voom wrappers
-- [x] Module 4: 8 meta-analysis methods, validated against metafor
+- [x] Module 4: 9 meta-analysis methods (incl. AWmeta), validated against metafor / AWFisher
+- [x] Small-study effect tests (Egger, Begg) and funnel plots
 - [x] Module 5: Missing gene handling
 - [x] Module 6: Pathway meta-analysis (fgsea GSEA, ORA, cross-study combination)
 - [x] Module 7: Visualization suite
@@ -431,6 +434,8 @@ If you use `metaXpress` in your research, academic applications, or benchmarking
 | Missing gene handling | Villatoro-García et al. (2022) *Mathematics* 10:3376 (DExMA) |
 | Library-type correction | Bush et al. (2017) *BMC Bioinformatics* 18:301 |
 | Study-quality assessment | Heberle et al. (2024) *bioRxiv* doi:10.1101/2024.11.07.622520 |
+| AW-Fisher / AWmeta | Li & Tseng (2011) *Ann Appl Stat* 5:994; Huo et al. (2020) *Bioinformatics* 36:524; Hu et al. (2026) *Curr Issues Mol Biol* 48:530 |
+| Small-study effects | Egger et al. (1997) *BMJ* 315:629; Begg & Mazumdar (1994) *Biometrics* 50:1088 |
 
 ---
 

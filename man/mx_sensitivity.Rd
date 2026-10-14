@@ -7,7 +7,7 @@
 mx_sensitivity(
   de_results,
   method = c("random_effects", "fixed_effects", "fisher", "stouffer", "inverse_normal",
-    "minp", "maxp", "rop"),
+    "minp", "maxp", "rop", "awmeta"),
   padj_threshold = 0.05,
   ...
 )
@@ -44,6 +44,15 @@ of \code{\linkS4class{metaXpressStudy}} objects after
     Non-directional.}
   \item{\code{"rop"}}{r-th ordered p-value (Song & Tseng 2014): DE in
     at least \code{r} studies. Non-directional.}
+  \item{\code{"awmeta"}}{AWmeta (Hu et al. 2026). The p-value is the
+    adaptively weighted Fisher statistic (AW-Fisher; Li & Tseng 2011),
+    calibrated with the \pkg{AWFisher} package (Huo et al. 2020), which
+    also returns binary per-study weights indicating which studies
+    contribute. The effect size is an REML random-effects estimate over
+    the selected studies only (AW-REM). Requires \pkg{AWFisher} and
+    \code{lfcSE}. Non-directional, as in the original method; check
+    \code{direction_consistency}. The selected studies are reported in
+    \code{aw_studies}.}
 }}
 
 \item{padj_threshold}{Numeric. FDR threshold used to call genes in the

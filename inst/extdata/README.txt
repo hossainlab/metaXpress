@@ -22,10 +22,13 @@ ad_brain_de.rds
     Built by inst/scripts/make_ad_brain_extdata.R.
 
 case_study_downstream.rds
-    Inputs for the Module 9 vignette (downstream_biology), from a pan-cancer
-    tumour vs adjacent-normal meta-analysis of GSE130688 (CRC), GSE136569
-    (PDAC) and GSE171485 (ccRCC), NCBI GEO-generated counts. A list with:
-      meta_result  genome-wide random-effects meta-analysis (29,560 genes)
+    Inputs for the Module 9 vignette (downstream_biology), from a
+    pancreatic ductal adenocarcinoma (PDAC) tumour vs adjacent non-tumour
+    meta-analysis of three GEO cohorts: GSE130688 (15/15), GSE136569 (5/5)
+    and GSE171485 (6/6); NCBI GEO-generated counts, labels from GEO series
+    metadata. A list with:
+      meta_result  genome-wide random-effects (REML) meta-analysis
+                   (29,679 genes)
       studies      the three cohorts restricted to MCP-counter markers and
                    the 1,500 most variable genes (colData$lib_size holds the
                    true library size; rowData$symbol holds gene symbols)

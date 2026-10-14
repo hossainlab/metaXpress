@@ -1,8 +1,8 @@
 # ==============================================================================
-# Build inst/extdata/case_study_downstream.rds for the live tutorial
+# Build inst/extdata/case_study_downstream.rds for the downstream_biology vignette
 # ==============================================================================
-# Compact, offline inputs so the live tutorial can run Module 9 on the real
-# pan-cancer case study. Requires scripts/fetch_case_study_data.R and
+# Compact, offline inputs so the vignette can run Module 9 on the real
+# three-cohort PDAC meta-analysis. Requires scripts/fetch_case_study_data.R and
 # scripts/run_case_study_applications.R to have been run first.
 #
 # Contents:
@@ -26,8 +26,8 @@ obj <- readRDS(file.path(in_dir, "pipeline_objects.rds"))
 
 # Genome-wide meta result, trimmed to the columns the downstream functions use
 meta_result <- obj$meta_res
-keep_cols <- c("gene_id", "symbol", "meta_log2FC", "meta_pvalue", "meta_padj",
-               "i_squared", "n_studies", "direction_consistency")
+keep_cols <- c("gene_id", "symbol", "meta_log2FC", "meta_se", "meta_pvalue",
+               "meta_padj", "i_squared", "n_studies", "direction_consistency")
 meta_result@meta_table <- meta_result@meta_table[, keep_cols]
 num <- vapply(meta_result@meta_table, is.double, logical(1))
 meta_result@meta_table[num] <- lapply(meta_result@meta_table[num], signif, 4)

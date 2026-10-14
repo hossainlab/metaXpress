@@ -152,19 +152,22 @@ n_sig <- function(...) sum(mx_meta(de, ...)@meta_table$meta_padj <= 0.05)
 data.frame(
   method   = c("random_effects (REML)", "fixed_effects",
                "inverse_normal (sqrt n)", "fisher (directional)",
-               "rop (r = 2 of 4)", "maxp (all 4)"),
+               "rop (r = 2 of 4)", "maxp (all 4)", "awmeta"),
   question = c("average effect across populations",
                "one common effect (studies are replicates)",
                "signed evidence, weighted by sample size",
                "same-direction effect in at least one study",
                "DE in at least 2 studies",
-               "DE in every study"),
+               "DE in every study",
+               "AW-Fisher: DE in an adaptively selected subset"),
   n_FDR05  = c(n_sig(method = "random_effects"),
                n_sig(method = "fixed_effects"),
                n_sig(method = "inverse_normal"),
                n_sig(method = "fisher"),
                n_sig(method = "rop", r = 2),
-               n_sig(method = "maxp")))
+               n_sig(method = "maxp"),
+               if (requireNamespace("AWFisher", quietly = TRUE))
+                 n_sig(method = "awmeta") else NA))
 ```
 
 The fixed-effect and p-value methods call more genes because they ignore
@@ -240,6 +243,26 @@ mx_forest("GFAP", de, res)
 mx_forest("SST", de, res)
 ```
 
+AWmeta also records which studies carry each gene's signal
+(`aw_studies`). This shows whether a finding rests mainly on the large
+fusiform-gyrus cohort:
+
+```{r awmeta, eval = requireNamespace("AWFisher", quietly = TRUE)}
+aw <- mx_meta(de, method = "awmeta")@meta_table
+aw_sig <- aw[aw$meta_padj <= 0.05, ]
+head(sort(table(aw_sig$aw_studies), decreasing = TRUE), 5)
+aw[match(c("GFAP", "VGF", "SST"), aw$gene_id),
+   c("gene_id", "meta_log2FC", "meta_padj", "aw_studies")]
+```
+
+Most AWmeta-significant genes rest on GSE125583 alone or together with one
+other cohort.
+
+SST shows how the two hypotheses differ. AWmeta calls it significant because
+it selects the two cohorts with a strong loss and ignores the others.
+Random effects asks for an *average* effect across all cohorts and does not
+call it significant (I² = 87%). Report which hypothesis was tested.
+
 # 5. Robustness
 
 ```{r loo}
@@ -255,6 +278,19 @@ statistical power that single cohort provides. The **core signature** of
 `r nrow(core)` genes stays significant, with the same direction, after
 omitting any single study. These are the genes to report as robust
 findings and to prioritise for validation.
+
+## Small-study effects
+
+Do the smaller cohorts report systematically larger effects? With four
+studies these tests have very little power: Sterne et al. (2011) advise
+against them below 10 studies. They are shown here as a template and must
+not be read as evidence that no bias exists.
+
+```{r small-study}
+ss <- suppressWarnings(mx_small_study(de, genes = core$gene_id))
+c(tested = nrow(ss), egger_FDR05 = sum(ss$egger_padj <= 0.05, na.rm = TRUE))
+mx_funnel("GFAP", de, res)
+```
 
 # 6. Pathways
 

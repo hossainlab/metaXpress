@@ -6,7 +6,7 @@ NULL
 # ============================================================================
 
 .mx_meta_methods <- c("random_effects", "fixed_effects", "fisher", "stouffer",
-                      "inverse_normal", "minp", "maxp", "rop")
+                      "inverse_normal", "minp", "maxp", "rop", "awmeta")
 
 #' Run meta-analysis across per-study DE results
 #'
@@ -47,6 +47,15 @@ NULL
 #'       Non-directional.}
 #'     \item{\code{"rop"}}{r-th ordered p-value (Song & Tseng 2014): DE in
 #'       at least \code{r} studies. Non-directional.}
+#'     \item{\code{"awmeta"}}{AWmeta (Hu et al. 2026). The p-value is the
+#'       adaptively weighted Fisher statistic (AW-Fisher; Li & Tseng 2011),
+#'       calibrated with the \pkg{AWFisher} package (Huo et al. 2020), which
+#'       also returns binary per-study weights indicating which studies
+#'       contribute. The effect size is an REML random-effects estimate over
+#'       the selected studies only (AW-REM). Requires \pkg{AWFisher} and
+#'       \code{lfcSE}. Non-directional, as in the original method; check
+#'       \code{direction_consistency}. The selected studies are reported in
+#'       \code{aw_studies}.}
 #'   }
 #' @param min_studies Integer. Minimum number of studies in which a gene must
 #'   be measured. Default: \code{2}.
@@ -166,6 +175,21 @@ NULL
 #' robust genomic meta-analysis. \emph{Annals of Applied Statistics},
 #' \strong{8}(2), 777--800. \doi{10.1214/13-AOAS683}
 #'
+#' Li, J. & Tseng, G.C. (2011) An adaptively weighted statistic for detecting
+#' differential gene expression when combining multiple transcriptomic
+#' studies. \emph{Annals of Applied Statistics}, \strong{5}(2A), 994--1019.
+#' \doi{10.1214/10-AOAS393}
+#'
+#' Huo, Z., Tang, S., Park, Y. & Tseng, G. (2020) P-value evaluation,
+#' variability index and biomarker categorization for adaptively weighted
+#' Fisher's meta-analysis method in omics applications.
+#' \emph{Bioinformatics}, \strong{36}(2), 524--532.
+#' \doi{10.1093/bioinformatics/btz589}
+#'
+#' Hu, Y. et al. (2026) AWmeta empowers adaptively weighted transcriptomic
+#' meta-analysis. \emph{Current Issues in Molecular Biology},
+#' \strong{48}(5), 530. \doi{10.3390/cimb48050530}
+#'
 #' @examples
 #' # Three per-study results in the format written by mx_de()
 #' set.seed(1)
@@ -190,7 +214,7 @@ NULL
 mx_meta <- function(de_results,
                     method      = c("random_effects", "fixed_effects",
                                     "fisher", "stouffer", "inverse_normal",
-                                    "minp", "maxp", "rop"),
+                                    "minp", "maxp", "rop", "awmeta"),
                     min_studies = 2,
                     tau_method  = c("REML", "PM", "DL"),
                     hksj        = FALSE,
@@ -202,9 +226,6 @@ mx_meta <- function(de_results,
                     ...) {
   de_results <- .extract_de_results(de_results)
   .validate_de_list(de_results)
-  if (identical(method, "awmeta"))
-    stop("method = 'awmeta' has been removed: the previous implementation did ",
-         "not follow a published algorithm. Use 'random_effects' or 'rop'.")
   method     <- match.arg(method)
   tau_method <- match.arg(tau_method)
 
@@ -215,7 +236,8 @@ mx_meta <- function(de_results,
   k_total <- length(de_results)
   if (k_total < 2) stop("At least 2 studies are required")
 
-  if (method %in% c("random_effects", "fixed_effects")) {
+  if (method == "awmeta") .require_package("AWFisher", "AWmeta")
+  if (method %in% c("random_effects", "fixed_effects", "awmeta")) {
     no_se <- !vapply(de_results, function(d) "lfcSE" %in% colnames(d),
                      logical(1))
     if (any(no_se))
@@ -238,7 +260,7 @@ mx_meta <- function(de_results,
   pv[!is.na(pv)] <- pmin(pmax(pv[!is.na(pv)], .Machine$double.xmin), 1)
 
   measured <- !is.na(lfc) & !is.na(pv)
-  if (method %in% c("random_effects", "fixed_effects"))
+  if (method %in% c("random_effects", "fixed_effects", "awmeta"))
     measured <- measured & !is.na(se)
   lfc[!measured] <- NA_real_
   se[!measured]  <- NA_real_
@@ -270,7 +292,8 @@ mx_meta <- function(de_results,
     minp           = .meta_order(pv, rep(1L, nrow(pv))),
     maxp           = .meta_order(pv, k_gene),
     rop            = .meta_order(pv, if (is.null(r)) ceiling(k_gene / 2)
-                                      else pmin(as.integer(r), k_gene))
+                                      else pmin(as.integer(r), k_gene)),
+    awmeta         = .meta_awmeta(pv, lfc, se, alpha)
   )
 
   # P-value methods: report a descriptive pooled effect
@@ -321,6 +344,12 @@ mx_meta <- function(de_results,
     stringsAsFactors      = FALSE,
     row.names             = NULL
   )
+  if (method == "awmeta") {
+    w <- res$weights
+    meta_table$aw_n_selected <- as.integer(rowSums(w == 1, na.rm = TRUE))
+    meta_table$aw_studies <- apply(w, 1, function(x)
+      paste(colnames(lfc)[!is.na(x) & x == 1], collapse = ";"))
+  }
 
   heterogeneity_df <- data.frame(
     gene_id         = rownames(lfc),
@@ -448,7 +477,7 @@ mx_heterogeneity <- function(de_results, tau_method = c("REML", "PM", "DL")) {
 mx_sensitivity <- function(de_results,
                            method = c("random_effects", "fixed_effects",
                                       "fisher", "stouffer", "inverse_normal",
-                                      "minp", "maxp", "rop"),
+                                      "minp", "maxp", "rop", "awmeta"),
                            padj_threshold = 0.05,
                            ...) {
   de_results <- .extract_de_results(de_results)
@@ -907,4 +936,32 @@ mx_small_study <- function(de_results, genes = NULL,
   ct <- suppressWarnings(cor.test(zs, v, method = "kendall",
                                   exact = length(y) < 50))
   c(unname(ct$estimate), ct$p.value)
+}
+
+# AWmeta (Hu et al. 2026): AW-Fisher p-value and weights (AWFisher package),
+# REML random-effects effect size over the AW-selected studies.
+.meta_awmeta <- function(pv, lfc, se, alpha) {
+  n <- nrow(pv)
+  p_aw <- rep(NA_real_, n)
+  w    <- matrix(NA_integer_, n, ncol(pv), dimnames = dimnames(pv))
+  pattern <- apply(!is.na(pv), 1, function(x) paste(as.integer(x),
+                                                     collapse = ""))
+  for (pt in unique(pattern)) {
+    rows <- which(pattern == pt)
+    cols <- which(strsplit(pt, "")[[1]] == "1")
+    if (length(cols) < 2) next
+    aw <- AWFisher::AWFisher_pvalue(pv[rows, cols, drop = FALSE])
+    p_aw[rows] <- aw$pvalues
+    w[rows, cols] <- matrix(as.integer(aw$weights), nrow = length(rows))
+  }
+
+  # AW-REM: random effects (REML tau^2) restricted to selected studies
+  sel <- !is.na(w) & w == 1
+  lfc_s <- lfc; lfc_s[!sel] <- NA_real_
+  se_s  <- se;  se_s[!sel]  <- NA_real_
+  het <- .heterogeneity(lfc_s, se_s, "REML")
+  re  <- .meta_re(lfc_s, se_s, het$tau2, hksj = FALSE, alpha = alpha)
+  list(est = re$est, se = re$se, ci_lower = re$ci_lower,
+       ci_upper = re$ci_upper, stat = rep(NA_real_, n), p = p_aw,
+       weights = w)
 }

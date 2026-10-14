@@ -529,6 +529,6 @@ mx_funnel <- function(gene, de_results, meta_result = NULL) {
     ggrepel::geom_text_repel(ggplot2::aes(label = study), size = 3) +
     ggplot2::scale_y_reverse() +
     ggplot2::labs(title = paste0("Funnel plot: ", gene),
-                  x = "log₂ fold change", y = "Standard error") +
+                  x = "log\u2082 fold change", y = "Standard error") +
     ggplot2::theme_bw()
 }

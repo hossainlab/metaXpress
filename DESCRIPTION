@@ -50,7 +50,9 @@ Suggests:
     airway,
     apeglm,
     ashr,
-    fgsea
+    fgsea,
+    AWFisher,
+    org.Mm.eg.db
 VignetteBuilder: knitr
 biocViews: RNASeq, DifferentialExpression, GeneExpression,
     Transcriptomics, BatchEffect, Normalization, Pathways,

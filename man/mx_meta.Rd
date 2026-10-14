@@ -7,7 +7,7 @@
 mx_meta(
   de_results,
   method = c("random_effects", "fixed_effects", "fisher", "stouffer", "inverse_normal",
-    "minp", "maxp", "rop"),
+    "minp", "maxp", "rop", "awmeta"),
   min_studies = 2,
   tau_method = c("REML", "PM", "DL"),
   hksj = FALSE,
@@ -51,6 +51,15 @@ of \code{\linkS4class{metaXpressStudy}} objects after
     Non-directional.}
   \item{\code{"rop"}}{r-th ordered p-value (Song & Tseng 2014): DE in
     at least \code{r} studies. Non-directional.}
+  \item{\code{"awmeta"}}{AWmeta (Hu et al. 2026). The p-value is the
+    adaptively weighted Fisher statistic (AW-Fisher; Li & Tseng 2011),
+    calibrated with the \pkg{AWFisher} package (Huo et al. 2020), which
+    also returns binary per-study weights indicating which studies
+    contribute. The effect size is an REML random-effects estimate over
+    the selected studies only (AW-REM). Requires \pkg{AWFisher} and
+    \code{lfcSE}. Non-directional, as in the original method; check
+    \code{direction_consistency}. The selected studies are reported in
+    \code{aw_studies}.}
 }}
 
 \item{min_studies}{Integer. Minimum number of studies in which a gene must
@@ -203,6 +212,21 @@ RNA-seq data from multiple studies. \emph{BMC Bioinformatics},
 Song, C. & Tseng, G.C. (2014) Hypothesis setting and order statistic for
 robust genomic meta-analysis. \emph{Annals of Applied Statistics},
 \strong{8}(2), 777--800. \doi{10.1214/13-AOAS683}
+
+Li, J. & Tseng, G.C. (2011) An adaptively weighted statistic for detecting
+differential gene expression when combining multiple transcriptomic
+studies. \emph{Annals of Applied Statistics}, \strong{5}(2A), 994--1019.
+\doi{10.1214/10-AOAS393}
+
+Huo, Z., Tang, S., Park, Y. & Tseng, G. (2020) P-value evaluation,
+variability index and biomarker categorization for adaptively weighted
+Fisher's meta-analysis method in omics applications.
+\emph{Bioinformatics}, \strong{36}(2), 524--532.
+\doi{10.1093/bioinformatics/btz589}
+
+Hu, Y. et al. (2026) AWmeta empowers adaptively weighted transcriptomic
+meta-analysis. \emph{Current Issues in Molecular Biology},
+\strong{48}(5), 530. \doi{10.3390/cimb48050530}
 }
 \seealso{
 \code{\link{mx_heterogeneity}}, \code{\link{mx_sensitivity}},

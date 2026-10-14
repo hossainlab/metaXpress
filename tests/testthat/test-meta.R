@@ -182,9 +182,33 @@ test_that("directional combination does not accumulate opposite effects", {
   expect_equal(dir$direction_consistency, 0.5)
 })
 
-test_that("awmeta is rejected with an informative error", {
-  expect_error(mx_meta(make_test_de_results(), method = "awmeta"),
-               "removed")
+test_that("awmeta matches AWFisher + REML random effects on selected studies", {
+  skip_if_not_installed("AWFisher")
+  skip_if_not_installed("metafor")
+  de <- make_het_de(K = 4, G = 40)
+  mt <- suppressMessages(mx_meta(de, method = "awmeta"))@meta_table
+  expect_true(all(c("aw_studies", "aw_n_selected") %in% names(mt)))
+  for (i in c(1, 3, 12, 30)) {
+    g  <- mt$gene_id[i]
+    p  <- vapply(de, function(d) d$pvalue[match(g, d$gene_id)], numeric(1))
+    y  <- vapply(de, function(d) d$log2FC[match(g, d$gene_id)], numeric(1))
+    s  <- vapply(de, function(d) d$lfcSE[match(g, d$gene_id)], numeric(1))
+    ok <- !is.na(p)
+    aw <- AWFisher::AWFisher_pvalue(p[ok])
+    expect_equal(mt$meta_pvalue[i], aw$pvalues, info = g)
+    selected <- names(de)[ok][aw$weights == 1]
+    expect_equal(strsplit(mt$aw_studies[i], ";")[[1]], selected, info = g)
+    if (length(selected) >= 2) {
+      ref <- metafor::rma(yi = y[selected], sei = s[selected], method = "REML",
+                          control = list(threshold = 1e-12, maxiter = 5000,
+                                         stepadj = 0.5))
+      expect_equal(mt$meta_log2FC[i], unname(ref$b[1, 1]), tolerance = 1e-6,
+                   info = g)
+    } else {
+      expect_equal(mt$meta_log2FC[i], unname(y[selected]), info = g)
+    }
+  }
+  expect_equal(mt$meta_padj, p.adjust(mt$meta_pvalue, "BH"))
 })
 
 test_that("effect-size methods require lfcSE", {
