@@ -7,55 +7,93 @@ NULL
 
 #' Fetch bulk RNA-seq studies from GEO
 #'
-#' Downloads count matrices and sample metadata from the Gene Expression
-#' Omnibus (GEO) for one or more accession IDs and returns a list of
+#' Downloads raw count matrices and sample metadata from the Gene Expression
+#' Omnibus (GEO) for one or more series and returns a list of
 #' \code{metaXpressStudy} objects ready for downstream analysis.
 #'
-#' @param accessions Character vector of GEO accession IDs
-#'   (e.g., \code{c("GSE12345", "GSE67890")}).
+#' By default (\code{source = "ncbi"}) counts come from the NCBI GEO RNA-seq
+#' pipeline, which re-processes the SRA reads of every eligible human and
+#' mouse series with a single pipeline (HISAT2 alignment to GRCh38.p13 /
+#' GRCm39 and featureCounts against NCBI RefSeq annotation). Because every
+#' study is quantified identically, these counts remove the largest source
+#' of technical heterogeneity in a meta-analysis (different aligners,
+#' annotations and count definitions). Genes are NCBI Entrez Gene IDs.
+#' Series without NCBI counts fall back to author-supplied supplementary
+#' files.
+#'
+#' @param accessions Character vector of GEO series accessions
+#'   (e.g., \code{c("GSE52778", "GSE95587")}).
+#' @param source Character scalar. \code{"ncbi"} (default) uses NCBI
+#'   GEO-generated raw counts with fallback to supplementary files;
+#'   \code{"supplementary"} only uses author-supplied files.
 #' @param count_type Character scalar. One of \code{"raw"} (default) or
-#'   \code{"normalized"}. Always prefer \code{"raw"} for meta-analysis.
+#'   \code{"normalized"}. Always use \code{"raw"} for count-based DE.
+#' @param condition_col Optional. Name of the GEO phenotype column holding
+#'   the case/control labels (e.g. \code{"disease state:ch1"}), either one
+#'   name for all series or a character vector named by accession. When
+#'   \code{NULL}, a column is auto-detected; always check the result.
+#' @param annotate Logical. Add Entrez ID, gene symbol and gene type from
+#'   NCBI \code{gene_info} to \code{rowData} for NCBI counts. Default:
+#'   \code{TRUE}.
 #' @param cache_dir Character scalar. Directory for caching downloaded files.
-#'   Defaults to \code{tempdir()}.
+#'   Defaults to \code{tempdir()}; use a persistent directory to avoid
+#'   repeated downloads.
+#' @param BPPARAM Unused; downloads run serially to respect NCBI rate limits.
+#'   Kept for backward compatibility.
 #'
 #' @return A named list of \code{\linkS4class{metaXpressStudy}} objects, one
-#'   per accession. QC scores are filled by an internal call to
-#'   \code{\link{mx_qc_study}}. Studies failing QC receive a warning but are
-#'   returned (use \code{\link{mx_filter_studies}} to remove them).
+#'   per accession. \code{metadata(study)$count_source} records where the
+#'   counts came from. QC scores are filled by \code{\link{mx_qc_study}}.
 #'
 #' @references
 #' Davis, S. & Meltzer, P.S. (2007) GEOquery: a bridge between the Gene
 #' Expression Omnibus (GEO) and BioConductor. \emph{Bioinformatics},
 #' \strong{23}(14), 1846--1847. \doi{10.1093/bioinformatics/btm254}
 #'
-#' Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
-#' RNAseq studies in human Alzheimer's disease brain tissue. \emph{bioRxiv}.
-#' \doi{10.1101/2024.11.07.622520}
+#' Clough, E. et al. (2024) NCBI GEO: archive for gene expression and
+#' epigenomics data sets: 23-year update. \emph{Nucleic Acids Research},
+#' \strong{52}(D1), D138--D144. \doi{10.1093/nar/gkad965}
 #'
 #' @examples
-#' \dontrun{
-#'   studies <- mx_fetch_geo(c("GSE12345", "GSE67890"))
-#'   studies <- mx_filter_studies(studies, qc_threshold = 7)
+#' \donttest{
+#' # Requires internet access. Himes et al. (2014) airway smooth muscle,
+#' # NCBI-processed counts for 16 samples.
+#' if (requireNamespace("GEOquery", quietly = TRUE)) {
+#'   studies <- mx_fetch_geo("GSE52778",
+#'                           condition_col = "treatment:ch1")
+#'   studies$GSE52778
+#'   table(studies$GSE52778$condition)
+#' }
 #' }
 #'
 #' @seealso \code{\link{mx_load_local}}, \code{\link{mx_qc_study}},
 #'   \code{\link{mx_filter_studies}}
 #'
-#' @param BPPARAM A \code{\link[BiocParallel]{BiocParallelParam}} object
-#'   controlling parallelization. Default: \code{BiocParallel::bpparam()}.
-#'   Set to \code{BiocParallel::SerialParam()} for sequential execution.
-#'
 #' @importFrom methods new
 #' @export
-mx_fetch_geo <- function(accessions, count_type = "raw",
-                          cache_dir = tempdir(),
-                          BPPARAM = BiocParallel::bpparam()) {
+mx_fetch_geo <- function(accessions,
+                         source        = c("ncbi", "supplementary"),
+                         count_type    = "raw",
+                         condition_col = NULL,
+                         annotate      = TRUE,
+                         cache_dir     = tempdir(),
+                         BPPARAM       = NULL) {
   if (!is.character(accessions) || length(accessions) == 0)
     stop("'accessions' must be a non-empty character vector of GEO IDs")
+  source     <- match.arg(source)
   count_type <- match.arg(count_type, c("raw", "normalized"))
+  if (!is.null(condition_col)) {
+    if (is.null(names(condition_col))) {
+      if (length(condition_col) != 1)
+        stop("Unnamed 'condition_col' must be a single column name")
+      condition_col <- stats::setNames(rep(condition_col, length(accessions)),
+                                       accessions)
+    }
+  }
 
   .require_package("GEOquery", "fetching data from GEO")
   .require_package("Biobase", "parsing GEO metadata")
+  dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
 
   message("Fetching ", length(accessions), " studies from GEO...")
 
@@ -63,7 +101,10 @@ mx_fetch_geo <- function(accessions, count_type = "raw",
   studies <- lapply(accessions, function(acc) {
     message("  Downloading: ", acc)
     tryCatch(
-      .fetch_single_geo(acc, count_type = count_type, cache_dir = cache_dir),
+      .fetch_single_geo(acc, count_type = count_type, cache_dir = cache_dir,
+                        source = source,
+                        condition_col = condition_col[acc],
+                        annotate = annotate),
       error = function(e) {
         warning("Failed to fetch ", acc, ": ", conditionMessage(e))
         NULL
@@ -557,7 +598,9 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
 # Internal helpers
 # ============================================================================
 
-.fetch_single_geo <- function(accession, count_type, cache_dir) {
+.fetch_single_geo <- function(accession, count_type, cache_dir,
+                              source = "supplementary",
+                              condition_col = NULL, annotate = FALSE) {
   .require_package("GEOquery", "fetching data from GEO")
   .require_package("Biobase", "parsing GEO metadata")
 
@@ -569,45 +612,69 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
            conditionMessage(e))
     }
   )
-  if (is.list(gse)) gse <- gse[[1]]
+  if (is.list(gse)) {
+    if (length(gse) > 1)
+      message("  ", accession, " spans ", length(gse), " platforms; ",
+              "combining sample metadata")
+    pdata <- do.call(.rbind_fill, lapply(gse, Biobase::pData))
+    gse1  <- gse[[1]]
+  } else {
+    pdata <- Biobase::pData(gse)
+    gse1  <- gse
+  }
 
-  # --- Detect organism from GEO metadata ---
-  organism <- .detect_organism(gse)
+  organism <- .detect_organism(gse1)
+  counts   <- NULL
+  gene_info <- NULL
+  count_source <- NA_character_
 
-  # --- Download supplementary (count) files ---
-  supp_files <- tryCatch(
-    GEOquery::getGEOSuppFiles(accession, baseDir = cache_dir),
-    error = function(e) NULL
-  )
+  # --- NCBI GEO-generated raw counts (uniformly processed) ---
+  if (source == "ncbi" && count_type == "raw") {
+    counts <- .fetch_ncbi_counts(accession, organism, cache_dir)
+    if (!is.null(counts)) {
+      count_source <- "NCBI GEO RNA-seq pipeline"
+      message("  Using NCBI-generated raw counts (", nrow(counts), " genes x ",
+              ncol(counts), " samples)")
+      if (annotate)
+        gene_info <- .ncbi_gene_info(rownames(counts), organism, cache_dir)
+    } else {
+      message("  No NCBI-generated counts for ", accession,
+              "; trying supplementary files")
+    }
+  }
 
-  # --- Extract count matrix ---
-  counts <- NULL
-
-  if (!is.null(supp_files) && nrow(supp_files) > 0) {
-    # Try to find a count matrix in supplementary files
-    counts <- tryCatch(
-      .parse_geo_counts(supp_files, accession, cache_dir),
-      error = function(e) {
-        warning("Could not parse supplementary files for ", accession,
-                ": ", conditionMessage(e))
-        NULL
-      }
+  # --- Author-supplied supplementary files ---
+  if (is.null(counts)) {
+    supp_files <- tryCatch(
+      GEOquery::getGEOSuppFiles(accession, baseDir = cache_dir),
+      error = function(e) NULL
     )
+    if (!is.null(supp_files) && nrow(supp_files) > 0) {
+      counts <- tryCatch(
+        .parse_geo_counts(supp_files, accession, cache_dir),
+        error = function(e) {
+          warning("Could not parse supplementary files for ", accession,
+                  ": ", conditionMessage(e))
+          NULL
+        }
+      )
+      if (!is.null(counts)) count_source <- "GEO supplementary file"
+    }
   }
 
   # Fallback: use the expression matrix from the GSEMatrix
   if (is.null(counts) && count_type == "normalized") {
     message("  Using expression matrix from GSEMatrix for ", accession)
-    expr_mat <- Biobase::exprs(gse)
+    expr_mat <- Biobase::exprs(gse1)
     if (nrow(expr_mat) > 0 && ncol(expr_mat) > 0) {
       counts <- as.matrix(expr_mat)
+      count_source <- "GEO series matrix (normalized)"
     }
   }
 
   if (is.null(counts) || nrow(counts) == 0 || ncol(counts) == 0) {
     warning("No count matrix could be extracted for ", accession,
             ". Use mx_load_local() with manually downloaded count files.")
-    # Return a minimal valid object (empty counts, but valid metadata)
     empty_meta <- data.frame(sample_id = character(0),
                              condition = character(0),
                              stringsAsFactors = FALSE)
@@ -620,26 +687,103 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
                de_result = data.frame()))
   }
 
-  # --- Parse sample metadata from GEO phenotype data ---
-  metadata <- .parse_geo_metadata(gse)
-
-  # --- Align metadata to count columns ---
+  # --- Sample metadata ---
+  metadata <- .parse_geo_metadata(pdata, condition_col = condition_col)
   metadata <- .align_metadata_to_counts(metadata, counts)
+  counts   <- counts[, metadata$sample_id, drop = FALSE]
 
-  # --- Warn if counts look pre-normalized ---
   if (!all(counts == floor(counts), na.rm = TRUE)) {
     warning("Study '", accession, "': count matrix contains non-integer values. ",
             "This likely indicates pre-normalized data. ",
             "DESeq2/edgeR require raw integer counts for valid inference.")
   }
 
-  metaXpressStudy(
+  study <- metaXpressStudy(
       counts    = counts,
       metadata  = metadata,
       accession = accession,
       organism  = organism,
       qc_score  = NA_real_,
-      de_result = data.frame())
+      de_result = data.frame(),
+      gene_info = gene_info)
+  S4Vectors::metadata(study)$count_source <- count_source
+  study
+}
+
+# Row-bind data.frames with different columns
+.rbind_fill <- function(...) {
+  dfs  <- list(...)
+  cols <- unique(unlist(lapply(dfs, colnames)))
+  do.call(rbind, lapply(dfs, function(d) {
+    d[setdiff(cols, colnames(d))] <- NA
+    d[cols]
+  }))
+}
+
+# Download NCBI GEO-generated raw counts; NULL if unavailable
+.fetch_ncbi_counts <- function(accession, organism, cache_dir) {
+  build <- switch(organism,
+                  "Homo sapiens" = "GRCh38.p13",
+                  "Mus musculus" = "GRCm39",
+                  NULL)
+  if (is.null(build)) return(NULL)
+  fname <- sprintf("%s_raw_counts_%s_NCBI.tsv.gz", accession, build)
+  dest  <- file.path(cache_dir, fname)
+  if (!file.exists(dest)) {
+    url <- paste0("https://www.ncbi.nlm.nih.gov/geo/download/",
+                  "?type=rnaseq_counts&format=file&acc=", accession,
+                  "&file=", fname)
+    ok <- tryCatch({
+      utils::download.file(url, dest, mode = "wb", quiet = TRUE)
+      TRUE
+    }, error = function(e) FALSE, warning = function(w) FALSE)
+    if (!ok) { unlink(dest); return(NULL) }
+  }
+  tab <- tryCatch(
+    utils::read.delim(gzfile(dest), check.names = FALSE,
+                      stringsAsFactors = FALSE),
+    error = function(e) NULL)
+  if (is.null(tab) || colnames(tab)[1] != "GeneID" || ncol(tab) < 2) {
+    unlink(dest)
+    return(NULL)
+  }
+  mat <- as.matrix(tab[, -1, drop = FALSE])
+  storage.mode(mat) <- "integer"
+  rownames(mat) <- as.character(tab$GeneID)
+  mat
+}
+
+# Gene annotation from the NCBI gene_info FTP file
+.ncbi_gene_info <- function(entrez_ids, organism, cache_dir) {
+  file <- switch(organism,
+                 "Homo sapiens" = "Mammalia/Homo_sapiens.gene_info.gz",
+                 "Mus musculus" = "Mammalia/Mus_musculus.gene_info.gz",
+                 NULL)
+  if (is.null(file)) return(NULL)
+  dest <- file.path(cache_dir, basename(file))
+  if (!file.exists(dest)) {
+    ok <- tryCatch({
+      utils::download.file(
+        paste0("https://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/", file),
+        dest, mode = "wb", quiet = TRUE)
+      TRUE
+    }, error = function(e) FALSE, warning = function(w) FALSE)
+    if (!ok) {
+      unlink(dest)
+      message("  Could not download NCBI gene_info; rowData left empty")
+      return(NULL)
+    }
+  }
+  gi <- utils::read.delim(gzfile(dest), quote = "", comment.char = "",
+                          stringsAsFactors = FALSE,
+                          colClasses = "character")
+  idx <- match(entrez_ids, gi$GeneID)
+  S4Vectors::DataFrame(
+    entrez_id = entrez_ids,
+    symbol    = gi$Symbol[idx],
+    gene_type = gi$type_of_gene[idx],
+    row.names = entrez_ids
+  )
 }
 
 .parse_geo_counts <- function(supp_files, accession, cache_dir) {
@@ -860,8 +1004,8 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
   result
 }
 
-.parse_geo_metadata <- function(gse) {
-  pd <- Biobase::pData(gse)
+.parse_geo_metadata <- function(pd, condition_col = NULL) {
+  if (methods::is(pd, "ExpressionSet")) pd <- Biobase::pData(pd)
   meta <- as.data.frame(pd, stringsAsFactors = FALSE)
 
   # Set sample_id from GEO accession column or rownames
@@ -869,6 +1013,16 @@ mx_filter_studies <- function(studies, qc_threshold = 7) {
     meta$sample_id <- meta$geo_accession
   } else {
     meta$sample_id <- rownames(meta)
+  }
+
+  if (!is.null(condition_col) && !is.na(condition_col)) {
+    if (!condition_col %in% colnames(meta))
+      stop("condition_col '", condition_col, "' not found. Available: ",
+           paste(grep(":ch1$", colnames(meta), value = TRUE), collapse = ", "))
+    meta$condition <- trimws(sub("^[^:]+:\\s*", "", meta[[condition_col]]))
+    message("  Condition from '", condition_col, "': ",
+            paste(names(table(meta$condition)), table(meta$condition),
+                  sep = "=", collapse = ", "))
   }
 
   # --- Detect condition column from GEO phenotype data ---

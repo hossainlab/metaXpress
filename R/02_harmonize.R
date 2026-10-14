@@ -67,14 +67,18 @@ mx_reannotate <- function(studies, org = "Homo sapiens",
 #'   \code{"TMM"} (default), \code{"VST"}, \code{"CPM"}, \code{"TPM"},
 #'   or \code{"quantile"}.
 #'
-#' @return The input \code{study} with \code{counts} replaced by normalized
-#'   values.
+#' @return The input \code{study} with the normalized values added as a new
+#'   assay (\code{"logCPM_TMM"}, \code{"vst"}, \code{"cpm"}, \code{"tpm"}
+#'   or \code{"log2_quantile"}). The raw \code{"counts"} assay is never
+#'   modified, because \code{\link{mx_de}} requires raw counts.
 #'
 #' @details
+#' Normalized values are for visualization, clustering, co-expression and
+#' cell-composition analyses. Differential expression always works from raw
+#' counts with each engine's own normalization.
 #' \itemize{
-#'   \item \strong{TMM}: Trimmed mean of M-values (Robinson & Oshlack 2010),
-#'     implemented in \pkg{edgeR}. Recommended for between-sample normalization
-#'     of count data.
+#'   \item \strong{TMM}: log2 CPM with trimmed-mean-of-M-values library
+#'     sizes (Robinson & Oshlack 2010), via \pkg{edgeR} (prior count 2).
 #'   \item \strong{VST}: Variance-stabilizing transformation (Anders & Huber
 #'     2010), implemented in \pkg{DESeq2}. Produces approximately
 #'     homoscedastic values suitable for clustering and visualization.
@@ -85,7 +89,7 @@ mx_reannotate <- function(studies, org = "Homo sapiens",
 #'     levels across genes.
 #'   \item \strong{quantile}: Quantile normalization (Bolstad et al. 2003),
 #'     implemented in \pkg{limma}. Forces identical distributions across
-#'     samples; operates on log1p-transformed counts.
+#'     samples; operates on log2(CPM + 1) values.
 #' }
 #'
 #' @references
@@ -103,9 +107,12 @@ mx_reannotate <- function(studies, org = "Homo sapiens",
 #' \doi{10.1093/bioinformatics/19.2.185}
 #'
 #' @examples
-#' \dontrun{
-#'   study <- mx_normalize(study, method = "TMM")
-#' }
+#' counts <- matrix(rpois(600, 50), nrow = 100,
+#'                  dimnames = list(paste0("G", 1:100), paste0("S", 1:6)))
+#' meta <- data.frame(condition = rep(c("control", "case"), each = 3))
+#' study <- metaXpressStudy(counts, meta, accession = "local")
+#' study <- mx_normalize(study, method = "TMM")
+#' SummarizedExperiment::assayNames(study)
 #'
 #' @seealso \code{\link{mx_reannotate}}, \code{\link{mx_remove_batch}}
 #'
@@ -125,21 +132,34 @@ mx_normalize <- function(study,
     TPM      = .normalize_tpm(study),
     quantile = .normalize_quantile(study)
   )
-
-  .set_counts(study, normalized)
+  assay_name <- switch(method, TMM = "logCPM_TMM", VST = "vst", CPM = "cpm",
+                       TPM = "tpm", quantile = "log2_quantile")
+  dimnames(normalized) <- dimnames(study)
+  SummarizedExperiment::assay(study, assay_name) <- normalized
+  study
 }
 
 #' Correct for library type bias (polyA vs rRNA-depleted)
 #'
 #' Adjusts for systematic expression differences between polyA-selected and
-#' rRNA-depleted RNA-seq libraries using the ratio-based correction described
-#' by Bush et al. (2017).
+#' rRNA-depleted RNA-seq libraries with a per-gene ratio correction in the
+#' spirit of Bush et al. (2017). The ratio is estimated from
+#' \emph{control} samples only, so disease effects do not leak into it.
+#'
+#' Per-gene multiplicative scaling cancels out of within-study log fold
+#' changes, so this correction is \strong{not needed} for the standard
+#' per-study DE + meta-analysis workflow. It matters only when expression
+#' levels are compared across studies (pooled heatmaps, co-expression,
+#' cell-composition scores). The corrected values are stored in a new
+#' \code{"cpm_libtype_corrected"} assay; raw counts are untouched.
 #'
 #' @param studies A named list of \code{\linkS4class{metaXpressStudy}} objects.
 #'   Studies must have a \code{library_type} column in \code{metadata} with
 #'   values \code{"polyA"} or \code{"rRNA_depleted"}.
 #'
-#' @return The input list of studies with library type bias corrected.
+#' @return The input list of studies, restricted to their common genes, with
+#'   an added \code{"cpm_libtype_corrected"} assay in rRNA-depleted studies
+#'   (and plain CPM in polyA studies).
 #'
 #' @references
 #' Bush, S.J. et al. (2017) Integration of quantitated expression estimates
@@ -188,27 +208,25 @@ mx_correct_library_type <- function(studies) {
   # Align genes first
   aligned <- mx_align_genes(studies)
 
-  # Compute mean CPM per gene per library type
-  polya_cpm <- Reduce("+", lapply(aligned[polya_idx], function(s) {
-    dge <- edgeR::DGEList(counts = .counts(s))
-    edgeR::cpm(dge, log = FALSE)
-  })) / length(polya_idx)
+  .require_package("edgeR", "library-type correction")
+  cpm_of <- function(s) edgeR::cpm(edgeR::normLibSizes(
+    edgeR::DGEList(counts = .counts(s))), log = FALSE)
+  control_mean <- function(s) {
+    ctrl <- .make_condition_factor(s$condition)
+    rowMeans(cpm_of(s)[, ctrl == levels(ctrl)[1], drop = FALSE])
+  }
 
-  rrna_cpm <- Reduce("+", lapply(aligned[rrna_idx], function(s) {
-    dge <- edgeR::DGEList(counts = .counts(s))
-    edgeR::cpm(dge, log = FALSE)
-  })) / length(rrna_idx)
+  # Mean control-sample CPM per gene for each library type
+  mean_polya <- rowMeans(vapply(aligned[polya_idx], control_mean,
+                                numeric(nrow(aligned[[1]]))))
+  mean_rrna  <- rowMeans(vapply(aligned[rrna_idx], control_mean,
+                                numeric(nrow(aligned[[1]]))))
+  ratio <- mean_polya / pmax(mean_rrna, 0.01)
 
-  # Per-gene ratio: polyA / rRNA (avoid division by zero)
-  mean_polya <- rowMeans(polya_cpm)
-  mean_rrna  <- rowMeans(rrna_cpm)
-  ratio      <- mean_polya / pmax(mean_rrna, 0.01)
-
-  # Apply ratio to rRNA-depleted studies
-  for (i in rrna_idx) {
-    dge <- edgeR::DGEList(counts = .counts(aligned[[i]]))
-    cpm_vals <- edgeR::cpm(dge, log = FALSE)
-    aligned[[i]] <- .set_counts(aligned[[i]], round(sweep(cpm_vals, 1, ratio, "*")))
+  for (i in seq_along(aligned)) {
+    vals <- cpm_of(aligned[[i]])
+    if (i %in% rrna_idx) vals <- sweep(vals, 1, ratio, "*")
+    SummarizedExperiment::assay(aligned[[i]], "cpm_libtype_corrected") <- vals
   }
 
   message(sprintf("Library type correction applied to %d rRNA-depleted studies.",
@@ -216,23 +234,32 @@ mx_correct_library_type <- function(studies) {
   aligned
 }
 
-#' Remove batch effects across studies
+#' Remove between-study batch effects for pooled expression analyses
 #'
-#' Applies one of four batch effect removal methods to harmonize expression
-#' levels across studies before meta-analysis.
+#' Combines all studies into one expression matrix and removes study-level
+#' batch effects while preserving the biological \code{condition} effect.
 #'
 #' @param studies A named list of \code{\linkS4class{metaXpressStudy}} objects.
-#' @param method Character scalar. Batch removal method. One of
-#'   \code{"ComBat-seq"} (default), \code{"ComBat"}, \code{"limma"},
-#'   or \code{"harmony"}.
+#' @param method Character scalar. \code{"ComBat-seq"} (default; negative
+#'   binomial model on counts), \code{"ComBat"} (empirical Bayes on
+#'   log2 CPM) or \code{"limma"} (\code{removeBatchEffect} on log2 CPM).
+#' @param covariate Name of a \code{colData} column whose effect must be
+#'   preserved. Default: \code{"condition"}. Use \code{NULL} only if you
+#'   understand that condition effects confounded with study will be removed.
 #'
-#' @return The input list of studies with batch effects removed from
-#'   \code{counts}.
+#' @return The input list of studies, restricted to their common genes, with
+#'   the corrected values in a new assay: \code{"combat_seq_counts"} for
+#'   ComBat-seq or \code{"log2cpm_batch_corrected"} otherwise. The raw
+#'   \code{"counts"} assay is untouched.
 #'
 #' @details
-#' Batch is defined as study of origin. \code{"ComBat-seq"} operates on raw
-#' counts and is preferred for count data. \code{"ComBat"} and
-#' \code{"limma"} operate on log-transformed values.
+#' \strong{Batch correction is not required, and should not be used, before
+#' per-study DE}: \code{\link{mx_de}} analyses each study separately, so
+#' between-study batch effects never enter the per-study fold changes, and
+#' feeding batch-corrected values into count models invalidates their
+#' variance assumptions. Use this function only for pooled visualizations
+#' (PCA, heatmaps), consensus co-expression or other analyses on a merged
+#' matrix. Batch is defined as study of origin.
 #'
 #' @references
 #' Johnson, W.E., Li, C. & Rabinovic, A. (2007) Adjusting batch effects in
@@ -240,83 +267,85 @@ mx_correct_library_type <- function(studies) {
 #' \emph{Biostatistics}, \strong{8}(1), 118--127.
 #' \doi{10.1093/biostatistics/kxj037}
 #'
-#' Zhang, Y. et al. (2020) ComBat-seq: batch effect adjustment for RNA-seq
-#' count data. \emph{NAR Genomics and Bioinformatics}, \strong{2}(3),
-#' lqaa078. \doi{10.1093/nargab/lqaa078}
+#' Zhang, Y., Parmigiani, G. & Johnson, W.E. (2020) ComBat-seq: batch effect
+#' adjustment for RNA-seq count data. \emph{NAR Genomics and
+#' Bioinformatics}, \strong{2}(3), lqaa078. \doi{10.1093/nargab/lqaa078}
 #'
-#' Ritchie, M.E. et al. (2015) limma powers differential expression analyses
-#' for RNA-sequencing and microarray studies. \emph{Nucleic Acids Research},
-#' \strong{43}(7), e47. \doi{10.1093/nar/gkv007}
+#' Nygaard, V., Rødland, E.A. & Hovig, E. (2016) Methods that remove batch
+#' effects while retaining group differences may lead to exaggerated
+#' confidence in downstream analyses. \emph{Biostatistics}, \strong{17}(1),
+#' 29--39. \doi{10.1093/biostatistics/kxv027}
 #'
 #' @examples
 #' \dontrun{
-#'   studies <- mx_remove_batch(studies, method = "ComBat-seq")
+#'   pooled <- mx_remove_batch(studies, method = "limma")
+#'   SummarizedExperiment::assay(pooled[[1]], "log2cpm_batch_corrected")
 #' }
 #'
 #' @seealso \code{\link{mx_normalize}}
 #'
 #' @export
 mx_remove_batch <- function(studies,
-                             method = c("ComBat-seq", "ComBat",
-                                        "limma", "harmony")) {
+                            method = c("ComBat-seq", "ComBat", "limma"),
+                            covariate = "condition") {
   if (!is.list(studies))
     stop("'studies' must be a list of metaXpressStudy objects")
+  if (identical(method, "harmony"))
+    stop("method = 'harmony' was removed: harmony corrects low-dimensional ",
+         "embeddings and cannot return a gene-level matrix.")
   method <- match.arg(method)
 
-  message("Removing batch effects using ", method, "...")
+  message("Removing between-study batch effects using ", method, "...")
 
   aligned <- mx_align_genes(studies)
   combined_counts <- do.call(cbind, lapply(aligned, .counts))
-  batch <- rep(seq_along(aligned),
-               times = vapply(aligned, ncol, integer(1)))
+  study_ids <- if (is.null(names(aligned))) seq_along(aligned)
+               else names(aligned)
+  batch <- factor(rep(study_ids, times = vapply(aligned, ncol, integer(1))))
+
+  group <- NULL
+  if (!is.null(covariate)) {
+    group <- unlist(lapply(aligned, function(s) {
+      if (!covariate %in% colnames(SummarizedExperiment::colData(s)))
+        stop("Covariate '", covariate, "' missing in study ", s@accession)
+      as.character(.make_condition_factor(s[[covariate]]))
+    }), use.names = FALSE)
+    group <- factor(group)
+    if (any(rowSums(table(batch, group) > 0) < 2))
+      warning("Some studies contain only one '", covariate, "' level; ",
+              "batch and biology are partly confounded.")
+  }
+
+  log2cpm <- function(x) edgeR::cpm(edgeR::DGEList(counts = x), log = TRUE,
+                                    prior.count = 2)
 
   corrected_combined <- switch(method,
     `ComBat-seq` = {
-      if (!requireNamespace("sva", quietly = TRUE))
-        stop("Package 'sva' is required: BiocManager::install('sva')")
-      sva::ComBat_seq(combined_counts, batch = batch)
+      .require_package("sva", "ComBat-seq")
+      sva::ComBat_seq(combined_counts, batch = batch, group = group)
     },
-    ComBat       = {
-      if (!requireNamespace("sva", quietly = TRUE))
-        stop("Package 'sva' is required: BiocManager::install('sva')")
-      log_counts <- log1p(combined_counts)
-      sva::ComBat(log_counts, batch = batch)
+    ComBat = {
+      .require_package("sva", "ComBat")
+      mod <- if (is.null(group)) NULL else stats::model.matrix(~ group)
+      sva::ComBat(log2cpm(combined_counts), batch = batch, mod = mod)
     },
-    limma        = {
-      if (!requireNamespace("limma", quietly = TRUE))
-        stop("Package 'limma' is required: BiocManager::install('limma')")
-      limma::removeBatchEffect(log1p(combined_counts), batch = batch)
-    },
-    harmony      = {
-      if (!requireNamespace("harmony", quietly = TRUE))
-        stop("Package 'harmony' is required: BiocManager::install('harmony')")
-      # Harmony operates on PCA embeddings of log-CPM values
-      log_counts <- log1p(combined_counts)
-      # PCA reduction (top 30 PCs)
-      pca_res <- prcomp(t(log_counts), center = TRUE, scale. = FALSE,
-                        rank. = min(30, ncol(log_counts) - 1))
-      pca_embed <- pca_res$x  # samples x PCs
-      # Run Harmony on embeddings
-      harm_embed <- harmony::RunHarmony(
-        pca_embed,
-        meta_data  = data.frame(batch = as.character(batch)),
-        vars_use   = "batch",
-        verbose    = FALSE
-      )
-      # Project back to gene space: corrected = t(rotation) %*% t(harm)
-      # (approximate reconstruction)
-      t(pca_res$rotation %*% t(harm_embed)) * apply(log_counts, 1, sd) +
-        rowMeans(log_counts)
+    limma = {
+      .require_package("limma", "removeBatchEffect")
+      design <- if (is.null(group)) matrix(1, length(batch), 1)
+                else stats::model.matrix(~ group)
+      limma::removeBatchEffect(log2cpm(combined_counts), batch = batch,
+                               design = design)
     }
   )
+  assay_name <- if (method == "ComBat-seq") "combat_seq_counts"
+                else "log2cpm_batch_corrected"
 
   col_idx <- 0
   for (i in seq_along(aligned)) {
     n <- ncol(aligned[[i]])
-    aligned[[i]] <- .set_counts(
-      aligned[[i]],
-      corrected_combined[, (col_idx + 1):(col_idx + n), drop = FALSE]
-    )
+    vals <- corrected_combined[, (col_idx + 1):(col_idx + n), drop = FALSE]
+    dimnames(vals) <- dimnames(aligned[[i]])
+    SummarizedExperiment::assay(aligned[[i]], assay_name) <- vals
     col_idx <- col_idx + n
   }
 
@@ -412,8 +441,8 @@ mx_align_genes <- function(studies) {
 
 .normalize_tmm <- function(study) {
   dge <- edgeR::DGEList(counts = .counts(study))
-  dge <- edgeR::calcNormFactors(dge, method = "TMM")
-  edgeR::cpm(dge, log = FALSE)
+  dge <- edgeR::normLibSizes(dge, method = "TMM")
+  edgeR::cpm(dge, log = TRUE, prior.count = 2)
 }
 
 .normalize_vst <- function(study) {
@@ -445,6 +474,6 @@ mx_align_genes <- function(studies) {
 }
 
 .normalize_quantile <- function(study) {
-  log_counts <- log1p(.counts(study))
-  limma::normalizeBetweenArrays(log_counts, method = "quantile")
+  log_cpm <- log2(edgeR::cpm(edgeR::DGEList(counts = .counts(study))) + 1)
+  limma::normalizeBetweenArrays(log_cpm, method = "quantile")
 }

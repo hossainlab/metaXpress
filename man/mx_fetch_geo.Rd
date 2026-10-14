@@ -6,40 +6,72 @@
 \usage{
 mx_fetch_geo(
   accessions,
+  source = c("ncbi", "supplementary"),
   count_type = "raw",
+  condition_col = NULL,
+  annotate = TRUE,
   cache_dir = tempdir(),
-  BPPARAM = BiocParallel::bpparam()
+  BPPARAM = NULL
 )
 }
 \arguments{
-\item{accessions}{Character vector of GEO accession IDs
-(e.g., \code{c("GSE12345", "GSE67890")}).}
+\item{accessions}{Character vector of GEO series accessions
+(e.g., \code{c("GSE52778", "GSE95587")}).}
+
+\item{source}{Character scalar. \code{"ncbi"} (default) uses NCBI
+GEO-generated raw counts with fallback to supplementary files;
+\code{"supplementary"} only uses author-supplied files.}
 
 \item{count_type}{Character scalar. One of \code{"raw"} (default) or
-\code{"normalized"}. Always prefer \code{"raw"} for meta-analysis.}
+\code{"normalized"}. Always use \code{"raw"} for count-based DE.}
+
+\item{condition_col}{Optional. Name of the GEO phenotype column holding
+the case/control labels (e.g. \code{"disease state:ch1"}), either one
+name for all series or a character vector named by accession. When
+\code{NULL}, a column is auto-detected; always check the result.}
+
+\item{annotate}{Logical. Add Entrez ID, gene symbol and gene type from
+NCBI \code{gene_info} to \code{rowData} for NCBI counts. Default:
+\code{TRUE}.}
 
 \item{cache_dir}{Character scalar. Directory for caching downloaded files.
-Defaults to \code{tempdir()}.}
+Defaults to \code{tempdir()}; use a persistent directory to avoid
+repeated downloads.}
 
-\item{BPPARAM}{A \code{\link[BiocParallel]{BiocParallelParam}} object
-controlling parallelization. Default: \code{BiocParallel::bpparam()}.
-Set to \code{BiocParallel::SerialParam()} for sequential execution.}
+\item{BPPARAM}{Unused; downloads run serially to respect NCBI rate limits.
+Kept for backward compatibility.}
 }
 \value{
 A named list of \code{\linkS4class{metaXpressStudy}} objects, one
-  per accession. QC scores are filled by an internal call to
-  \code{\link{mx_qc_study}}. Studies failing QC receive a warning but are
-  returned (use \code{\link{mx_filter_studies}} to remove them).
+  per accession. \code{metadata(study)$count_source} records where the
+  counts came from. QC scores are filled by \code{\link{mx_qc_study}}.
 }
 \description{
-Downloads count matrices and sample metadata from the Gene Expression
-Omnibus (GEO) for one or more accession IDs and returns a list of
+Downloads raw count matrices and sample metadata from the Gene Expression
+Omnibus (GEO) for one or more series and returns a list of
 \code{metaXpressStudy} objects ready for downstream analysis.
 }
+\details{
+By default (\code{source = "ncbi"}) counts come from the NCBI GEO RNA-seq
+pipeline, which re-processes the SRA reads of every eligible human and
+mouse series with a single pipeline (HISAT2 alignment to GRCh38.p13 /
+GRCm39 and featureCounts against NCBI RefSeq annotation). Because every
+study is quantified identically, these counts remove the largest source
+of technical heterogeneity in a meta-analysis (different aligners,
+annotations and count definitions). Genes are NCBI Entrez Gene IDs.
+Series without NCBI counts fall back to author-supplied supplementary
+files.
+}
 \examples{
-\dontrun{
-  studies <- mx_fetch_geo(c("GSE12345", "GSE67890"))
-  studies <- mx_filter_studies(studies, qc_threshold = 7)
+\donttest{
+# Requires internet access. Himes et al. (2014) airway smooth muscle,
+# NCBI-processed counts for 16 samples.
+if (requireNamespace("GEOquery", quietly = TRUE)) {
+  studies <- mx_fetch_geo("GSE52778",
+                          condition_col = "treatment:ch1")
+  studies$GSE52778
+  table(studies$GSE52778$condition)
+}
 }
 
 }
@@ -48,9 +80,9 @@ Davis, S. & Meltzer, P.S. (2007) GEOquery: a bridge between the Gene
 Expression Omnibus (GEO) and BioConductor. \emph{Bioinformatics},
 \strong{23}(14), 1846--1847. \doi{10.1093/bioinformatics/btm254}
 
-Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
-RNAseq studies in human Alzheimer's disease brain tissue. \emph{bioRxiv}.
-\doi{10.1101/2024.11.07.622520}
+Clough, E. et al. (2024) NCBI GEO: archive for gene expression and
+epigenomics data sets: 23-year update. \emph{Nucleic Acids Research},
+\strong{52}(D1), D138--D144. \doi{10.1093/nar/gkad965}
 }
 \seealso{
 \code{\link{mx_load_local}}, \code{\link{mx_qc_study}},

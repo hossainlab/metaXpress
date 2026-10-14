@@ -14,18 +14,22 @@ mx_normalize(study, method = c("TMM", "VST", "CPM", "TPM", "quantile"))
 or \code{"quantile"}.}
 }
 \value{
-The input \code{study} with \code{counts} replaced by normalized
-  values.
+The input \code{study} with the normalized values added as a new
+  assay (\code{"logCPM_TMM"}, \code{"vst"}, \code{"cpm"}, \code{"tpm"}
+  or \code{"log2_quantile"}). The raw \code{"counts"} assay is never
+  modified, because \code{\link{mx_de}} requires raw counts.
 }
 \description{
 Applies one of five normalization methods to the raw count matrix of a
 \code{metaXpressStudy} object.
 }
 \details{
+Normalized values are for visualization, clustering, co-expression and
+cell-composition analyses. Differential expression always works from raw
+counts with each engine's own normalization.
 \itemize{
-  \item \strong{TMM}: Trimmed mean of M-values (Robinson & Oshlack 2010),
-    implemented in \pkg{edgeR}. Recommended for between-sample normalization
-    of count data.
+  \item \strong{TMM}: log2 CPM with trimmed-mean-of-M-values library
+    sizes (Robinson & Oshlack 2010), via \pkg{edgeR} (prior count 2).
   \item \strong{VST}: Variance-stabilizing transformation (Anders & Huber
     2010), implemented in \pkg{DESeq2}. Produces approximately
     homoscedastic values suitable for clustering and visualization.
@@ -36,13 +40,16 @@ Applies one of five normalization methods to the raw count matrix of a
     levels across genes.
   \item \strong{quantile}: Quantile normalization (Bolstad et al. 2003),
     implemented in \pkg{limma}. Forces identical distributions across
-    samples; operates on log1p-transformed counts.
+    samples; operates on log2(CPM + 1) values.
 }
 }
 \examples{
-\dontrun{
-  study <- mx_normalize(study, method = "TMM")
-}
+counts <- matrix(rpois(600, 50), nrow = 100,
+                 dimnames = list(paste0("G", 1:100), paste0("S", 1:6)))
+meta <- data.frame(condition = rep(c("control", "case"), each = 3))
+study <- metaXpressStudy(counts, meta, accession = "local")
+study <- mx_normalize(study, method = "TMM")
+SummarizedExperiment::assayNames(study)
 
 }
 \references{

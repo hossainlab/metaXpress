@@ -35,12 +35,28 @@ test_that("mx_normalize returns a study with same dimensions", {
 test_that("mx_normalize CPM produces non-negative values", {
   s      <- make_test_study(n_genes = 50, n_samples = 6)
   s_norm <- mx_normalize(s, method = "CPM")
-  expect_true(all(SummarizedExperiment::assay(s_norm, "counts") >= 0))
+  expect_true(all(SummarizedExperiment::assay(s_norm, "cpm") >= 0))
+  # raw counts are never overwritten
+  expect_identical(SummarizedExperiment::assay(s_norm, "counts"),
+                   SummarizedExperiment::assay(s, "counts"))
 })
 
 test_that("mx_normalize TMM returns a numeric matrix", {
   s      <- make_test_study(n_genes = 50, n_samples = 6)
   s_norm <- mx_normalize(s, method = "TMM")
-  expect_true(is.matrix(SummarizedExperiment::assay(s_norm, "counts")))
-  expect_true(is.numeric(SummarizedExperiment::assay(s_norm, "counts")))
+  expect_true(is.matrix(SummarizedExperiment::assay(s_norm, "logCPM_TMM")))
+  expect_true(is.numeric(SummarizedExperiment::assay(s_norm, "logCPM_TMM")))
+})
+
+test_that("mx_remove_batch keeps raw counts and preserves condition", {
+  skip_if_not_installed("limma")
+  studies <- list(
+    A = make_test_study(n_genes = 60, n_samples = 6, accession = "A", seed = 1),
+    B = make_test_study(n_genes = 60, n_samples = 6, accession = "B", seed = 2))
+  out <- mx_remove_batch(studies, method = "limma")
+  expect_true("log2cpm_batch_corrected" %in%
+                SummarizedExperiment::assayNames(out$A))
+  expect_identical(SummarizedExperiment::assay(out$A, "counts"),
+                   SummarizedExperiment::assay(studies$A, "counts"))
+  expect_error(mx_remove_batch(studies, method = "harmony"), "removed")
 })
