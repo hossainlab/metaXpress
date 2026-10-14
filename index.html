@@ -92,63 +92,58 @@
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p>Most transcriptomic meta-analysis tools address only one part of the workflow — existing packages handle data harmonization <strong>or</strong> DE analysis <strong>or</strong> meta-statistics, but not the full pipeline. <strong>metaXpress</strong> closes this gap.</p>
-<p>It provides a single, opinionated, end-to-end pipeline:</p>
-<pre><code>GEO / SRA / Local files
-        │
-        ▼
-┌───────────────────┐
-│  Module 1: Ingest │  mx_fetch_geo · mx_load_local · mx_qc_study
-└────────┬──────────┘
-         │
-         ▼
-┌──────────────────────┐
-│ Module 2: Harmonize  │  mx_reannotate · mx_normalize · mx_remove_batch
-└────────┬─────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  Module 3: Per-Study │  mx_de · mx_de_all  (DESeq2 / edgeR / limma-voom)
-│  Differential Expr. │
-└────────┬────────────┘
-         │
-         ▼
-┌──────────────────────┐
-│ Module 5: Missing    │  mx_impute · mx_filter_coverage
-│ Gene Handling        │
-└────────┬─────────────┘
-         │
-         ▼
-┌──────────────────────┐
-│  Module 4: Meta-     │  mx_meta  (9 statistical methods)
-│  Analysis Statistics │
-└────────┬─────────────┘
-         │
-         ├─────────────────────────┐
-         ▼                         ▼
-┌──────────────────┐    ┌────────────────────┐
-│  Module 6:       │    │  Module 7:         │
-│  Pathway         │    │  Visualization     │
-│  Meta-Analysis   │    │  (volcano · forest │
-│                  │    │   heatmap · UpSet) │
-└────────┬─────────┘    └────────────────────┘
-         │
-         ▼
-┌──────────────────────┐
-│  Module 9: Downstream│  TF activity · cell composition
-│  Biology             │  co-expression modules · drug reversal
-└────────┬─────────────┘
-         │
-         ▼
-┌──────────────────────┐
-│  Module 8: Report    │  mx_report (HTML / PDF) · mx_export
-└──────────────────────┘</code></pre>
+<p>It provides a single end-to-end pipeline, from public or local counts to a validated, reported meta-analysis:</p>
+<p align="center">
+<img src="reference/figures/metaXpress_workflow.png" width="760" alt="metaXpress workflow: (1) study ingestion, QC and selection; (2) identifier harmonization and per-study differential expression; (3) gene-level meta-analysis; (4) pathways, downstream biology, visualization and reporting"></p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr>
+<th>Stage</th>
+<th>What happens</th>
+<th>Key functions</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>1. Ingest &amp; QC</td>
+<td>Uniformly processed NCBI GEO counts, local files or any <code>SummarizedExperiment</code>. Ten QC criteria, each recorded as pass, fail or not evaluable</td>
+<td>
+<code><a href="reference/mx_fetch_geo.html">mx_fetch_geo()</a></code>, <code><a href="reference/mx_load_local.html">mx_load_local()</a></code>, <code><a href="reference/mx_from_se.html">mx_from_se()</a></code>, <code><a href="reference/mx_qc_study.html">mx_qc_study()</a></code>, <code><a href="reference/mx_filter_studies.html">mx_filter_studies()</a></code>
+</td>
+</tr>
+<tr>
+<td>2. Harmonize &amp; per-study DE</td>
+<td>Gene ID mapping. DESeq2 / edgeR / limma-voom on raw counts, with covariates and explicit contrasts. Fold-change concordance check</td>
+<td>
+<code><a href="reference/mx_reannotate.html">mx_reannotate()</a></code>, <code><a href="reference/mx_de_all.html">mx_de_all()</a></code>, <code><a href="reference/mx_study_concordance.html">mx_study_concordance()</a></code>
+</td>
+</tr>
+<tr>
+<td>3. Meta-analysis</td>
+<td>Random effects (REML / PM / DL, optional HKSJ), fixed effect, directional p-value methods, rOP, AWmeta. Heterogeneity, prediction intervals, leave-one-out, small-study tests</td>
+<td>
+<code><a href="reference/mx_meta.html">mx_meta()</a></code>, <code><a href="reference/mx_sensitivity.html">mx_sensitivity()</a></code>, <code><a href="reference/mx_small_study.html">mx_small_study()</a></code>
+</td>
+</tr>
+<tr>
+<td>4. Interpret &amp; report</td>
+<td>GSEA / ORA, cross-study pathways, TF activity, cell composition, co-expression, drug reversal. Figures and HTML report</td>
+<td>
+<code><a href="reference/mx_pathway_meta.html">mx_pathway_meta()</a></code>, <code><a href="reference/mx_pathway_studies.html">mx_pathway_studies()</a></code>, <code><a href="reference/mx_forest.html">mx_forest()</a></code>, <code><a href="reference/mx_report.html">mx_report()</a></code>
+</td>
+</tr>
+</tbody>
+</table>
 <hr>
 </div>
 <div class="section level2">
 <h2 id="package-installation">📦 Installation<a class="anchor" aria-label="anchor" href="#package-installation"></a>
 </h2>
 <p>Install <code>metaXpress</code> directly from GitHub:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install remotes if not already installed</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"remotes"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
@@ -160,14 +155,14 @@
 <h3 id="alternative-installation-with-pak">Alternative Installation with <code>pak</code>
 <a class="anchor" aria-label="anchor" href="#alternative-installation-with-pak"></a>
 </h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pkg_install.html" class="external-link">pkg_install</a></span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="verify-installation">Verify Installation<a class="anchor" aria-label="anchor" href="#verify-installation"></a>
 </h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mdjubayerhossain.com/metaXpress/">metaXpress</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"metaXpress"</span><span class="op">)</span></span>
 <span><span class="co"># [1] '0.99.1'</span></span></code></pre></div>
@@ -257,7 +252,7 @@
 <div class="section level2">
 <h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mdjubayerhossain.com/metaXpress/">metaXpress</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 1. Uniformly processed raw counts from GEO (NCBI pipeline)</span></span>
@@ -287,7 +282,7 @@
 <span><span class="fu"><a href="reference/mx_volcano.html">mx_volcano</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span>; <span class="fu"><a href="reference/mx_forest.html">mx_forest</a></span><span class="op">(</span><span class="st">"GFAP"</span>, <span class="va">de_results</span>, <span class="va">res</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/mx_report.html">mx_report</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">de_results</span>, output_dir <span class="op">=</span> <span class="st">"results"</span><span class="op">)</span></span></code></pre></div>
 <p>The per-study results for these four cohorts ship with the package, so the analysis runs offline:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ad</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"ad_brain_de.rds"</span>, package <span class="op">=</span> <span class="st">"metaXpress"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_meta.html">mx_meta</a></span><span class="op">(</span><span class="va">ad</span><span class="op">$</span><span class="va">de_results</span><span class="op">)</span></span></code></pre></div>
 <hr>
@@ -387,13 +382,37 @@
 <div class="section level2">
 <h2 id="s4-data-structures">S4 Data Structures<a class="anchor" aria-label="anchor" href="#s4-data-structures"></a>
 </h2>
-<pre><code>mx_fetch_geo() ──► metaXpressStudy ──► mx_de() ──► mx_meta() ──► metaXpressResult
-                   ├── counts                                      ├── meta_table
-                   ├── metadata                                    ├── method
-                   ├── accession                                   ├── n_studies
-                   ├── organism                                    ├── heterogeneity
-                   ├── qc_score (criteria passed)                 └── pathway_result
-                   └── de_result</code></pre>
+<p>Two classes carry data through the pipeline:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr>
+<th>Class</th>
+<th>Created by</th>
+<th>Contains</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>
+<code>metaXpressStudy</code> (extends <code>SummarizedExperiment</code>)</td>
+<td>
+<code><a href="reference/mx_fetch_geo.html">mx_fetch_geo()</a></code>, <code><a href="reference/mx_load_local.html">mx_load_local()</a></code>, <code><a href="reference/mx_from_se.html">mx_from_se()</a></code>
+</td>
+<td>raw <code>counts</code> assay, sample <code>colData</code> (with <code>condition</code>), gene <code>rowData</code>, <code>accession</code>, <code>organism</code>, <code>qc_score</code>, per-study <code>de_result</code> after <code><a href="reference/mx_de.html">mx_de()</a></code>
+</td>
+</tr>
+<tr>
+<td><code>metaXpressResult</code></td>
+<td><code><a href="reference/mx_meta.html">mx_meta()</a></code></td>
+<td>
+<code>meta_table</code> (pooled log2FC, SE, CI, prediction interval, p / FDR, tau², I², direction consistency), <code>method</code>, <code>n_studies</code>, <code>heterogeneity</code>, <code>pathway_result</code>
+</td>
+</tr>
+</tbody>
+</table>
 <hr>
 </div>
 <div class="section level2">
@@ -771,13 +790,13 @@
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>If you use <code>metaXpress</code> in your research, academic applications, or benchmarking, please cite:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="va">@manual</span>{<span class="ot">metaXpress2026</span>,</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="dt">title</span>  = {metaXpress: End-to-End Bulk RNA-seq Meta-Analysis},</span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="dt">author</span> = {Hossain, Md. Jubayer},</span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
-<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="dt">note</span>   = {R package version 0.99.0},</span>
-<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  <span class="dt">url</span>    = {https://mdjubayerhossain.com/metaXpress/}</span>
-<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="va">@manual</span>{<span class="ot">metaXpress2026</span>,</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="dt">title</span>  = {metaXpress: End-to-End Bulk RNA-seq Meta-Analysis},</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="dt">author</span> = {Hossain, Md. Jubayer},</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="dt">note</span>   = {R package version 0.99.0},</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="dt">url</span>    = {https://mdjubayerhossain.com/metaXpress/}</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>}</span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
