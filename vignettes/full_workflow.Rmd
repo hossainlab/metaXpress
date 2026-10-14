@@ -34,7 +34,7 @@ analyses of real data, see:
 
 The steps below reproduce that case study from scratch.
 
-```{r install-github}
+```{r install-github, eval=FALSE, purl=FALSE}
 if (!requireNamespace("remotes", quietly = TRUE))
   install.packages("remotes")
 remotes::install_github("hossainlab/metaXpress")
@@ -57,7 +57,7 @@ IDs, and symbols and gene types are added to `rowData`.
 Always name the phenotype column that holds the case/control labels.
 Automatic detection is only a fallback.
 
-```{r fetch-geo}
+```{r fetch-geo, eval=FALSE, purl=FALSE}
 accessions <- c("GSE125583", "GSE104704", "GSE53697", "GSE173955")
 studies <- mx_fetch_geo(
   accessions,
@@ -88,7 +88,7 @@ Before the analysis, record for every study:
 
 ## 1c. Data-level QC
 
-```{r qc}
+```{r qc, eval=FALSE, purl=FALSE}
 studies <- lapply(studies, mx_qc_study, min_genes = 15000)
 studies[[1]]                          # "x / 10 passed (y failed, z not evaluable)"
 S4Vectors::metadata(studies[[1]])$qc  # per-criterion status and details
@@ -110,7 +110,7 @@ step 2.
 Restrict each study to the two groups being compared, choose a gene
 namespace and filter out low-count genes:
 
-```{r prepare}
+```{r prepare, eval=FALSE, purl=FALSE}
 prep <- function(s, keep_levels) {
   s <- s[, s$condition %in% keep_levels]
   rd <- SummarizedExperiment::rowData(s)
@@ -146,7 +146,7 @@ overwrite the raw counts.
 Covariates enter the per-study design formula. The contrast is set
 explicitly per study, so every fold change means case / control:
 
-```{r de}
+```{r de, eval=FALSE, purl=FALSE}
 studies <- mx_de_all(
   studies,
   method   = "DESeq2",               # or "edgeR" (QL) / "limma-voom"
@@ -164,7 +164,7 @@ de_results <- lapply(studies, function(s) s@de_result)
 
 # 4. Pre-pooling checks
 
-```{r checks}
+```{r checks, eval=FALSE, purl=FALSE}
 mx_study_concordance(de_results)   # negative r => flipped contrast
 cov <- mx_missing_summary(de_results)
 table(studies_measured = rowSums(cov))
@@ -189,7 +189,7 @@ Choose the method a priori from the question being asked:
 | Same-direction effect in at least one study | `"fisher"` (directional) |
 | DE in all, or in at least r, studies | `"maxp"`, `"rop"` |
 
-```{r meta}
+```{r meta, eval=FALSE, purl=FALSE}
 res <- mx_meta(de_results, method = "random_effects", tau_method = "REML")
 mt  <- res@meta_table
 head(mt[order(mt$meta_pvalue), c("gene_id", "meta_log2FC", "ci_lower",
@@ -202,7 +202,7 @@ intervals with few studies. With fewer than about 5 studies, though, its
 t-distribution makes genome-wide FDR control unreachable (see the case
 study).
 
-```{r loo}
+```{r loo, eval=FALSE, purl=FALSE}
 loo <- mx_sensitivity(de_results, method = "random_effects",
                       tau_method = "REML")
 rob <- attr(loo, "robustness")
@@ -213,7 +213,7 @@ core <- rob$gene_id[rob$full_padj <= 0.05 & rob$frac_loo_sig == 1]
 
 # 6. Pathways
 
-```{r pathway}
+```{r pathway, eval=FALSE, purl=FALSE}
 # GSEA on the signed meta z-score (fgsea + MSigDB)
 res <- mx_pathway_meta(res, db = "Hallmarks", method = "GSEA")
 
@@ -227,7 +227,7 @@ mx_pathway_dedup(ps, gene_sets = mx_gene_sets("Reactome"))
 
 # 7. Figures
 
-```{r figures}
+```{r figures, eval=FALSE, purl=FALSE}
 mx_volcano(res, padj_threshold = 0.05, lfc_threshold = 0.5, label_top = 15)
 mx_forest("GFAP", de_results, res)      # CI diamond + prediction interval
 mx_heterogeneity_plot(res)
@@ -242,7 +242,7 @@ Module 9 turns the meta-signature into testable biology. Each function takes a p
 
 ## 8a. Load Prior-Knowledge Resources
 
-```{r downstream-resources, purl=FALSE}
+```{r downstream-resources, purl=FALSE, eval=FALSE}
 # CollecTRI TF-target regulons (OmniPath); OmniPath columns are read directly
 collectri <- read.delim(
   "https://omnipathdb.org/interactions?datasets=collectri&genesymbols=yes&organisms=9606"
@@ -261,7 +261,7 @@ lincs <- mx_read_signatures("LINCS_L1000_Chem_Pert_Consensus_Sigs.txt")
 
 ## 8b. Transcription Factor Activity
 
-```{r tf-activity, purl=FALSE}
+```{r tf-activity, purl=FALSE, eval=FALSE}
 # Use id_col = "symbol" when gene_id holds Entrez/Ensembl IDs
 tf <- mx_tf_activity(res, collectri, id_col = "symbol", min_size = 10)
 head(tf)
@@ -270,7 +270,7 @@ mx_downstream_plot(tf, top = 30)
 
 ## 8c. Cell-Type Composition Shifts
 
-```{r composition, purl=FALSE}
+```{r composition, purl=FALSE, eval=FALSE}
 comp <- mx_cell_composition(studies, markers)
 comp
 mx_downstream_plot(comp)
@@ -278,7 +278,7 @@ mx_downstream_plot(comp)
 
 ## 8d. Consensus Co-Expression Modules
 
-```{r coexpression, purl=FALSE}
+```{r coexpression, purl=FALSE, eval=FALSE}
 net <- mx_coexpression_modules(studies, n_genes = 3000, consensus = "min",
                                cut_height = 0.3, meta_result = res)
 net$module_stats      # pooled eigengene effect, hub genes, meta-DEG overlap
@@ -288,7 +288,7 @@ mx_downstream_plot(net)
 
 ## 8e. Drug Signature Reversal
 
-```{r drug-reversal, purl=FALSE}
+```{r drug-reversal, purl=FALSE, eval=FALSE}
 drugs <- mx_drug_connectivity(res, lincs, id_col = "symbol")
 head(drugs, 20)       # negative reversal_score = reverses the disease signature
 mx_downstream_plot(drugs, top = 30)
@@ -300,7 +300,7 @@ mx_downstream_plot(drugs, top = 30)
 
 ## Generate Reproducible Reports & Export
 
-```{r report, purl=FALSE}
+```{r report, purl=FALSE, eval=FALSE}
 mx_report(res, de_results, output_dir = "results")    # HTML with methods text
 mx_export(res, format = "csv", output_dir = "results")
 ```
