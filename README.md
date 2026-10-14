@@ -33,59 +33,18 @@
 
 Most transcriptomic meta-analysis tools address only one part of the workflow — existing packages handle data harmonization **or** DE analysis **or** meta-statistics, but not the full pipeline. **metaXpress** closes this gap.
 
-It provides a single, opinionated, end-to-end pipeline:
+It provides a single end-to-end pipeline, from public or local counts to a validated, reported meta-analysis:
 
-```
-GEO / SRA / Local files
-        │
-        ▼
-┌───────────────────┐
-│  Module 1: Ingest │  mx_fetch_geo · mx_load_local · mx_qc_study
-└────────┬──────────┘
-         │
-         ▼
-┌──────────────────────┐
-│ Module 2: Harmonize  │  mx_reannotate · mx_normalize · mx_remove_batch
-└────────┬─────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  Module 3: Per-Study │  mx_de · mx_de_all  (DESeq2 / edgeR / limma-voom)
-│  Differential Expr. │
-└────────┬────────────┘
-         │
-         ▼
-┌──────────────────────┐
-│ Module 5: Missing    │  mx_impute · mx_filter_coverage
-│ Gene Handling        │
-└────────┬─────────────┘
-         │
-         ▼
-┌──────────────────────┐
-│  Module 4: Meta-     │  mx_meta  (9 statistical methods)
-│  Analysis Statistics │
-└────────┬─────────────┘
-         │
-         ├─────────────────────────┐
-         ▼                         ▼
-┌──────────────────┐    ┌────────────────────┐
-│  Module 6:       │    │  Module 7:         │
-│  Pathway         │    │  Visualization     │
-│  Meta-Analysis   │    │  (volcano · forest │
-│                  │    │   heatmap · UpSet) │
-└────────┬─────────┘    └────────────────────┘
-         │
-         ▼
-┌──────────────────────┐
-│  Module 9: Downstream│  TF activity · cell composition
-│  Biology             │  co-expression modules · drug reversal
-└────────┬─────────────┘
-         │
-         ▼
-┌──────────────────────┐
-│  Module 8: Report    │  mx_report (HTML / PDF) · mx_export
-└──────────────────────┘
-```
+<p align="center">
+  <img src="man/figures/metaXpress_workflow.png" width="760" alt="metaXpress workflow: (1) study ingestion, QC and selection; (2) identifier harmonization and per-study differential expression; (3) gene-level meta-analysis; (4) pathways, downstream biology, visualization and reporting"/>
+</p>
+
+| Stage | What happens | Key functions |
+|---|---|---|
+| 1. Ingest & QC | Uniformly processed NCBI GEO counts, local files or any `SummarizedExperiment`. Ten QC criteria, each recorded as pass, fail or not evaluable | `mx_fetch_geo()`, `mx_load_local()`, `mx_from_se()`, `mx_qc_study()`, `mx_filter_studies()` |
+| 2. Harmonize & per-study DE | Gene ID mapping. DESeq2 / edgeR / limma-voom on raw counts, with covariates and explicit contrasts. Fold-change concordance check | `mx_reannotate()`, `mx_de_all()`, `mx_study_concordance()` |
+| 3. Meta-analysis | Random effects (REML / PM / DL, optional HKSJ), fixed effect, directional p-value methods, rOP, AWmeta. Heterogeneity, prediction intervals, leave-one-out, small-study tests | `mx_meta()`, `mx_sensitivity()`, `mx_small_study()` |
+| 4. Interpret & report | GSEA / ORA, cross-study pathways, TF activity, cell composition, co-expression, drug reversal. Figures and HTML report | `mx_pathway_meta()`, `mx_pathway_studies()`, `mx_forest()`, `mx_report()` |
 
 ---
 
@@ -236,15 +195,12 @@ Before pooling, run `mx_study_concordance()`. A negative fold-change correlation
 
 ## S4 Data Structures
 
-```
-mx_fetch_geo() ──► metaXpressStudy ──► mx_de() ──► mx_meta() ──► metaXpressResult
-                   ├── counts                                      ├── meta_table
-                   ├── metadata                                    ├── method
-                   ├── accession                                   ├── n_studies
-                   ├── organism                                    ├── heterogeneity
-                   ├── qc_score (criteria passed)                 └── pathway_result
-                   └── de_result
-```
+Two classes carry data through the pipeline:
+
+| Class | Created by | Contains |
+|---|---|---|
+| `metaXpressStudy` (extends `SummarizedExperiment`) | `mx_fetch_geo()`, `mx_load_local()`, `mx_from_se()` | raw `counts` assay, sample `colData` (with `condition`), gene `rowData`, `accession`, `organism`, `qc_score`, per-study `de_result` after `mx_de()` |
+| `metaXpressResult` | `mx_meta()` | `meta_table` (pooled log2FC, SE, CI, prediction interval, p / FDR, tau², I², direction consistency), `method`, `n_studies`, `heterogeneity`, `pathway_result` |
 
 ---
 
