@@ -2,31 +2,44 @@
 % Please edit documentation in R/01_ingest.R
 \name{mx_filter_studies}
 \alias{mx_filter_studies}
-\title{Filter studies below a QC threshold}
+\title{Remove studies that fail quality control}
 \usage{
-mx_filter_studies(studies, qc_threshold = 7)
+mx_filter_studies(
+  studies,
+  required = c(1, 7, 10),
+  max_failed = Inf,
+  qc_threshold = NULL
+)
 }
 \arguments{
-\item{studies}{A named list of \code{\linkS4class{metaXpressStudy}} objects.}
+\item{studies}{A named list of \code{\linkS4class{metaXpressStudy}}
+objects after \code{\link{mx_qc_study}}.}
 
-\item{qc_threshold}{Numeric scalar. Minimum acceptable QC score (inclusive).
-Default: \code{7}.}
+\item{required}{Integer vector of criteria that must not fail. Default:
+\code{c(1, 7, 10)} (>= 3 samples per group, complete condition labels,
+raw counts) -- the minimum for valid count-based DE.}
+
+\item{max_failed}{Integer. Maximum number of other failed criteria
+allowed. Default: \code{Inf} (only \code{required} criteria exclude).}
+
+\item{qc_threshold}{Optional minimum \code{qc_score} (criteria passed).
+Default \code{NULL}: not used.}
 }
 \value{
-A filtered list of \code{\linkS4class{metaXpressStudy}} objects.
+The filtered list. A message lists removed studies and reasons.
 }
 \description{
-Removes studies whose \code{qc_score} is below the specified threshold.
-Studies with \code{NA} QC scores (i.e., \code{\link{mx_qc_study}} has not
-been run) are always removed with a warning.
+Keeps studies according to the per-criterion QC results from
+\code{\link{mx_qc_study}}. Failures, not the summed score, drive the
+decision, because criteria that cannot be evaluated (common for GEO
+data) should not count against a study.
 }
 \examples{
-\dontrun{
-  studies <- mx_fetch_geo(c("GSE12345", "GSE67890"))
-  studies <- mx_filter_studies(studies, qc_threshold = 7)
+if (requireNamespace("airway", quietly = TRUE)) {
+  data("airway", package = "airway")
+  s <- mx_qc_study(mx_from_se(airway, condition_col = "dex",
+                              accession = "GSE52778"))
+  length(mx_filter_studies(list(airway = s)))
 }
 
-}
-\seealso{
-\code{\link{mx_qc_study}}
 }

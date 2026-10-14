@@ -17,8 +17,13 @@ setMethod("show", "metaXpressStudy", function(object) {
   cat("  Organism  :", object@organism, "\n")
   cat("  Genes     :", nrow(object), "\n")
   cat("  Samples   :", ncol(object), "\n")
-  qc <- if (is.na(object@qc_score)) "not run" else
-    paste0(object@qc_score, " / 10")
+  q  <- S4Vectors::metadata(object)$qc
+  qc <- if (is.na(object@qc_score)) "not run"
+        else if (!is.null(q) && "status" %in% names(q))
+          sprintf("%g / 10 passed (%d failed, %d not evaluable)",
+                  object@qc_score, sum(q$status == "fail"),
+                  sum(q$status == "not evaluable"))
+        else paste0(object@qc_score, " / 10")
   cat("  QC score  :", qc, "\n")
   cat("  DE run    :", nrow(object@de_result) > 0, "\n")
   invisible(object)

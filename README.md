@@ -240,28 +240,28 @@ mx_fetch_geo() ──► metaXpressStudy ──► mx_de() ──► mx_meta() �
                    ├── metadata                                    ├── method
                    ├── accession                                   ├── n_studies
                    ├── organism                                    ├── heterogeneity
-                   ├── qc_score (0–10)                            └── pathway_result
+                   ├── qc_score (criteria passed)                 └── pathway_result
                    └── de_result
 ```
 
 ---
 
-## 10-Point Study QC Scoring
+## Study QC
 
-`mx_qc_study()` scores each study against 10 data-level criteria. The thresholds are metaXpress defaults, informed by Schurch et al. (2016) and ENCODE RNA-seq guidelines; study-level reporting quality should additionally be assessed as in Heberle et al. (2024):
+`mx_qc_study()` records each of 10 data-level criteria as **pass**, **fail** or **not evaluable**. Alignment, rRNA and duplicate metrics, for example, are rarely deposited in GEO. `qc_score` is the number of criteria passed. It is never rescaled, so missing information cannot inflate it. `mx_filter_studies()` decides on failures. By default it excludes a study that fails a criterion required for valid count-based DE: replicates, condition labels or raw counts. The thresholds are metaXpress defaults informed by Schurch et al. (2016). Assess study-level reporting quality separately, e.g. with the tool of Heberle et al. (2024).
 
-| # | Criterion | Threshold |
-|---|---|---|
-| 1 | Minimum sample size | ≥ 3 replicates per group |
-| 2 | Sequencing depth | Median ≥ 10M reads |
-| 3 | Alignment rate | Mean ≥ 70% |
-| 4 | rRNA contamination | < 10% |
-| 5 | Duplicate rate | < 50% |
-| 6 | Gene detection rate | ≥ 15,000 genes in ≥ 50% of samples |
-| 7 | Metadata completeness | `condition` + `sample_id` present |
-| 8 | Clear case/control | Exactly 2 condition levels |
-| 9 | No batch confounding | Batch not perfectly correlated with condition |
-| 10 | Raw counts | Integer counts (not FPKM/TPM) |
+| # | Criterion | Pass if | Evaluable when |
+|---|---|---|---|
+| 1 | Sample size | ≥ 3 samples per group | always |
+| 2 | Sequencing depth | median assigned reads ≥ 10M | always |
+| 3 | Alignment rate | mean ≥ 70% | `alignment_rate` in colData |
+| 4 | rRNA contamination | mean < 10% | `rrna_fraction` in colData |
+| 5 | Duplicate rate | mean < 50% | `duplicate_rate` in colData |
+| 6 | Gene detection | ≥ `min_genes` (15,000) genes in ≥ 50% of samples | always |
+| 7 | Condition labels | every sample labelled | always |
+| 8 | Clear contrast | exactly 2 condition levels | always |
+| 9 | Batch confounding | batch not aliased with condition | multi-level `batch` column |
+| 10 | Raw counts | non-negative integers, max > 1,000 | always |
 
 ---
 
@@ -275,9 +275,9 @@ mx_fetch_geo() ──► metaXpressStudy ──► mx_de() ──► mx_meta() �
 | `mx_fetch_geo(accessions, condition_col)` | NCBI uniformly processed raw counts + metadata from GEO |
 | `mx_fetch_sra(srp_ids)` | Fetch from SRA via `recount3` |
 | `mx_load_local(count_paths, metadata_paths)` | Load user-supplied files |
-| `mx_qc_study(study)` | Apply 10-point QC checklist |
-| `mx_cluster_samples(study)` | Auto-cluster samples from metadata strings |
-| `mx_filter_studies(studies, qc_threshold)` | Remove studies below QC threshold |
+| `mx_qc_study(study)` | 10 data-level criteria: pass / fail / not evaluable |
+| `mx_cluster_samples(study)` | Suggest groups from metadata text (new `cluster` column) |
+| `mx_filter_studies(studies, required)` | Remove studies failing required QC criteria |
 
 </details>
 

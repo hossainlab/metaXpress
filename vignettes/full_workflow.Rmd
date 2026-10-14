@@ -89,21 +89,19 @@ Before the analysis, record for every study:
 ## 1c. Data-level QC
 
 ```{r qc}
-vapply(studies, function(s) s@qc_score, numeric(1))
-attr(studies[[1]], "qc_details")
+studies <- lapply(studies, mx_qc_study, min_genes = 15000)
+studies[[1]]                          # "x / 10 passed (y failed, z not evaluable)"
+S4Vectors::metadata(studies[[1]])$qc  # per-criterion status and details
+studies <- mx_filter_studies(studies) # drop studies failing required criteria
 ```
 
-`mx_qc_study()` checks the following data-level criteria:
-
-- replicates per group;
-- sequencing depth;
-- detected genes;
-- integer counts;
-- metadata completeness.
-
-Criteria that cannot be evaluated (for example, alignment rate missing
-from GEO) are reported as `NA`. Use the details table to decide on
-inclusion. Do not filter on the score alone.
+Each criterion is recorded as pass, fail or not evaluable. Alignment rate,
+for example, is usually missing from GEO. `qc_score` counts the criteria
+passed and is never rescaled. By default, `mx_filter_studies()` removes
+studies that fail a criterion required for valid DE: at least 3 replicates
+per group, complete condition labels and raw counts. Criterion 8 (exactly
+two groups) fails for series with extra groups until they are subset in
+step 2.
 
 ---
 

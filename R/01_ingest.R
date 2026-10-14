@@ -325,49 +325,53 @@ mx_load_local <- function(count_paths, metadata_paths,
 
 #' Score a study against the 10-point QC checklist
 #'
-#' Applies 10 data-level QC criteria and
-#' stores the total score in the \code{qc_score} slot. Criteria that cannot
-#' be evaluated (e.g., alignment rate not in metadata) are scored \code{NA}
-#' and do not penalise the total.
+#' Applies 10 data-level QC criteria. Each criterion is recorded as
+#' \code{"pass"}, \code{"fail"} or \code{"not evaluable"} (the information
+#' needed is absent, e.g. alignment rate is not deposited in GEO).
+#' \code{qc_score} is the number of criteria \emph{passed}. Criteria that
+#' could not be evaluated are not counted as passed and the score is
+#' \strong{not} rescaled, so a score is only comparable between studies
+#' together with the number of evaluable criteria. Decide on inclusion with
+#' \code{\link{mx_filter_studies}}, which works on failures rather than the
+#' score.
 #'
 #' The 10 criteria are:
 #' \enumerate{
-#'   \item \strong{Minimum sample size:} at least 3 samples per condition
-#'     group, required for reliable dispersion estimation in negative binomial
-#'     models (Schurch et al. 2016).
-#'   \item \strong{Sequencing depth:} median library size >= 10 million reads,
-#'     ensuring adequate power for detecting low-abundance transcripts
-#'     (Sims et al. 2014).
-#'   \item \strong{Alignment rate:} mean alignment rate >= 70\%, indicating
-#'     acceptable read quality (optional; skipped if not available).
-#'   \item \strong{rRNA contamination:} mean rRNA fraction < 10\%, flagging
-#'     insufficient ribosomal depletion (optional).
-#'   \item \strong{Duplicate rate:} mean duplicate rate < 50\%, flagging
-#'     library complexity issues (optional).
-#'   \item \strong{Gene detection:} at least 15,000 genes detected in >= 50\%
-#'     of samples, confirming adequate transcriptome coverage.
-#'   \item \strong{Metadata completeness:} required columns \code{condition}
-#'     and \code{sample_id} are present.
-#'   \item \strong{Clear case/control:} exactly two condition levels, ensuring
-#'     a well-defined contrast for differential expression.
+#'   \item \strong{Minimum sample size:} at least 3 samples in every
+#'     condition group (Schurch et al. 2016).
+#'   \item \strong{Sequencing depth:} median library size >= 10 million
+#'     assigned reads.
+#'   \item \strong{Alignment rate:} mean >= 70\% (column
+#'     \code{alignment_rate} in \code{colData}, fraction or percent).
+#'   \item \strong{rRNA contamination:} mean < 10\% (column
+#'     \code{rrna_fraction}).
+#'   \item \strong{Duplicate rate:} mean < 50\% (column
+#'     \code{duplicate_rate}).
+#'   \item \strong{Gene detection:} at least \code{min_genes} genes with a
+#'     non-zero count in >= 50\% of samples.
+#'   \item \strong{Condition labels complete:} every sample has a non-missing,
+#'     non-empty \code{condition}.
+#'   \item \strong{Clear contrast:} exactly two condition levels. Studies with
+#'     more groups fail until they are subset to the two compared groups.
 #'   \item \strong{No batch-condition confounding:} batch and condition are not
-#'     perfectly aliased, which would make batch correction impossible
-#'     (Leek et al. 2010).
-#'   \item \strong{Raw counts:} data are non-negative integers with maximum
-#'     > 1,000, confirming untransformed count data suitable for count-based
-#'     statistical models.
+#'     perfectly aliased (Leek et al. 2010). Not evaluable without a
+#'     \code{batch} column.
+#'   \item \strong{Raw counts:} non-negative integers with maximum > 1,000,
+#'     i.e. untransformed counts suitable for count models.
 #' }
 #'
 #' @param study A \code{\linkS4class{metaXpressStudy}} object.
+#' @param min_genes Integer. Threshold for criterion 6. Default \code{15000},
+#'   appropriate for an unfiltered human or mouse gene-level matrix; lower it
+#'   for matrices already restricted (e.g. to protein-coding genes).
 #'
-#' @return The input \code{study} with the \code{qc_score} slot filled.
-#'   A \code{qc_details} attribute is attached with a per-criterion breakdown.
+#' @return The input \code{study} with \code{qc_score} filled (criteria
+#'   passed, 0--10). The per-criterion table (\code{criterion}, \code{name},
+#'   \code{status}, \code{score}, \code{details}) is stored in
+#'   \code{S4Vectors::metadata(study)$qc} and in \code{attr(study,
+#'   "qc_details")}.
 #'
 #' @references
-#' Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
-#' RNAseq studies in human Alzheimer's disease brain tissue. \emph{bioRxiv}.
-#' \doi{10.1101/2024.11.07.622520}
-#'
 #' Schurch, N.J. et al. (2016) How many biological replicates are needed in an
 #' RNA-seq experiment and which differential expression tool should you use?
 #' \emph{RNA}, \strong{22}(6), 839--851. \doi{10.1261/rna.053959.115}
@@ -376,222 +380,262 @@ mx_load_local <- function(count_paths, metadata_paths,
 #' batch effects in high-throughput data. \emph{Nature Reviews Genetics},
 #' \strong{11}(10), 733--739. \doi{10.1038/nrg2825}
 #'
+#' Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
+#' RNAseq studies in human Alzheimer's disease brain tissue. \emph{bioRxiv}.
+#' \doi{10.1101/2024.11.07.622520} (complementary study-level reporting
+#' quality assessment).
+#'
 #' @examples
-#' \dontrun{
+#' if (requireNamespace("airway", quietly = TRUE)) {
+#'   data("airway", package = "airway")
+#'   study <- mx_from_se(airway, condition_col = "dex", accession = "GSE52778")
 #'   study <- mx_qc_study(study)
-#'   attr(study, "qc_details")
+#'   study@qc_score
+#'   S4Vectors::metadata(study)$qc
 #' }
 #'
 #' @export
-mx_qc_study <- function(study) {
+mx_qc_study <- function(study, min_genes = 15000) {
   if (!is(study, "metaXpressStudy"))
     stop("'study' must be a metaXpressStudy object")
 
   counts   <- .counts(study)
   metadata <- .samples(study)
-  score    <- integer(10)
+  cond     <- as.character(metadata$condition)
+  score    <- rep(NA_integer_, 10)
   details  <- character(10)
+  names    <- c("sample size", "sequencing depth", "alignment rate",
+                "rRNA fraction", "duplicate rate", "gene detection",
+                "condition labels", "clear contrast", "batch confounding",
+                "raw counts")
+  as_frac  <- function(x) {
+    x <- suppressWarnings(as.numeric(x))
+    if (all(x > 1, na.rm = TRUE)) x / 100 else x
+  }
+  labelled <- !is.na(cond) & nzchar(trimws(cond))
 
-  # 1. Minimum sample size
-  min_n    <- min(table(metadata$condition))
-  score[1] <- as.integer(min_n >= 3)
-  details[1] <- sprintf("Min samples per group: %d (need >= 3)", min_n)
+  # 1. Minimum sample size per group
+  if (any(labelled)) {
+    min_n <- min(table(cond[labelled]))
+    score[1] <- as.integer(min_n >= 3)
+    details[1] <- sprintf("Min samples per group: %d (need >= 3)", min_n)
+  } else {
+    details[1] <- "No condition labels"
+  }
 
-  # 2. Sequencing depth
-  lib_sizes <- colSums(counts)
-  med_depth <- median(lib_sizes)
+  # 2. Sequencing depth (assigned reads)
+  med_depth <- stats::median(colSums(counts))
   score[2]  <- as.integer(med_depth >= 10e6)
-  details[2] <- sprintf("Median depth: %.1fM reads (need >= 10M)",
-                         med_depth / 1e6)
+  details[2] <- sprintf("Median assigned reads: %.1fM (need >= 10M)",
+                        med_depth / 1e6)
 
-  # 3. Alignment rate (optional)
-  if ("alignment_rate" %in% colnames(metadata)) {
-    mean_align <- mean(metadata$alignment_rate, na.rm = TRUE)
-    score[3]   <- as.integer(mean_align >= 0.70)
-    details[3] <- sprintf("Mean alignment: %.1f%% (need >= 70%%)",
-                           mean_align * 100)
-  } else {
-    score[3]   <- NA_integer_
-    details[3] <- "Alignment rate: not available in metadata"
+  # 3-5. Optional alignment metrics
+  opt <- list(c(3, "alignment_rate", ">=", 0.70),
+              c(4, "rrna_fraction", "<", 0.10),
+              c(5, "duplicate_rate", "<", 0.50))
+  for (o in opt) {
+    i <- as.integer(o[1]); col <- o[2]; thr <- as.numeric(o[4])
+    if (col %in% colnames(metadata) &&
+        any(!is.na(suppressWarnings(as.numeric(metadata[[col]]))))) {
+      v <- mean(as_frac(metadata[[col]]), na.rm = TRUE)
+      ok <- if (o[3] == ">=") v >= thr else v < thr
+      score[i] <- as.integer(ok)
+      details[i] <- sprintf("Mean %s: %.1f%% (need %s %.0f%%)", col, v * 100,
+                            o[3], thr * 100)
+    } else {
+      details[i] <- sprintf("'%s' not in colData", col)
+    }
   }
 
-  # 4. rRNA contamination (optional)
-  if ("rrna_fraction" %in% colnames(metadata)) {
-    mean_rrna <- mean(metadata$rrna_fraction, na.rm = TRUE)
-    score[4]  <- as.integer(mean_rrna < 0.10)
-    details[4] <- sprintf("Mean rRNA: %.1f%% (need < 10%%)",
-                           mean_rrna * 100)
-  } else {
-    score[4]  <- NA_integer_
-    details[4] <- "rRNA fraction: not available in metadata"
-  }
+  # 6. Gene detection
+  genes_in_half <- sum(rowSums(counts > 0) >= ncol(counts) * 0.5)
+  score[6] <- as.integer(genes_in_half >= min_genes)
+  details[6] <- sprintf("Genes detected in >= 50%% of samples: %d (need >= %d)",
+                        genes_in_half, min_genes)
 
-  # 5. Duplicate rate (optional)
-  if ("duplicate_rate" %in% colnames(metadata)) {
-    mean_dup <- mean(metadata$duplicate_rate, na.rm = TRUE)
-    score[5] <- as.integer(mean_dup < 0.50)
-    details[5] <- sprintf("Mean duplicate rate: %.1f%% (need < 50%%)",
-                           mean_dup * 100)
-  } else {
-    score[5]  <- NA_integer_
-    details[5] <- "Duplicate rate: not available in metadata"
-  }
+  # 7. Condition labels complete
+  score[7] <- as.integer(length(cond) > 0 && all(labelled))
+  details[7] <- sprintf("Samples with a condition label: %d / %d",
+                        sum(labelled), length(cond))
 
-  # 6. Gene detection rate
-  n_detected    <- rowSums(counts > 0)
-  genes_in_half <- sum(n_detected >= (ncol(counts) * 0.5))
-  score[6]      <- as.integer(genes_in_half >= 15000)
-  details[6]    <- sprintf(
-    "Genes detected in >=50%% samples: %d (need >= 15000)", genes_in_half)
-
-  # 7. Metadata completeness
-  required     <- c("condition", "sample_id")
-  has_required <- all(required %in% colnames(metadata))
-  score[7]     <- as.integer(has_required)
-  details[7]   <- sprintf("Required metadata columns present: %s",
-                           ifelse(has_required, "yes", "no"))
-
-  # 8. Clear case/control definition
-  n_levels <- length(unique(metadata$condition))
+  # 8. Clear two-group contrast
+  n_levels <- length(unique(cond[labelled]))
   score[8] <- as.integer(n_levels == 2)
   details[8] <- sprintf("Condition levels: %d (need exactly 2)", n_levels)
 
-  # 9. No batch-condition confounding
-  if ("batch" %in% colnames(metadata)) {
-    tab        <- table(metadata$condition, metadata$batch)
+  # 9. Batch-condition confounding
+  if ("batch" %in% colnames(metadata) &&
+      length(unique(stats::na.omit(metadata$batch))) > 1) {
+    tab <- table(cond, metadata$batch)
     confounded <- all(apply(tab, 2, function(x) sum(x > 0) == 1))
-    score[9]   <- as.integer(!confounded)
-    details[9] <- sprintf("Batch-condition confounding: %s",
-                           ifelse(confounded, "YES (problem)", "no"))
+    score[9] <- as.integer(!confounded)
+    details[9] <- sprintf("Batch aliased with condition: %s",
+                          if (confounded) "YES" else "no")
   } else {
-    score[9]   <- 1L
-    details[9] <- "No batch variable present"
+    details[9] <- "No multi-level 'batch' column in colData"
   }
 
-  # 10. Raw counts available
-  is_int  <- all(counts == floor(counts), na.rm = TRUE)
-  is_pos  <- all(counts >= 0, na.rm = TRUE)
-  is_raw  <- is_int && is_pos && max(counts, na.rm = TRUE) > 1000
-  score[10]   <- as.integer(is_raw)
+  # 10. Raw counts
+  is_raw <- all(counts == floor(counts), na.rm = TRUE) &&
+    all(counts >= 0, na.rm = TRUE) && max(counts, na.rm = TRUE) > 1000
+  score[10] <- as.integer(is_raw)
   details[10] <- sprintf("Raw integer counts: %s",
-                          ifelse(is_raw, "yes", "no (likely pre-normalized)"))
+                         if (is_raw) "yes" else "no (likely transformed)")
 
-  # Score normalized to 0-10 scale, counting only evaluable criteria
-  n_evaluable    <- sum(!is.na(score))
-  raw_score      <- sum(score, na.rm = TRUE)
-  total_score    <- round(raw_score / n_evaluable * 10)
-  study@qc_score <- total_score
+  status <- ifelse(is.na(score), "not evaluable",
+                   ifelse(score == 1L, "pass", "fail"))
+  qc <- data.frame(criterion = seq_len(10), name = names, status = status,
+                   score = score, details = details,
+                   stringsAsFactors = FALSE)
 
-  attr(study, "qc_details") <- data.frame(
-    criterion = seq_len(10),
-    score     = score,
-    details   = details,
-    stringsAsFactors = FALSE
-  )
+  study@qc_score <- sum(score, na.rm = TRUE)
+  S4Vectors::metadata(study)$qc <- qc
+  attr(study, "qc_details") <- qc
 
-  if (total_score < 7)
-    warning(sprintf(
-      "Study %s has low QC score (%d/10). Consider excluding with mx_filter_studies().",
-      study@accession, total_score))
-
+  failed <- qc$name[qc$status == "fail"]
+  if (length(failed) > 0)
+    warning("Study ", study@accession, " failed QC: ",
+            paste(failed, collapse = ", "),
+            ". See S4Vectors::metadata(study)$qc.")
   study
 }
 
-#' Automatically cluster samples by metadata
+#' Remove studies that fail quality control
 #'
-#' Uses text mining on metadata fields to assign samples to case/control groups,
-#' as a heuristic for automated group assignment from
-#' GEO metadata. It computes string distances between sample descriptions and
-#' uses hierarchical clustering to partition them into two groups.
+#' Keeps studies according to the per-criterion QC results from
+#' \code{\link{mx_qc_study}}. Failures, not the summed score, drive the
+#' decision, because criteria that cannot be evaluated (common for GEO
+#' data) should not count against a study.
 #'
-#' @param study A \code{\linkS4class{metaXpressStudy}} object.
+#' @param studies A named list of \code{\linkS4class{metaXpressStudy}}
+#'   objects after \code{\link{mx_qc_study}}.
+#' @param required Integer vector of criteria that must not fail. Default:
+#'   \code{c(1, 7, 10)} (>= 3 samples per group, complete condition labels,
+#'   raw counts) -- the minimum for valid count-based DE.
+#' @param max_failed Integer. Maximum number of other failed criteria
+#'   allowed. Default: \code{Inf} (only \code{required} criteria exclude).
+#' @param qc_threshold Optional minimum \code{qc_score} (criteria passed).
+#'   Default \code{NULL}: not used.
 #'
-#' @return The input \code{study} with the \code{condition} column updated
-#'   in \code{metadata}.
+#' @return The filtered list. A message lists removed studies and reasons.
 #'
 #' @examples
-#' \dontrun{
-#'   study <- mx_cluster_samples(study)
+#' if (requireNamespace("airway", quietly = TRUE)) {
+#'   data("airway", package = "airway")
+#'   s <- mx_qc_study(mx_from_se(airway, condition_col = "dex",
+#'                               accession = "GSE52778"))
+#'   length(mx_filter_studies(list(airway = s)))
 #' }
 #'
 #' @export
-mx_cluster_samples <- function(study) {
-  if (!is(study, "metaXpressStudy"))
-    stop("'study' must be a metaXpressStudy object")
-    
-  .require_package("stringdist", "string distance calculation for clustering")
-  
-  meta <- .samples(study)
-  
-  # Concatenate all character/factor columns for each sample into a single text document
-  text_cols <- vapply(meta, function(x) is.character(x) || is.factor(x), logical(1))
-  if (sum(text_cols) == 0) {
-    warning("No character columns found in metadata to cluster on.")
-    return(study)
-  }
-  
-  docs <- apply(meta[, text_cols, drop=FALSE], 1, function(x) {
-    paste(na.omit(as.character(x)), collapse = " ")
-  })
-  
-  # Compute Jaro-Winkler string distance matrix
-  dist_mat <- stringdist::stringdistmatrix(docs, docs, method = "jw")
-  
-  # Hierarchical clustering
-  hc <- hclust(as.dist(dist_mat), method = "ward.D2")
-  groups <- cutree(hc, k = 2)
-  
-  # Assign the groups as "group1" and "group2"
-  study$condition <- paste0("group", groups)
-  
-  message("Auto-clustered ", nrow(meta), " samples into 2 groups based on metadata text.")
-  study
-}
-
-#' Filter studies below a QC threshold
-#'
-#' Removes studies whose \code{qc_score} is below the specified threshold.
-#' Studies with \code{NA} QC scores (i.e., \code{\link{mx_qc_study}} has not
-#' been run) are always removed with a warning.
-#'
-#' @param studies A named list of \code{\linkS4class{metaXpressStudy}} objects.
-#' @param qc_threshold Numeric scalar. Minimum acceptable QC score (inclusive).
-#'   Default: \code{7}.
-#'
-#' @return A filtered list of \code{\linkS4class{metaXpressStudy}} objects.
-#'
-#' @examples
-#' \dontrun{
-#'   studies <- mx_fetch_geo(c("GSE12345", "GSE67890"))
-#'   studies <- mx_filter_studies(studies, qc_threshold = 7)
-#' }
-#'
-#' @seealso \code{\link{mx_qc_study}}
-#'
-#' @export
-mx_filter_studies <- function(studies, qc_threshold = 7) {
+mx_filter_studies <- function(studies, required = c(1, 7, 10),
+                              max_failed = Inf, qc_threshold = NULL) {
   if (!is.list(studies))
     stop("'studies' must be a list of metaXpressStudy objects")
-  if (!is.numeric(qc_threshold) || length(qc_threshold) != 1)
-    stop("'qc_threshold' must be a single numeric value")
+  if (is.null(names(studies)))
+    names(studies) <- vapply(studies, function(s) s@accession, character(1))
 
-  scores <- vapply(studies, function(s) s@qc_score, numeric(1))
-
-  na_idx <- is.na(scores)
+  qc <- lapply(studies, function(s) {
+    q <- S4Vectors::metadata(s)$qc
+    if (is.null(q)) q <- attr(s, "qc_details")
+    q
+  })
+  na_idx <- vapply(qc, is.null, logical(1))
   if (any(na_idx))
-    warning(sum(na_idx), " study/studies have NA QC scores (mx_qc_study ",
-            "not run?) and will be removed: ",
+    warning(sum(na_idx), " study/studies have no QC results (run ",
+            "mx_qc_study() first) and will be removed: ",
             paste(names(studies)[na_idx], collapse = ", "))
 
-  keep <- !na_idx & scores >= qc_threshold
-  removed <- sum(!keep)
+  reasons <- vapply(seq_along(studies), function(i) {
+    if (na_idx[i]) return("QC not run")
+    q <- qc[[i]]
+    st <- if ("status" %in% names(q)) q$status
+          else ifelse(is.na(q$score), "not evaluable",
+                      ifelse(q$score == 1, "pass", "fail"))
+    why <- character(0)
+    req_fail <- q$criterion[st == "fail" & q$criterion %in% required]
+    if (length(req_fail))
+      why <- c(why, paste("required criterion failed:",
+                          paste(req_fail, collapse = ",")))
+    other_fail <- sum(st == "fail" & !q$criterion %in% required)
+    if (other_fail > max_failed)
+      why <- c(why, sprintf("%d other failures (max %s)", other_fail,
+                            max_failed))
+    if (!is.null(qc_threshold) && studies[[i]]@qc_score < qc_threshold)
+      why <- c(why, sprintf("qc_score %d < %s", studies[[i]]@qc_score,
+                            qc_threshold))
+    paste(why, collapse = "; ")
+  }, character(1))
 
-  if (removed > 0)
-    message(removed, " study/studies removed (QC score < ", qc_threshold, "): ",
-            paste(names(studies)[!keep], collapse = ", "))
-
+  keep <- reasons == ""
+  if (any(!keep))
+    message(sum(!keep), " study/studies removed: ",
+            paste(names(studies)[!keep], " (", reasons[!keep], ")",
+                  sep = "", collapse = "; "))
   studies[keep]
 }
+
+#' Suggest sample groups from metadata text
+#'
+#' Exploratory helper for GEO series whose phenotype columns do not state
+#' the case/control group cleanly. Concatenates each sample's text metadata,
+#' computes Jaro-Winkler string distances and cuts an average-linkage
+#' hierarchical clustering into \code{k} groups. The result is written to a
+#' new \code{cluster} column; \code{condition} is \strong{not} changed,
+#' because automatically derived labels must be checked by a person before
+#' they define a contrast.
+#'
+#' @param study A \code{\linkS4class{metaXpressStudy}} object.
+#' @param k Integer. Number of groups. Default: \code{2}.
+#' @param columns Optional character vector of \code{colData} columns to use.
+#'   Default: all character/factor columns except identifiers.
+#'
+#' @return The input \code{study} with \code{colData(study)$cluster}. A
+#'   cross-tabulation against \code{condition} (if present) is printed.
+#'
+#' @examples
+#' counts <- matrix(rpois(60, 50), nrow = 10,
+#'                  dimnames = list(paste0("G", 1:10), paste0("S", 1:6)))
+#' meta <- data.frame(title = c(paste("healthy donor", 1:3),
+#'                              paste("tumour patient", 1:3)))
+#' if (requireNamespace("stringdist", quietly = TRUE)) {
+#'   s <- mx_cluster_samples(metaXpressStudy(counts, meta))
+#'   s$cluster
+#' }
+#'
+#' @export
+mx_cluster_samples <- function(study, k = 2, columns = NULL) {
+  if (!is(study, "metaXpressStudy"))
+    stop("'study' must be a metaXpressStudy object")
+  .require_package("stringdist", "string distance calculation for clustering")
+
+  meta <- .samples(study)
+  if (is.null(columns)) {
+    columns <- names(meta)[vapply(meta, function(x)
+      is.character(x) || is.factor(x), logical(1))]
+    columns <- setdiff(columns, c("sample_id", "geo_accession", "condition",
+                                  "cluster"))
+    columns <- columns[!grepl("supplementary|date|contact|protocol|^relation",
+                              columns, ignore.case = TRUE)]
+  }
+  if (length(columns) == 0) {
+    warning("No text columns found in metadata to cluster on.")
+    return(study)
+  }
+
+  docs <- apply(meta[, columns, drop = FALSE], 1, function(x)
+    tolower(paste(stats::na.omit(as.character(x)), collapse = " ")))
+  d  <- stats::as.dist(stringdist::stringdistmatrix(docs, docs, method = "jw"))
+  hc <- stats::hclust(d, method = "average")
+  study$cluster <- paste0("cluster", stats::cutree(hc, k = k))
+
+  if ("condition" %in% names(meta) && any(!is.na(meta$condition)))
+    print(table(condition = meta$condition, cluster = study$cluster))
+  message("Assigned ", ncol(study), " samples to ", k, " clusters in ",
+          "'cluster'. Inspect before using as condition labels.")
+  study
+}
+
 
 # ============================================================================
 # Internal helpers
