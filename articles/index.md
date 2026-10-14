@@ -8,5 +8,7 @@
   mechanism](https://mdjubayerhossain.com/metaXpress/articles/downstream_biology.md):
 - [Full workflow: from GEO accessions to
   report](https://mdjubayerhossain.com/metaXpress/articles/full_workflow.md):
+- [An introduction to bulk RNA-seq
+  meta-analysis](https://mdjubayerhossain.com/metaXpress/articles/introduction.md):
 - [Getting started with
   metaXpress](https://mdjubayerhossain.com/metaXpress/articles/quickstart.md):

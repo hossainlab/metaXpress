@@ -56,5 +56,10 @@ if (requireNamespace("msigdbr", quietly = TRUE)) {
   head(hallmarks$HALLMARK_INFLAMMATORY_RESPONSE)
 }
 #> Downloading gene sets (first use only, may take a few minutes)...
+#> Warning: The `category` argument of `msigdbr()` is deprecated as of msigdbr 10.0.0.
+#> ℹ Please use the `collection` argument instead.
+#> ℹ The deprecated feature was likely used in the metaXpress package.
+#>   Please report the issue at <https://github.com/hossainlab/metaXpress/issues>.
+#> Downloading gene sets (first use only, may take a few minutes)...
 #> [1] "ABCA1"  "ABI1"   "ACVR1B" "ACVR2A" "ADGRE1" "ADM"   
 ```
