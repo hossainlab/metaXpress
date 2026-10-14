@@ -1,7 +1,9 @@
-# Find consensus pathways across studies
+# Find consensus pathways across studies (vote counting)
 
-Identifies pathways that are significantly enriched in the majority of
-individual studies, indicating robust cross-study signal.
+Counts in how many per-study enrichment analyses each pathway is
+significant. Vote counting ignores effect size and is less powerful than
+[`mx_pathway_studies`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_studies.md);
+use it as a descriptive summary.
 
 ## Usage
 
@@ -17,7 +19,8 @@ mx_pathway_consensus(
 
 - pathway_results:
 
-  A list of `data.frame` objects from per-study enrichment analyses.
+  A list of per-study enrichment `data.frame`s with columns `pathway_id`
+  and `padj`, e.g. `attr(mx_pathway_studies(...), "per_study")`.
 
 - min_fraction:
 
@@ -30,18 +33,19 @@ mx_pathway_consensus(
 
 ## Value
 
-A `data.frame` of consensus pathways with columns `pathway_id`,
-`pathway_name`, `n_significant_studies`, `fraction_studies`.
+A `data.frame` with `pathway_id`, `n_significant_studies` and
+`fraction_studies`.
 
 ## See also
 
-[`mx_pathway_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_meta.md),
-[`mx_pathway_dedup`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_dedup.md)
+[`mx_pathway_studies`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_studies.md)
 
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-  consensus <- mx_pathway_consensus(pathway_results)
-} # }
+pr1 <- data.frame(pathway_id = c("A", "B"), padj = c(0.01, 0.2))
+pr2 <- data.frame(pathway_id = c("A", "B"), padj = c(0.03, 0.01))
+mx_pathway_consensus(list(pr1, pr2), min_fraction = 1)
+#>   pathway_id n_significant_studies fraction_studies
+#> 1          A                     2                1
 ```

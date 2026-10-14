@@ -11,7 +11,7 @@ pathway enrichment results."><meta property="og:image" content="https://mdjubaye
 
     <a class="navbar-brand me-2" href="../index.html">metaXpress</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,10 +22,10 @@ pathway enrichment results."><meta property="og:image" content="https://mdjubaye
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/live_tutorial.html">Live Demonstration Tutorial</a></li>
-    <li><a class="dropdown-item" href="../articles/quickstart.html">Getting Started (Quickstart)</a></li>
-    <li><a class="dropdown-item" href="../articles/full_workflow.html">Full Workflow: GEO to Report</a></li>
-    <li><a class="dropdown-item" href="../articles/case_study.html">Public GEO Case Study: Pan-Cancer</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Getting started</a></li>
+    <li><a class="dropdown-item" href="../articles/case_study.html">Case study: Alzheimer's disease brain meta-analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/full_workflow.html">Full workflow: GEO to report</a></li>
+    <li><a class="dropdown-item" href="../articles/downstream_biology.html">Downstream biology</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -63,8 +63,9 @@ columns: <code>gene_id</code>, <code>meta_log2FC</code>, <code>meta_pvalue</code
 
 <dt><code>method</code></dt>
 <dd><p>A length-1 character naming the meta-analysis method used.
-One of <code>"fisher"</code>, <code>"stouffer"</code>, <code>"inverse_normal"</code>,
-<code>"fixed_effects"</code>, <code>"random_effects"</code>, <code>"awmeta"</code>.</p></dd>
+One of <code>"random_effects"</code>, <code>"fixed_effects"</code>, <code>"fisher"</code>,
+<code>"stouffer"</code>, <code>"inverse_normal"</code>, <code>"minp"</code>,
+<code>"maxp"</code>, <code>"rop"</code>.</p></dd>
 
 
 <dt><code>n_studies</code></dt>

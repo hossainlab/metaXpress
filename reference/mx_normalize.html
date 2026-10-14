@@ -9,7 +9,7 @@ metaXpressStudy object."><meta property="og:image" content="https://mdjubayerhos
 
     <a class="navbar-brand me-2" href="../index.html">metaXpress</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,10 +20,10 @@ metaXpressStudy object."><meta property="og:image" content="https://mdjubayerhos
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/live_tutorial.html">Live Demonstration Tutorial</a></li>
-    <li><a class="dropdown-item" href="../articles/quickstart.html">Getting Started (Quickstart)</a></li>
-    <li><a class="dropdown-item" href="../articles/full_workflow.html">Full Workflow: GEO to Report</a></li>
-    <li><a class="dropdown-item" href="../articles/case_study.html">Public GEO Case Study: Pan-Cancer</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Getting started</a></li>
+    <li><a class="dropdown-item" href="../articles/case_study.html">Case study: Alzheimer's disease brain meta-analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/full_workflow.html">Full workflow: GEO to report</a></li>
+    <li><a class="dropdown-item" href="../articles/downstream_biology.html">Downstream biology</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -67,15 +67,17 @@ or <code>"quantile"</code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The input <code>study</code> with <code>counts</code> replaced by normalized
-  values.</p>
+    <p>The input <code>study</code> with the normalized values added as a new
+  assay (<code>"logCPM_TMM"</code>, <code>"vst"</code>, <code>"cpm"</code>, <code>"tpm"</code>
+  or <code>"log2_quantile"</code>). The raw <code>"counts"</code> assay is never
+  modified, because <code><a href="mx_de.html">mx_de</a></code> requires raw counts.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-
-<ul><li><p><strong>TMM</strong>: Trimmed mean of M-values (Robinson &amp; Oshlack 2010),
-    implemented in <span class="pkg">edgeR</span>. Recommended for between-sample normalization
-    of count data.</p></li>
+    <p>Normalized values are for visualization, clustering, co-expression and
+cell-composition analyses. Differential expression always works from raw
+counts with each engine's own normalization.</p><ul><li><p><strong>TMM</strong>: log2 CPM with trimmed-mean-of-M-values library
+    sizes (Robinson &amp; Oshlack 2010), via <span class="pkg">edgeR</span> (prior count 2).</p></li>
 <li><p><strong>VST</strong>: Variance-stabilizing transformation (Anders &amp; Huber
     2010), implemented in <span class="pkg">DESeq2</span>. Produces approximately
     homoscedastic values suitable for clustering and visualization.</p></li>
@@ -86,7 +88,7 @@ or <code>"quantile"</code>.</p></dd>
     levels across genes.</p></li>
 <li><p><strong>quantile</strong>: Quantile normalization (Bolstad et al. 2003),
     implemented in <span class="pkg">limma</span>. Forces identical distributions across
-    samples; operates on log1p-transformed counts.</p></li>
+    samples; operates on log2(CPM + 1) values.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -108,9 +110,14 @@ density oligonucleotide array data based on variance and bias.
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span>  <span class="va">study</span> <span class="op">&lt;-</span> <span class="fu">mx_normalize</span><span class="op">(</span><span class="va">study</span>, method <span class="op">=</span> <span class="st">"TMM"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">600</span>, <span class="fl">50</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">100</span>,</span></span>
+<span class="r-in"><span>                 dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"G"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"S"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>condition <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"control"</span>, <span class="st">"case"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">study</span> <span class="op">&lt;-</span> <span class="fu"><a href="metaXpressStudy.html">metaXpressStudy</a></span><span class="op">(</span><span class="va">counts</span>, <span class="va">meta</span>, accession <span class="op">=</span> <span class="st">"local"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">study</span> <span class="op">&lt;-</span> <span class="fu">mx_normalize</span><span class="op">(</span><span class="va">study</span>, method <span class="op">=</span> <span class="st">"TMM"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Normalizing study local using TMM...</span>
+<span class="r-in"><span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assayNames</a></span><span class="op">(</span><span class="va">study</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "counts"     "logCPM_TMM"</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

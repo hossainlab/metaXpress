@@ -11,6 +11,7 @@ mx_de_all(
   studies,
   method = "DESeq2",
   formula = ~condition,
+  contrast = NULL,
   BPPARAM = BiocParallel::SerialParam(),
   ...
 )
@@ -32,7 +33,16 @@ mx_de_all(
 
 - formula:
 
-  A formula specifying the design. Default: `~ condition`.
+  A design formula (see
+  [`mx_de`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md)),
+  or a list of formulas with one entry per study when covariates differ
+  between studies. Default: `~ condition`.
+
+- contrast:
+
+  `NULL`, a length-2 character vector `c(case, control)` applied to
+  every study, or a list with one such vector per study (labels often
+  differ between GEO series).
 
 - BPPARAM:
 

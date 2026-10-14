@@ -24,13 +24,20 @@ mx_normalize(study, method = c("TMM", "VST", "CPM", "TPM", "quantile"))
 
 ## Value
 
-The input `study` with `counts` replaced by normalized values.
+The input `study` with the normalized values added as a new assay
+(`"logCPM_TMM"`, `"vst"`, `"cpm"`, `"tpm"` or `"log2_quantile"`). The
+raw `"counts"` assay is never modified, because
+[`mx_de`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md)
+requires raw counts.
 
 ## Details
 
-- **TMM**: Trimmed mean of M-values (Robinson & Oshlack 2010),
-  implemented in edgeR. Recommended for between-sample normalization of
-  count data.
+Normalized values are for visualization, clustering, co-expression and
+cell-composition analyses. Differential expression always works from raw
+counts with each engine's own normalization.
+
+- **TMM**: log2 CPM with trimmed-mean-of-M-values library sizes
+  (Robinson & Oshlack 2010), via edgeR (prior count 2).
 
 - **VST**: Variance-stabilizing transformation (Anders & Huber 2010),
   implemented in DESeq2. Produces approximately homoscedastic values
@@ -45,7 +52,7 @@ The input `study` with `counts` replaced by normalized values.
 
 - **quantile**: Quantile normalization (Bolstad et al. 2003),
   implemented in limma. Forces identical distributions across samples;
-  operates on log1p-transformed counts.
+  operates on log2(CPM + 1) values.
 
 ## References
 
@@ -71,7 +78,12 @@ high density oligonucleotide array data based on variance and bias.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-  study <- mx_normalize(study, method = "TMM")
-} # }
+counts <- matrix(rpois(600, 50), nrow = 100,
+                 dimnames = list(paste0("G", 1:100), paste0("S", 1:6)))
+meta <- data.frame(condition = rep(c("control", "case"), each = 3))
+study <- metaXpressStudy(counts, meta, accession = "local")
+study <- mx_normalize(study, method = "TMM")
+#>   Normalizing study local using TMM...
+SummarizedExperiment::assayNames(study)
+#> [1] "counts"     "logCPM_TMM"
 ```

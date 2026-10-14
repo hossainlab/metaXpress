@@ -2,11 +2,11 @@
 
 ### All vignettes
 
-- [Public GEO Case Study: Pan-Cancer
-  Meta-Analysis](https://mdjubayerhossain.com/metaXpress/articles/case_study.md):
-- [metaXpress Full Workflow: GEO to
-  Report](https://mdjubayerhossain.com/metaXpress/articles/full_workflow.md):
-- [Live Tutorial: End-to-End GEO Pan-Cancer
-  Meta-Analysis](https://mdjubayerhossain.com/metaXpress/articles/live_tutorial.md):
-- [metaXpress
-  Quickstart](https://mdjubayerhossain.com/metaXpress/articles/quickstart.md):
+- [Case study: Alzheimer's disease brain
+  meta-analysis](https://mdjubayerhossain.com/metaXpress/articles/case_study.md):
+- [Downstream biology: from meta-signature to
+  mechanism](https://mdjubayerhossain.com/metaXpress/articles/downstream_biology.md):
+- [Full workflow: from GEO accessions to
+  report](https://mdjubayerhossain.com/metaXpress/articles/full_workflow.md):
+- [Getting started with
+  metaXpress](https://mdjubayerhossain.com/metaXpress/articles/quickstart.md):

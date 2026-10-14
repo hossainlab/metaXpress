@@ -29,7 +29,7 @@ parallelised via BiocParallel."><meta property="og:image" content="https://mdjub
 
     <a class="navbar-brand me-2" href="../index.html">metaXpress</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,10 +40,10 @@ parallelised via BiocParallel."><meta property="og:image" content="https://mdjub
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/live_tutorial.html">Live Demonstration Tutorial</a></li>
-    <li><a class="dropdown-item" href="../articles/quickstart.html">Getting Started (Quickstart)</a></li>
-    <li><a class="dropdown-item" href="../articles/full_workflow.html">Full Workflow: GEO to Report</a></li>
-    <li><a class="dropdown-item" href="../articles/case_study.html">Public GEO Case Study: Pan-Cancer</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Getting started</a></li>
+    <li><a class="dropdown-item" href="../articles/case_study.html">Case study: Alzheimer's disease brain meta-analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/full_workflow.html">Full workflow: GEO to report</a></li>
+    <li><a class="dropdown-item" href="../articles/downstream_biology.html">Downstream biology</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -112,8 +112,7 @@ parallelised via <span class="pkg">BiocParallel</span>.</p>
     or <code>SummarizedExperiment</code> objects.</p></dd>
 
   <dt><code><a href="mx_qc_study.html">mx_qc_study</a></code></dt>
-<dd><p>Score a study against the 10-point QC checklist derived from
-    Heberle et al. (2025).</p></dd>
+<dd><p>Score a study against a 10-point data-level QC checklist.</p></dd>
 
   <dt><code><a href="mx_cluster_samples.html">mx_cluster_samples</a></code></dt>
 <dd><p>Automatically assign samples to case/control groups using metadata
@@ -172,9 +171,9 @@ parallelised via <span class="pkg">BiocParallel</span>.</p>
 
 
 <dl><dt><code><a href="mx_meta.html">mx_meta</a></code></dt>
-<dd><p>Combine per-study DE results using Fisher, Stouffer, inverse-normal,
-    fixed-effects, random-effects (DerSimonian-Laird), or AWmeta adaptive
-    weighting.  Returns a <code><a href="metaXpressResult-class.html">metaXpressResult</a></code>.</p></dd>
+<dd><p>Combine per-study DE results with random-effects (REML/PM/DL, optional
+    Hartung-Knapp), fixed-effect, directional Fisher, Stouffer, weighted
+    inverse-normal, minP, maxP or rOP methods. Returns a <code><a href="metaXpressResult-class.html">metaXpressResult</a></code>.</p></dd>
 
   <dt><code><a href="mx_heterogeneity.html">mx_heterogeneity</a></code></dt>
 <dd><p>Compute per-gene Cochran's Q, I\(^2\), \(\tau^2\), and
@@ -281,9 +280,9 @@ For the complete GEO-to-report workflow see
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Heberle, H. et al. (2025) A comprehensive framework for quality control
-and meta-analysis of bulk RNA-seq data. <em>Alzheimer's &amp; Dementia</em>,
-<strong>21</strong>(1), e70025. <a href="https://doi.org/10.1002/alz.70025" class="external-link">doi:10.1002/alz.70025</a></p>
+    <p>Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
+RNAseq studies in human Alzheimer's disease brain tissue. <em>bioRxiv</em>.
+<a href="https://doi.org/10.1101/2024.11.07.622520" class="external-link">doi:10.1101/2024.11.07.622520</a></p>
 <p>Fisher, R.A. (1932) <em>Statistical Methods for Research Workers</em>.
 4th edn. Edinburgh: Oliver &amp; Boyd.</p>
 <p>DerSimonian, R. &amp; Laird, N. (1986) Meta-analysis in clinical trials.

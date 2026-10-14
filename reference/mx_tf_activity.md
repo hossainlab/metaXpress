@@ -85,7 +85,7 @@ res <- new("metaXpressResult", meta_table = mt, method = "fisher",
 net <- data.frame(source = rep(c("TF_A", "TF_B"), each = 20),
                   target = paste0("G", c(1:20, 101:120)), mor = 1)
 mx_tf_activity(res, net)
-#>   source     score       pvalue         padj n_targets
-#> 1   TF_A 19.747160 1.112395e-48 2.224789e-48        20
-#> 2   TF_B -1.341654 1.812449e-01 1.812449e-01        20
+#>   source      score       pvalue         padj n_targets
+#> 1   TF_A 22.2375993 9.838827e-56 1.967765e-55        20
+#> 2   TF_B -0.1869722 8.518739e-01 8.518739e-01        20
 ```

@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="index.html">metaXpress</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,10 +43,10 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/live_tutorial.html">Live Demonstration Tutorial</a></li>
-    <li><a class="dropdown-item" href="articles/quickstart.html">Getting Started (Quickstart)</a></li>
-    <li><a class="dropdown-item" href="articles/full_workflow.html">Full Workflow: GEO to Report</a></li>
-    <li><a class="dropdown-item" href="articles/case_study.html">Public GEO Case Study: Pan-Cancer</a></li>
+<li><a class="dropdown-item" href="articles/quickstart.html">Getting started</a></li>
+    <li><a class="dropdown-item" href="articles/case_study.html">Case study: Alzheimer's disease brain meta-analysis</a></li>
+    <li><a class="dropdown-item" href="articles/full_workflow.html">Full workflow: GEO to report</a></li>
+    <li><a class="dropdown-item" href="articles/downstream_biology.html">Downstream biology</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
@@ -71,17 +71,19 @@
 </h1>
 </div>
 <p><strong>An end-to-end R package for bulk RNA-seq multi-study meta-analysis</strong></p>
-<p><a href="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml" class="external-link"><img src="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml/badge.svg" alt="R CMD Check"></a> <a href="https://mdjubayerhossain.com/metaXpress/"><img src="https://img.shields.io/badge/docs-pkgdown-blue.svg" alt="Documentation"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://github.com/hossainlab/metaXpress" class="external-link"><img src="https://img.shields.io/badge/version-0.99.0-276DC3?logo=github" alt="Version"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%E2%89%A54.3.0-276DC3?logo=r" alt="R version"></a> <a href="https://github.com/hossainlab/metaXpress/issues" class="external-link"><img src="https://img.shields.io/github/issues/hossainlab/metaXpress?color=red" alt="GitHub issues"></a> <a href="https://github.com/hossainlab/metaXpress/pulls" class="external-link"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a></p>
+<p><a href="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml" class="external-link"><img src="https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml/badge.svg" alt="R CMD Check"></a> <a href="https://mdjubayerhossain.com/metaXpress/"><img src="https://img.shields.io/badge/docs-pkgdown-blue.svg" alt="Documentation"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://github.com/hossainlab/metaXpress" class="external-link"><img src="https://img.shields.io/badge/version-0.99.1-276DC3?logo=github" alt="Version"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%E2%89%A54.3.0-276DC3?logo=r" alt="R version"></a> <a href="https://github.com/hossainlab/metaXpress/issues" class="external-link"><img src="https://img.shields.io/github/issues/hossainlab/metaXpress?color=red" alt="GitHub issues"></a> <a href="https://github.com/hossainlab/metaXpress/pulls" class="external-link"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a></p>
 </div>
 </div>
 <hr>
 <div class="section level3">
-<h3 id="globe_with_meridians-online-resources--live-demos">🌐 Online Resources &amp; Live Demos<a class="anchor" aria-label="anchor" href="#globe_with_meridians-online-resources--live-demos"></a>
+<h3 id="globe_with_meridians-documentation-all-examples-run-on-real-public-data">🌐 Documentation (all examples run on real public data)<a class="anchor" aria-label="anchor" href="#globe_with_meridians-documentation-all-examples-run-on-real-public-data"></a>
 </h3>
 <ul>
-<li>📖 <strong><a href="https://mdjubayerhossain.com/metaXpress/">Interactive Documentation Website</a></strong> — Complete function references, guides, and tutorials.</li>
-<li>⚡ <strong><a href="https://mdjubayerhossain.com/metaXpress/articles/live_tutorial.html">Live Demonstration Tutorial</a></strong> — Step-by-step hands-on tutorial from GitHub installation to multi-study meta-analysis with live rendered outputs and plots.</li>
-<li>🔬 <strong><a href="case_study_results/README.html">Public GEO Pan-Cancer Case Study Report</a></strong> (or view the <a href="https://mdjubayerhossain.com/metaXpress/articles/case_study.html">Online Vignette</a>) — Multi-cohort validation on 52 patient samples across colorectal, pancreatic, and renal cancers with embedded publication-grade figures.</li>
+<li>📖 <strong><a href="https://mdjubayerhossain.com/metaXpress/">Documentation website</a></strong>: function reference and articles.</li>
+<li>🚀 <strong><a href="https://mdjubayerhossain.com/metaXpress/articles/quickstart.html">Getting started</a></strong>: per-study DE on airway (GSE52778) and a four-cohort Alzheimer’s meta-analysis in five minutes.</li>
+<li>🧠 <strong><a href="https://mdjubayerhossain.com/metaXpress/articles/case_study.html">Case study: Alzheimer’s disease brain</a></strong>: 4 independent GEO cohorts (340 brains). Covers study selection and donor-overlap checks, model choice, heterogeneity and prediction intervals, leave-one-out robustness, and cross-study pathway meta-analysis.</li>
+<li>🔁 <strong><a href="https://mdjubayerhossain.com/metaXpress/articles/full_workflow.html">Full workflow</a></strong>: from GEO accessions to an HTML report.</li>
+<li>🧬 <strong><a href="https://mdjubayerhossain.com/metaXpress/articles/downstream_biology.html">Downstream biology</a></strong>: TF activity, cell composition, consensus co-expression and drug reversal.</li>
 </ul>
 <hr>
 </div>
@@ -116,7 +118,7 @@
          │
          ▼
 ┌──────────────────────┐
-│  Module 4: Meta-     │  mx_meta  (6 statistical methods)
+│  Module 4: Meta-     │  mx_meta  (9 statistical methods)
 │  Analysis Statistics │
 └────────┬─────────────┘
          │
@@ -167,45 +169,63 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mdjubayerhossain.com/metaXpress/">metaXpress</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"metaXpress"</span><span class="op">)</span></span>
-<span><span class="co"># [1] '0.99.0'</span></span></code></pre></div>
+<span><span class="co"># [1] '0.99.1'</span></span></code></pre></div>
 <hr>
 </div>
 </div>
 <div class="section level2">
-<h2 id="microscope-scientific-validation-public-geo-pan-cancer-case-study">🔬 Scientific Validation: Public GEO Pan-Cancer Case Study<a class="anchor" aria-label="anchor" href="#microscope-scientific-validation-public-geo-pan-cancer-case-study"></a>
+<h2 id="microscope-validation">🔬 Validation<a class="anchor" aria-label="anchor" href="#microscope-validation"></a>
 </h2>
-<p><code>metaXpress</code> has been benchmarked and scientifically validated across <strong>three independent public NCBI GEO bulk RNA-seq cohorts</strong> totaling <strong>52 patient samples</strong> and <strong>39,376 aligned genes</strong>: - <strong>Colorectal Adenocarcinoma (CRC):</strong> <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE130688" class="external-link">GSE130688</a> (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>30</mn></mrow><annotation encoding="application/x-tex">n = 30</annotation></semantics></math>, 10/10 QC score) - <strong>Pancreatic Ductal Adenocarcinoma (PDAC):</strong> <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE136569" class="external-link">GSE136569</a> (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>10</mn></mrow><annotation encoding="application/x-tex">n = 10</annotation></semantics></math>, 10/10 QC score) - <strong>Clear Cell Renal Cell Carcinoma (ccRCC):</strong> <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE171485" class="external-link">GSE171485</a> (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>12</mn></mrow><annotation encoding="application/x-tex">n = 12</annotation></semantics></math>, 10/10 QC score)</p>
-<div class="section level3">
-<h3 id="key-discoveries">Key Discoveries<a class="anchor" aria-label="anchor" href="#key-discoveries"></a>
-</h3>
+<p><strong>Statistics are tested against reference implementations</strong> (<code>tests/testthat</code>):</p>
 <ul>
 <li>
-<strong>558 Shared Meta-DEGs</strong> identified (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">FDR</mtext><mo>&lt;</mo><mn>0.05</mn><mo>,</mo><mo stretchy="false" form="prefix">|</mo><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>2</mn></msub><mtext mathvariant="normal">FC</mtext><mo stretchy="false" form="prefix">|</mo><mo>≥</mo><mn>1.0</mn></mrow><annotation encoding="application/x-tex">\text{FDR} &lt; 0.05, |\log_2\text{FC}| \ge 1.0</annotation></semantics></math>) with 100% directional concordance and zero between-study heterogeneity (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>I</mi><mn>2</mn></msup><mo>=</mo><mn>0</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">I^2 = 0\%</annotation></semantics></math>).</li>
+<strong>Random effects.</strong> Pooled effect, SE, p-value, tau², Q and CI agree with <code><a href="https://wviechtb.github.io/metafor/reference/rma.uni.html" class="external-link">metafor::rma()</a></code> to within 1e-7. This covers DerSimonian-Laird, REML and Paule-Mandel estimators, with and without Hartung-Knapp-Sidik-Jonkman.</li>
 <li>
-<strong>Statistical Power Amplification:</strong> Rescued small-sample cohorts (e.g. GSE171485 with only 18 individual DEGs) into a well-powered pooled consensus.</li>
+<strong>Per-study DE.</strong> <code><a href="reference/mx_de.html">mx_de()</a></code> reproduces native DESeq2 exactly on airway (GSE52778, paired design <code>~ cell + condition</code>). DESeq2, edgeR-QL and limma-voom log2FCs correlate at r ≥ 0.997, all with log2-scale SEs.</li>
 <li>
-<strong>Biomarker Recovery:</strong> Successfully recovered canonical oncogenes (<strong><code>MST1R</code></strong>, <strong><code>MUC4</code></strong>, <strong><code>IGF2BP3</code></strong>, <strong><code>CDCP1</code></strong>) and conserved tumor suppressors (<strong><code>FAM107A</code></strong>).</li>
-<li>
-<strong>Downstream Biology:</strong> E2F and NF-κB transcription factor activation; <code>MST1R</code>/<code>CDCP1</code> as hubs of a co-expression module conserved in all cohorts; TGF-β receptor, CDK, MEK and MDM2 inhibitors ranked as top LINCS signature reversers.</li>
+<strong>P-value methods.</strong> Fisher, Stouffer, weighted inverse-normal, minP, maxP and rOP are tested against their closed forms. The tests also confirm that opposite-direction effects do not accumulate.</li>
 </ul>
+<p><strong>Real-data case study: Alzheimer’s disease brain.</strong> Four independent GEO cohorts were analysed, all with NCBI uniformly processed counts:</p>
 <table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
 <thead><tr>
-<th align="center">Study Characteristics Overview</th>
-<th align="center">Pan-Cancer Meta-Volcano</th>
+<th>Cohort</th>
+<th>Region</th>
+<th>AD / control</th>
 </tr></thead>
-<tbody><tr>
-<td align="center"><img src="reference/figures/case_study_study_overview.png" width="480" alt="Study Overview"></td>
-<td align="center"><img src="reference/figures/case_study_volcano_plot.png" width="480" alt="Volcano Plot"></td>
-</tr></tbody>
+<tbody>
+<tr>
+<td>GSE125583</td>
+<td>Fusiform gyrus</td>
+<td>218 / 70</td>
+</tr>
+<tr>
+<td>GSE104704</td>
+<td>Lateral temporal lobe</td>
+<td>12 / 10</td>
+</tr>
+<tr>
+<td>GSE53697</td>
+<td>Dorsolateral PFC</td>
+<td>6 / 6</td>
+</tr>
+<tr>
+<td>GSE173955</td>
+<td>Hippocampus</td>
+<td>8 / 10</td>
+</tr>
+</tbody>
 </table>
-<p><img src="reference/figures/app_downstream_panel.png" width="100%" alt="Downstream biology applications"></p>
-<p>👉 <strong>Read the complete scientific report:</strong> <a href="case_study_results/README.html">case_study_results/README.md</a> or online at <a href="https://mdjubayerhossain.com/metaXpress/articles/case_study.html">https://mdjubayerhossain.com/metaXpress/articles/case_study.html</a>.</p>
+<p>GSE95587 and GSE159699 were excluded because their donors overlap with included cohorts. The random-effects REML meta-analysis recovers established AD biology:</p>
+<ul>
+<li>
+<strong>Up:</strong> GFAP, C4B, CD44.</li>
+<li>
+<strong>Down:</strong> VGF, BDNF, CRH, NPTX2, VIP.</li>
+<li>
+<strong>Pathways:</strong> loss of oxidative phosphorylation; gain of TNF-alpha/NF-kB and IL6/JAK/STAT3 signalling.</li>
+</ul>
+<p>The leave-one-out analysis identifies a robust core of genes that survives the removal of any single cohort.</p>
 <hr>
-</div>
 </div>
 <div class="section level2">
 <h2 id="why-metaxpress">Why metaXpress?<a class="anchor" aria-label="anchor" href="#why-metaxpress"></a>
@@ -215,101 +235,22 @@
 <li>
 <strong>One workflow, end to end.</strong> GEO ingestion → QC → harmonization → per-study DE → meta-analysis → pathways → figures → report, all through <code>mx_*</code> functions that chain directly.</li>
 <li>
-<strong>Study quality is explicit.</strong> A 10-point QC checklist (derived from Heberle et al., 2025) scores every study, so weak cohorts are filtered on documented criteria rather than intuition.</li>
+<strong>Study quality is explicit.</strong> A data-level QC checklist and a fold-change concordance check (which catches flipped contrasts) run before pooling.</li>
+<li>
+<strong>Uniform quantification.</strong> By default, counts come from NCBI’s GEO RNA-seq pipeline, so every study shares the same aligner, annotation and counting.</li>
 <li>
 <strong>Statistically sound by design.</strong> DE is always run independently per study (DESeq2, edgeR or limma-voom) before combining — never pooled — avoiding batch-confounded inference.</li>
 <li>
-<strong>Choose the right meta-method.</strong> Six methods (Fisher, Stouffer, inverse-normal, fixed effects, DerSimonian–Laird random effects, AWmeta) behind a single <code>method</code> argument, with I² heterogeneity reported for every gene.</li>
+<strong>Choose the right meta-method.</strong> Nine methods (random effects with REML/PM/DL and optional HKSJ, fixed effect, directional Fisher, Stouffer, weighted inverse-normal, minP, maxP, rOP, AWmeta) behind one <code>method</code> argument. Every gene gets tau², I², a 95% CI and a prediction interval. Results are validated against <code>metafor</code>.</li>
 <li>
-<strong>Missing genes are handled, not hidden.</strong> Genes absent from some studies are reported and either imputed or filtered by coverage, instead of disappearing in an intersect.</li>
+<strong>Missing genes are handled, not hidden.</strong> Each gene is pooled over the studies that measured it, and <code>n_studies</code> is reported. Genes are never silently dropped in an intersect.</li>
 <li>
-<strong>Biology, not just gene lists.</strong> Cross-study ORA/GSEA, transcription factor activity, cell-composition meta-analysis, consensus co-expression modules and drug-reversal ranking turn meta-signatures into testable hypotheses.</li>
+<strong>Biology, not just gene lists.</strong> fgsea GSEA/ORA on the meta-signature, per-study GSEA combined across studies, transcription factor activity, cell-composition meta-analysis, consensus co-expression modules and drug-reversal ranking turn meta-signatures into testable hypotheses.</li>
 <li>
 <strong>Publication-ready and reproducible.</strong> Volcano, forest, heatmap, UpSet and heterogeneity plots, plus HTML/PDF reports and CSV/Excel export with captured session info.</li>
 <li>
 <strong>Scales with BiocParallel.</strong> Per-study steps parallelize out of the box on laptops or clusters.</li>
 </ul>
-<table class="table">
-<thead><tr>
-<th>Feature</th>
-<th align="center">metaXpress</th>
-<th align="center">DExMA</th>
-<th align="center">GEDI</th>
-<th align="center">limma</th>
-</tr></thead>
-<tbody>
-<tr>
-<td>GEO public data ingestion</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-</tr>
-<tr>
-<td>10-point study QC checklist</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-</tr>
-<tr>
-<td>Cross-platform harmonization</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-</tr>
-<tr>
-<td>Library-type bias correction</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-</tr>
-<tr>
-<td>Per-study DE (3 engines)</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-<td align="center">✅</td>
-</tr>
-<tr>
-<td>6 meta-analysis methods</td>
-<td align="center">✅</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-</tr>
-<tr>
-<td>Missing gene imputation</td>
-<td align="center">✅</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-</tr>
-<tr>
-<td>Pathway meta-analysis</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-</tr>
-<tr>
-<td>TF activity, co-expression &amp; drug reversal</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-</tr>
-<tr>
-<td>Reproducible report export</td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-</tr>
-</tbody>
-</table>
 <hr>
 </div>
 <div class="section level2">
@@ -318,125 +259,128 @@
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mdjubayerhossain.com/metaXpress/">metaXpress</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ── 1. Fetch and QC studies from GEO ──────────────────────────────────────</span></span>
-<span><span class="co"># Download count matrices and curated metadata directly from NCBI GEO</span></span>
-<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_fetch_geo.html">mx_fetch_geo</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GSE130688"</span>, <span class="st">"GSE136569"</span>, <span class="st">"GSE171485"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># 1. Uniformly processed raw counts from GEO (NCBI pipeline)</span></span>
+<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_fetch_geo.html">mx_fetch_geo</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GSE125583"</span>, <span class="st">"GSE104704"</span>, <span class="st">"GSE53697"</span>, <span class="st">"GSE173955"</span><span class="op">)</span>,</span>
+<span>  condition_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>GSE125583 <span class="op">=</span> <span class="st">"diagnosis:ch1"</span>, GSE104704 <span class="op">=</span> <span class="st">"study group:ch1"</span>,</span>
+<span>                    GSE53697 <span class="op">=</span> <span class="st">"disease status:ch1"</span>, GSE173955 <span class="op">=</span> <span class="st">"title"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Filter studies passing quality control criteria (score &gt;= 7/10)</span></span>
-<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_filter_studies.html">mx_filter_studies</a></span><span class="op">(</span><span class="va">studies</span>, qc_threshold <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># ── 2. Harmonize ──────────────────────────────────────────────────────────</span></span>
-<span><span class="co"># Standardize gene identifiers to SYMBOL</span></span>
-<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_reannotate.html">mx_reannotate</a></span><span class="op">(</span><span class="va">studies</span>, org <span class="op">=</span> <span class="st">"Homo sapiens"</span>, target_id <span class="op">=</span> <span class="st">"SYMBOL"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Align common gene universe across cohorts</span></span>
-<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_align_genes.html">mx_align_genes</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># ── 3. Per-study Differential Expression ──────────────────────────────────</span></span>
-<span><span class="co"># Fit negative binomial GLMs independently across cohorts</span></span>
-<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_de_all.html">mx_de_all</a></span><span class="op">(</span><span class="va">studies</span>, method <span class="op">=</span> <span class="st">"DESeq2"</span>, formula <span class="op">=</span> <span class="op">~</span> <span class="va">condition</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/mx_de_summary.html">mx_de_summary</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># ── 4. Handle Missing Genes ───────────────────────────────────────────────</span></span>
+<span><span class="co"># 2. Per-study DE from raw counts, covariates and explicit contrasts</span></span>
+<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_de_all.html">mx_de_all</a></span><span class="op">(</span><span class="va">studies</span>, method <span class="op">=</span> <span class="st">"DESeq2"</span>,</span>
+<span>                     formula  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">condition</span>, <span class="op">~</span> <span class="va">condition</span>,</span>
+<span>                                     <span class="op">~</span> <span class="va">condition</span>, <span class="op">~</span> <span class="va">condition</span><span class="op">)</span>,</span>
+<span>                     contrast <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alzheimer's disease"</span>, <span class="st">"control"</span><span class="op">)</span>,</span>
+<span>                                     <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Aged, diseased"</span>, <span class="st">"Old"</span><span class="op">)</span>,</span>
+<span>                                     <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"advanced Alzheimer's Disease"</span>, <span class="st">"control"</span><span class="op">)</span>,</span>
+<span>                                     <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alzheimer's Disease"</span>, <span class="st">"non-Alzheimer's Disease"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">de_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">studies</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="va">s</span><span class="op">@</span><span class="va">de_result</span><span class="op">)</span></span>
-<span><span class="va">de_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_filter_coverage.html">mx_filter_coverage</a></span><span class="op">(</span><span class="va">de_results</span>, min_studies <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ── 5. Statistical Meta-Analysis ──────────────────────────────────────────</span></span>
-<span><span class="co"># Combine effect sizes and standard errors via DerSimonian-Laird Random Effects</span></span>
-<span><span class="va">meta_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_meta.html">mx_meta</a></span><span class="op">(</span><span class="va">de_results</span>, method <span class="op">=</span> <span class="st">"random_effects"</span><span class="op">)</span></span>
+<span><span class="co"># 3. Check orientation, then pool (random effects, REML)</span></span>
+<span><span class="fu"><a href="reference/mx_study_concordance.html">mx_study_concordance</a></span><span class="op">(</span><span class="va">de_results</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_meta.html">mx_meta</a></span><span class="op">(</span><span class="va">de_results</span>, method <span class="op">=</span> <span class="st">"random_effects"</span>, tau_method <span class="op">=</span> <span class="st">"REML"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ── 6. Pathway Meta-Analysis ──────────────────────────────────────────────</span></span>
-<span><span class="va">meta_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_pathway_meta.html">mx_pathway_meta</a></span><span class="op">(</span><span class="va">meta_result</span>, db <span class="op">=</span> <span class="st">"Hallmarks"</span>, method <span class="op">=</span> <span class="st">"ORA"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># ── 7. Visualize Results ──────────────────────────────────────────────────</span></span>
-<span><span class="fu"><a href="reference/mx_study_overview.html">mx_study_overview</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span>           <span class="co"># QC metrics and cohort depths</span></span>
-<span><span class="fu"><a href="reference/mx_volcano.html">mx_volcano</a></span><span class="op">(</span><span class="va">meta_result</span>, label_top <span class="op">=</span> <span class="fl">15</span><span class="op">)</span>  <span class="co"># Publication-grade volcano plot</span></span>
-<span><span class="fu"><a href="reference/mx_heterogeneity_plot.html">mx_heterogeneity_plot</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">)</span>   <span class="co"># Higgins I² distribution</span></span>
-<span></span>
-<span><span class="co"># Forest plot for top-ranked candidate gene</span></span>
-<span><span class="va">top_gene</span> <span class="op">&lt;-</span> <span class="va">meta_result</span><span class="op">@</span><span class="va">meta_table</span><span class="op">$</span><span class="va">gene_id</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.min</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">@</span><span class="va">meta_table</span><span class="op">$</span><span class="va">meta_padj</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="fu"><a href="reference/mx_forest.html">mx_forest</a></span><span class="op">(</span><span class="va">top_gene</span>, <span class="va">de_results</span>, <span class="va">meta_result</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># ── 8. Export ─────────────────────────────────────────────────────────────</span></span>
-<span><span class="co"># Export results table</span></span>
-<span><span class="fu"><a href="reference/mx_export.html">mx_export</a></span><span class="op">(</span><span class="va">meta_result</span>, format <span class="op">=</span> <span class="st">"csv"</span>, output_dir <span class="op">=</span> <span class="st">"results/"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># 4. Robustness, pathways, figures, report</span></span>
+<span><span class="va">loo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_sensitivity.html">mx_sensitivity</a></span><span class="op">(</span><span class="va">de_results</span>, tau_method <span class="op">=</span> <span class="st">"REML"</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_pathway_meta.html">mx_pathway_meta</a></span><span class="op">(</span><span class="va">res</span>, db <span class="op">=</span> <span class="st">"Hallmarks"</span><span class="op">)</span>          <span class="co"># fgsea GSEA</span></span>
+<span><span class="va">ps</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_pathway_studies.html">mx_pathway_studies</a></span><span class="op">(</span><span class="va">de_results</span>, db <span class="op">=</span> <span class="st">"Hallmarks"</span><span class="op">)</span> <span class="co"># cross-study pathways</span></span>
+<span><span class="fu"><a href="reference/mx_volcano.html">mx_volcano</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span>; <span class="fu"><a href="reference/mx_forest.html">mx_forest</a></span><span class="op">(</span><span class="st">"GFAP"</span>, <span class="va">de_results</span>, <span class="va">res</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/mx_report.html">mx_report</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">de_results</span>, output_dir <span class="op">=</span> <span class="st">"results"</span><span class="op">)</span></span></code></pre></div>
+<p>The per-study results for these four cohorts ship with the package, so the analysis runs offline:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ad</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"ad_brain_de.rds"</span>, package <span class="op">=</span> <span class="st">"metaXpress"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mx_meta.html">mx_meta</a></span><span class="op">(</span><span class="va">ad</span><span class="op">$</span><span class="va">de_results</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
 <h2 id="meta-analysis-statistical-methods">Meta-Analysis Statistical Methods<a class="anchor" aria-label="anchor" href="#meta-analysis-statistical-methods"></a>
 </h2>
-<p>metaXpress implements six statistical methods selectable via the <code>method</code> argument in <code><a href="reference/mx_meta.html">mx_meta()</a></code>:</p>
+<p><code><a href="reference/mx_meta.html">mx_meta()</a></code> implements two families of methods. Effect-size models pool per-study log2 fold changes weighted by their sampling variance; p-value combination methods pool evidence without pooling effects and answer different hypotheses. The random-effects estimates (DL, REML, Paule-Mandel, with optional Hartung-Knapp-Sidik-Jonkman adjustment) are tested to agree with <code><a href="https://wviechtb.github.io/metafor/reference/rma.uni.html" class="external-link">metafor::rma()</a></code> to within 1e-7.</p>
 <table class="table">
 <colgroup>
-<col width="12%">
-<col width="12%">
-<col width="20%">
-<col width="20%">
-<col width="20%">
-<col width="12%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
 </colgroup>
 <thead><tr>
 <th>Method</th>
 <th><code>method =</code></th>
-<th align="center">Effect Size</th>
-<th align="center">Handles Heterogeneity</th>
-<th align="center">Min Studies</th>
+<th>Hypothesis / estimand</th>
 <th>Reference</th>
 </tr></thead>
 <tbody>
-<tr>
-<td>Fisher’s combined p-value</td>
-<td><code>"fisher"</code></td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-<td align="center">2</td>
-<td>Rau et al. 2013</td>
-</tr>
-<tr>
-<td>Stouffer’s Z-score</td>
-<td><code>"stouffer"</code></td>
-<td align="center">❌</td>
-<td align="center">❌</td>
-<td align="center">2</td>
-<td>Rau et al. 2013</td>
-</tr>
-<tr>
-<td>Fused inverse-normal</td>
-<td><code>"inverse_normal"</code></td>
-<td align="center">❌</td>
-<td align="center">Partial</td>
-<td align="center">2</td>
-<td>Prasad &amp; Li 2021</td>
-</tr>
-<tr>
-<td>Fixed effects (Inverse-variance)</td>
-<td><code>"fixed_effects"</code></td>
-<td align="center">✅</td>
-<td align="center">❌</td>
-<td align="center">2</td>
-<td>Keel &amp; Lindholm-Perry 2022</td>
-</tr>
 <tr>
 <td>
 <strong>Random effects</strong> <em>(default)</em>
 </td>
 <td><code>"random_effects"</code></td>
-<td align="center">✅</td>
-<td align="center">✅</td>
-<td align="center">3</td>
-<td>Keel &amp; Lindholm-Perry 2022</td>
+<td>Average log2FC across populations; reports tau², I², 95% CI and prediction interval</td>
+<td>DerSimonian &amp; Laird 1986; Viechtbauer 2005; IntHout et al. 2014</td>
 </tr>
 <tr>
-<td>Adaptive weighting (AWmeta)</td>
+<td>Fixed (common) effect</td>
+<td><code>"fixed_effects"</code></td>
+<td>Single shared log2FC (studies are near-replicates)</td>
+<td>Borenstein et al. 2010</td>
+</tr>
+<tr>
+<td>Fisher (directional)</td>
+<td><code>"fisher"</code></td>
+<td>Effect in a common direction in ≥1 study</td>
+<td>Fisher 1932; Owen 2009</td>
+</tr>
+<tr>
+<td>Stouffer</td>
+<td><code>"stouffer"</code></td>
+<td>Signed Z-score combination, equal weights</td>
+<td>Stouffer et al. 1949</td>
+</tr>
+<tr>
+<td>Weighted inverse-normal</td>
+<td><code>"inverse_normal"</code></td>
+<td>Signed Z-score combination weighted by √n</td>
+<td>Marot et al. 2009; Rau et al. 2014</td>
+</tr>
+<tr>
+<td>Tippett minP</td>
+<td><code>"minp"</code></td>
+<td>DE in at least one study</td>
+<td>Tippett 1931</td>
+</tr>
+<tr>
+<td>Wilkinson maxP</td>
+<td><code>"maxp"</code></td>
+<td>DE in all studies</td>
+<td>Wilkinson 1951</td>
+</tr>
+<tr>
+<td>r-th ordered p (rOP)</td>
+<td><code>"rop"</code></td>
+<td>DE in at least <em>r</em> studies</td>
+<td>Song &amp; Tseng 2014</td>
+</tr>
+<tr>
+<td>AWmeta</td>
 <td><code>"awmeta"</code></td>
-<td align="center">✅</td>
-<td align="center">✅</td>
-<td align="center">3</td>
-<td>Hu et al. 2025</td>
+<td>AW-Fisher p-value with per-gene study selection + REML effect over selected studies</td>
+<td>Li &amp; Tseng 2011; Huo et al. 2020; Hu et al. 2026</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Method Selection Guide:</strong> - <strong>2 studies:</strong> use <code>"fisher"</code> or <code>"stouffer"</code> - <strong>3+ studies, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>I</mi><mn>2</mn></msup><mo>&lt;</mo><mn>25</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">I^2 &lt; 25\%</annotation></semantics></math>:</strong> use <code>"fixed_effects"</code> - <strong>3+ studies, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>I</mi><mn>2</mn></msup><mo>≥</mo><mn>25</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">I^2 \ge 25\%</annotation></semantics></math>:</strong> use <code>"random_effects"</code> (default) - <strong>Mixed or unknown heterogeneity:</strong> use <code>"awmeta"</code></p>
+<p><strong>Choosing a method.</strong> Pick the method a priori from the scientific question, not from the number of significant genes it returns:</p>
+<ul>
+<li>
+<strong>Consensus disease signature (most common):</strong> <code>"random_effects"</code> with <code>tau_method = "REML"</code>. Report I², tau² and the prediction interval. With fewer than ~5 studies consider <code>hksj = TRUE</code>, which gives better-calibrated confidence intervals.</li>
+<li>
+<strong>Studies are technical replicates of one design:</strong> <code>"fixed_effects"</code>.</li>
+<li>
+<strong>No usable standard errors (e.g. only p-values published):</strong> <code>"inverse_normal"</code> (with sample sizes) or <code>"stouffer"</code>.</li>
+<li>
+<strong>Genes changed in all, or in most, studies:</strong> <code>"maxp"</code> or <code>"rop"</code>.</li>
+<li>
+<strong>Which studies drive each gene:</strong> <code>"awmeta"</code> reports the AW-selected studies per gene (<code>aw_studies</code>).</li>
+</ul>
+<p>Before pooling, run <code><a href="reference/mx_study_concordance.html">mx_study_concordance()</a></code>. A negative fold-change correlation between two studies almost always means their case/control contrast is flipped. After pooling, run <code><a href="reference/mx_sensitivity.html">mx_sensitivity()</a></code> for a leave-one-out robustness table.</p>
 <hr>
 </div>
 <div class="section level2">
@@ -447,76 +391,90 @@
                    ├── metadata                                    ├── method
                    ├── accession                                   ├── n_studies
                    ├── organism                                    ├── heterogeneity
-                   ├── qc_score (0–10)                            └── pathway_result
+                   ├── qc_score (criteria passed)                 └── pathway_result
                    └── de_result</code></pre>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="id_10-point-study-qc-scoring">10-Point Study QC Scoring<a class="anchor" aria-label="anchor" href="#id_10-point-study-qc-scoring"></a>
+<h2 id="study-qc">Study QC<a class="anchor" aria-label="anchor" href="#study-qc"></a>
 </h2>
-<p><code><a href="reference/mx_qc_study.html">mx_qc_study()</a></code> benchmarks each study against 10 objective criteria (Heberle et al. 2025):</p>
+<p><code><a href="reference/mx_qc_study.html">mx_qc_study()</a></code> records each of 10 data-level criteria as <strong>pass</strong>, <strong>fail</strong> or <strong>not evaluable</strong>. Alignment, rRNA and duplicate metrics, for example, are rarely deposited in GEO. <code>qc_score</code> is the number of criteria passed. It is never rescaled, so missing information cannot inflate it. <code><a href="reference/mx_filter_studies.html">mx_filter_studies()</a></code> decides on failures. By default it excludes a study that fails a criterion required for valid count-based DE: replicates, condition labels or raw counts. The thresholds are metaXpress defaults informed by Schurch et al. (2016). Assess study-level reporting quality separately, e.g. with the tool of Heberle et al. (2024).</p>
 <table class="table">
 <colgroup>
-<col width="33%">
-<col width="33%">
-<col width="33%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
 </colgroup>
 <thead><tr>
 <th>#</th>
 <th>Criterion</th>
-<th>Threshold</th>
+<th>Pass if</th>
+<th>Evaluable when</th>
 </tr></thead>
 <tbody>
 <tr>
 <td>1</td>
-<td>Minimum sample size</td>
-<td>≥ 3 replicates per group</td>
+<td>Sample size</td>
+<td>≥ 3 samples per group</td>
+<td>always</td>
 </tr>
 <tr>
 <td>2</td>
 <td>Sequencing depth</td>
-<td>Median ≥ 10M reads</td>
+<td>median assigned reads ≥ 10M</td>
+<td>always</td>
 </tr>
 <tr>
 <td>3</td>
 <td>Alignment rate</td>
-<td>Mean ≥ 70%</td>
+<td>mean ≥ 70%</td>
+<td>
+<code>alignment_rate</code> in colData</td>
 </tr>
 <tr>
 <td>4</td>
 <td>rRNA contamination</td>
-<td>&lt; 10%</td>
+<td>mean &lt; 10%</td>
+<td>
+<code>rrna_fraction</code> in colData</td>
 </tr>
 <tr>
 <td>5</td>
 <td>Duplicate rate</td>
-<td>&lt; 50%</td>
+<td>mean &lt; 50%</td>
+<td>
+<code>duplicate_rate</code> in colData</td>
 </tr>
 <tr>
 <td>6</td>
-<td>Gene detection rate</td>
-<td>≥ 15,000 genes in ≥ 50% of samples</td>
+<td>Gene detection</td>
+<td>≥ <code>min_genes</code> (15,000) genes in ≥ 50% of samples</td>
+<td>always</td>
 </tr>
 <tr>
 <td>7</td>
-<td>Metadata completeness</td>
-<td>
-<code>condition</code> + <code>sample_id</code> present</td>
+<td>Condition labels</td>
+<td>every sample labelled</td>
+<td>always</td>
 </tr>
 <tr>
 <td>8</td>
-<td>Clear case/control</td>
-<td>Exactly 2 condition levels</td>
+<td>Clear contrast</td>
+<td>exactly 2 condition levels</td>
+<td>always</td>
 </tr>
 <tr>
 <td>9</td>
-<td>No batch confounding</td>
-<td>Batch not perfectly correlated with condition</td>
+<td>Batch confounding</td>
+<td>batch not aliased with condition</td>
+<td>multi-level <code>batch</code> column</td>
 </tr>
 <tr>
 <td>10</td>
 <td>Raw counts</td>
-<td>Integer counts (not FPKM/TPM)</td>
+<td>non-negative integers, max &gt; 1,000</td>
+<td>always</td>
 </tr>
 </tbody>
 </table>
@@ -537,8 +495,8 @@
 </tr></thead>
 <tbody>
 <tr>
-<td><code>mx_fetch_geo(accessions)</code></td>
-<td>Download count matrices + metadata from GEO</td>
+<td><code>mx_fetch_geo(accessions, condition_col)</code></td>
+<td>NCBI uniformly processed raw counts + metadata from GEO</td>
 </tr>
 <tr>
 <td><code>mx_fetch_sra(srp_ids)</code></td>
@@ -551,15 +509,15 @@
 </tr>
 <tr>
 <td><code>mx_qc_study(study)</code></td>
-<td>Apply 10-point QC checklist</td>
+<td>10 data-level criteria: pass / fail / not evaluable</td>
 </tr>
 <tr>
 <td><code>mx_cluster_samples(study)</code></td>
-<td>Auto-cluster samples from metadata strings</td>
+<td>Suggest groups from metadata text (new <code>cluster</code> column)</td>
 </tr>
 <tr>
-<td><code>mx_filter_studies(studies, qc_threshold)</code></td>
-<td>Remove studies below QC threshold</td>
+<td><code>mx_filter_studies(studies, required)</code></td>
+<td>Remove studies failing required QC criteria</td>
 </tr>
 </tbody>
 </table></details><details><summary><strong>Module 2 — Normalization &amp; Harmonization</strong>
@@ -575,11 +533,11 @@
 <tbody>
 <tr>
 <td><code>mx_reannotate(studies, org, target_id)</code></td>
-<td>Standardize gene ID namespace</td>
+<td>Human / mouse / rat or custom mapping; strips Ensembl versions; collapses duplicates (max-mean / sum / drop)</td>
 </tr>
 <tr>
 <td><code>mx_normalize(study, method)</code></td>
-<td>TMM / VST / CPM / TPM / quantile</td>
+<td>TMM / VST / CPM / TPM / quantile into a new assay (raw counts kept)</td>
 </tr>
 <tr>
 <td><code>mx_correct_library_type(studies)</code></td>
@@ -587,7 +545,7 @@
 </tr>
 <tr>
 <td><code>mx_remove_batch(studies, method)</code></td>
-<td>ComBat-seq / ComBat / limma / harmony</td>
+<td>ComBat-seq / ComBat / limma, preserving <code>condition</code>; new assay, for pooled visualisation only</td>
 </tr>
 <tr>
 <td><code>mx_align_genes(studies)</code></td>
@@ -620,14 +578,22 @@
 </tbody>
 </table></details><details><summary><strong>Module 4 — Meta-Analysis Statistics</strong>
 </summary><table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
 <thead><tr>
 <th>Function</th>
 <th>Description</th>
 </tr></thead>
 <tbody>
 <tr>
-<td><code>mx_meta(de_results, method)</code></td>
-<td>Run meta-analysis (6 methods)</td>
+<td><code>mx_meta(de_results, method, tau_method, hksj)</code></td>
+<td>Random/fixed effects, directional Fisher, Stouffer, inverse-normal, minP, maxP, rOP, AWmeta</td>
+</tr>
+<tr>
+<td><code>mx_study_concordance(de_results)</code></td>
+<td>Pairwise fold-change concordance; flags flipped contrasts</td>
 </tr>
 <tr>
 <td><code>mx_heterogeneity(de_results)</code></td>
@@ -635,7 +601,11 @@
 </tr>
 <tr>
 <td><code>mx_sensitivity(de_results)</code></td>
-<td>Leave-one-out sensitivity analysis</td>
+<td>Leave-one-out analysis with a robustness table</td>
+</tr>
+<tr>
+<td><code>mx_small_study(de_results)</code></td>
+<td>Per-gene Egger / Begg small-study (publication bias) tests</td>
 </tr>
 </tbody>
 </table></details><details><summary><strong>Module 5 — Missing Gene Handling</strong>
@@ -674,8 +644,16 @@
 </tr></thead>
 <tbody>
 <tr>
+<td><code>mx_gene_sets(db, id_type)</code></td>
+<td>MSigDB collections (Hallmarks, Reactome, KEGG MEDICUS, WikiPathways, GO BP)</td>
+</tr>
+<tr>
 <td><code>mx_pathway_meta(meta_result, db)</code></td>
-<td>ORA / GSEA with Hallmarks, KEGG, Reactome, GO</td>
+<td>fgsea GSEA (signed meta z) or direction-split ORA on the meta-signature</td>
+</tr>
+<tr>
+<td><code>mx_pathway_studies(de_results, db)</code></td>
+<td>Per-study GSEA combined across studies (directional Stouffer)</td>
 </tr>
 <tr>
 <td><code>mx_pathway_consensus(pathway_results)</code></td>
@@ -728,14 +706,18 @@
 </tbody>
 </table></details><details><summary><strong>Module 8 — Reporting &amp; Export</strong>
 </summary><table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
 <thead><tr>
 <th>Function</th>
 <th>Description</th>
 </tr></thead>
 <tbody>
 <tr>
-<td><code>mx_report(meta_result, ..., format)</code></td>
-<td>Render HTML / PDF report</td>
+<td><code>mx_report(meta_result, de_results, format)</code></td>
+<td>HTML / PDF report with methods text, CIs, PIs, robustness</td>
 </tr>
 <tr>
 <td><code>mx_export(meta_result, format)</code></td>
@@ -788,13 +770,13 @@
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>If you use <code>metaXpress</code> in your research, academic applications, or benchmarking, please cite:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="va">@manual</span>{<span class="ot">metaXpress2026</span>,</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="dt">title</span>  = {metaXpress: End-to-End Bulk RNA-seq Meta-Analysis},</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="dt">author</span> = {Hossain, Md. Jubayer},</span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="dt">note</span>   = {R package version 0.99.0},</span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="dt">url</span>    = {https://mdjubayerhossain.com/metaXpress/}</span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="va">@manual</span>{<span class="ot">metaXpress2026</span>,</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="dt">title</span>  = {metaXpress: End-to-End Bulk RNA-seq Meta-Analysis},</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="dt">author</span> = {Hossain, Md. Jubayer},</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="dt">note</span>   = {R package version 0.99.0},</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  <span class="dt">url</span>    = {https://mdjubayerhossain.com/metaXpress/}</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>}</span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -805,9 +787,10 @@
 <li><label><input type="checkbox" checked>Module 1: GEO ingestion + 10-point QC</label></li>
 <li><label><input type="checkbox" checked>Module 2: Normalization &amp; batch correction</label></li>
 <li><label><input type="checkbox" checked>Module 3: DESeq2 / edgeR / limma-voom wrappers</label></li>
-<li><label><input type="checkbox" checked>Module 4: All 6 meta-analysis methods</label></li>
+<li><label><input type="checkbox" checked>Module 4: 9 meta-analysis methods (incl. AWmeta), validated against metafor / AWFisher</label></li>
+<li><label><input type="checkbox" checked>Small-study effect tests (Egger, Begg) and funnel plots</label></li>
 <li><label><input type="checkbox" checked>Module 5: Missing gene handling</label></li>
-<li><label><input type="checkbox" checked>Module 6: Pathway meta-analysis (ORA + GSEA)</label></li>
+<li><label><input type="checkbox" checked>Module 6: Pathway meta-analysis (fgsea GSEA, ORA, cross-study combination)</label></li>
 <li><label><input type="checkbox" checked>Module 7: Visualization suite</label></li>
 <li><label><input type="checkbox" checked>Module 8: Report generation &amp; export</label></li>
 <li><label><input type="checkbox" checked>Module 9: Downstream biology (TF activity, composition, co-expression, drug reversal)</label></li>
@@ -831,43 +814,49 @@
 </tr></thead>
 <tbody>
 <tr>
-<td>Fisher / Stouffer meta-analysis</td>
-<td>Rau, Marot &amp; Jaffrézic (2013) <em>BMC Bioinformatics</em>
-</td>
+<td>RNA-seq differential meta-analysis</td>
+<td>Rau, Marot &amp; Jaffrézic (2014) <em>BMC Bioinformatics</em> 15:91</td>
 </tr>
 <tr>
-<td>Fused inverse-normal</td>
-<td>Prasad &amp; Li (2021) <em>BMC Bioinformatics</em>
-</td>
+<td>Random effects / tau² estimators</td>
+<td>DerSimonian &amp; Laird (1986); Viechtbauer (2005); Veroniki et al. (2016)</td>
 </tr>
 <tr>
-<td>Random effects (DerSimonian-Laird)</td>
-<td>Keel &amp; Lindholm-Perry (2022) <em>Front. Genetics</em>
-</td>
+<td>Hartung-Knapp-Sidik-Jonkman</td>
+<td>IntHout, Ioannidis &amp; Borm (2014) <em>BMC Med Res Methodol</em> 14:25</td>
 </tr>
 <tr>
-<td>AWmeta adaptive weighting</td>
-<td>Hu et al. (2025) <em>bioRxiv</em>
-</td>
+<td>Prediction intervals</td>
+<td>Higgins, Thompson &amp; Spiegelhalter (2009) <em>JRSS A</em> 172:137</td>
 </tr>
 <tr>
-<td>Missing gene imputation</td>
-<td>Villatoro-García et al. (2022) <em>Mathematics</em> (DExMA)</td>
+<td>Directional Fisher (Pearson) test</td>
+<td>Owen (2009) <em>Ann Stat</em> 37:3867</td>
+</tr>
+<tr>
+<td>r-th ordered p-value</td>
+<td>Song &amp; Tseng (2014) <em>Ann Appl Stat</em> 8:777</td>
+</tr>
+<tr>
+<td>Missing gene handling</td>
+<td>Villatoro-García et al. (2022) <em>Mathematics</em> 10:3376 (DExMA)</td>
 </tr>
 <tr>
 <td>Library-type correction</td>
-<td>Bush et al. (2017) <em>BMC Bioinformatics</em>
+<td>Bush et al. (2017) <em>BMC Bioinformatics</em> 18:301</td>
+</tr>
+<tr>
+<td>Study-quality assessment</td>
+<td>Heberle et al. (2024) <em>bioRxiv</em> <a href="doi:10.1101/2024.11.07.622520" class="uri">doi:10.1101/2024.11.07.622520</a>
 </td>
 </tr>
 <tr>
-<td>Study QC criteria</td>
-<td>Heberle et al. (2025) <em>Alzheimer’s &amp; Dementia</em>
-</td>
+<td>AW-Fisher / AWmeta</td>
+<td>Li &amp; Tseng (2011) <em>Ann Appl Stat</em> 5:994; Huo et al. (2020) <em>Bioinformatics</em> 36:524; Hu et al. (2026) <em>Curr Issues Mol Biol</em> 48:530</td>
 </tr>
 <tr>
-<td>Sample clustering from GEO</td>
-<td>Coke, Niranjan &amp; Ewing (2025) <em>bioRxiv</em>
-</td>
+<td>Small-study effects</td>
+<td>Egger et al. (1997) <em>BMJ</em> 315:629; Begg &amp; Mazumdar (1994) <em>Biometrics</em> 50:1088</td>
 </tr>
 </tbody>
 </table>

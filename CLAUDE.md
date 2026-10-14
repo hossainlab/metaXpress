@@ -127,7 +127,17 @@ targets: S4 class definitions, Module 1 (GEO ingestion + QC), Module 3
 
 ## Validation Reference
 
-Use the Alzheimer’s dataset from Heberle et al. (2025) as the primary
-benchmark for correctness. The QC checklist (10 criteria) in
+Statistical correctness is validated against reference implementations
+in tests:
+[`mx_meta()`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md)
+against
+[`metafor::rma()`](https://wviechtb.github.io/metafor/reference/rma.uni.html)
+(DL/REML/PM, HKSJ) and
+[`mx_de()`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md)
+against native DESeq2 on `airway` (GSE52778). Heberle et al. (2024,
+bioRxiv, <doi:10.1101/2024.11.07.622520>) is a systematic review of AD
+brain RNA-seq whose 10-category tool grades study *reporting* quality;
+the numeric thresholds in
 [`mx_qc_study()`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md)
-is directly derived from that paper.
+are metaXpress defaults, not taken from that paper. Never cite a
+reference without verifying it exists (PubMed/DOI).

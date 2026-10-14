@@ -81,6 +81,6 @@ sigs <- list(reverser = list(up = paste0("G", 31:60), down = paste0("G", 1:30)),
              mimic    = list(up = paste0("G", 1:30), down = paste0("G", 31:60)))
 mx_drug_connectivity(res, sigs)
 #>       drug reversal_score       pvalue         padj cmap_score n_up n_down
-#> 1 reverser      -16.43202 1.128432e-60 1.128432e-60  -1.803333   30     30
-#> 2    mimic       16.43202 1.128432e-60 1.128432e-60   1.803333   30     30
+#> 1 reverser      -16.29959 9.935399e-60 9.935399e-60  -1.803333   30     30
+#> 2    mimic       16.29959 9.935399e-60 9.935399e-60   1.803333   30     30
 ```

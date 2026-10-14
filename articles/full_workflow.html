@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>metaXpress Full Workflow: GEO to Report • metaXpress</title>
+<title>Full workflow: from GEO accessions to report • metaXpress</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -15,7 +15,7 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="metaXpress Full Workflow: GEO to Report">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Full workflow: from GEO accessions to report">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">metaXpress</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,10 +38,10 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/live_tutorial.html">Live Demonstration Tutorial</a></li>
-    <li><a class="dropdown-item" href="../articles/quickstart.html">Getting Started (Quickstart)</a></li>
-    <li><a class="dropdown-item" href="../articles/full_workflow.html">Full Workflow: GEO to Report</a></li>
-    <li><a class="dropdown-item" href="../articles/case_study.html">Public GEO Case Study: Pan-Cancer</a></li>
+<li><a class="dropdown-item" href="../articles/quickstart.html">Getting started</a></li>
+    <li><a class="dropdown-item" href="../articles/case_study.html">Case study: Alzheimer's disease brain meta-analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/full_workflow.html">Full workflow: GEO to report</a></li>
+    <li><a class="dropdown-item" href="../articles/downstream_biology.html">Downstream biology</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -63,11 +63,11 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>metaXpress Full Workflow: GEO to Report</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Full workflow: from GEO accessions to report</h1>
                         <h4 data-toc-skip class="author">Md. Jubayer
 Hossain</h4>
             
-            <h4 data-toc-skip class="date">2026-10-12</h4>
+            <h4 data-toc-skip class="date">2026-10-14</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/hossainlab/metaXpress/blob/main/vignettes/full_workflow.Rmd" class="external-link"><code>vignettes/full_workflow.Rmd</code></a></small>
       <div class="d-none name"><code>full_workflow.Rmd</code></div>
@@ -78,235 +78,251 @@ Hossain</h4>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p><code>metaXpress</code> is an end-to-end R package designed for
-multi-study transcriptomic meta-analysis. It provides a standardized
-pipeline covering data ingestion from NCBI GEO and SRA, 10-point quality
-control scoring, cross-platform harmonization, per-study differential
-expression, six statistical meta-analysis models, missing gene handling,
-pathway enrichment, interactive visualization, and reproducible
-reporting.</p>
-<p>For full documentation and online tutorials, visit the official
-website at <a href="https://mdjubayerhossain.com/metaXpress/">https://mdjubayerhossain.com/metaXpress/</a>.</p>
-</div>
-<div class="section level2">
-<h2 id="installation-from-github">Installation from GitHub<a class="anchor" aria-label="anchor" href="#installation-from-github"></a>
-</h2>
-<p><code>metaXpress</code> is currently available on GitHub and targets
-future submission to Bioconductor.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Install remotes if needed</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"remotes"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Install metaXpress directly from GitHub</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span><span class="op">)</span></span></code></pre></div>
-<p>Load the package:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mdjubayerhossain.com/metaXpress/">metaXpress</a></span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level2">
-<h2 id="data-ingestion-quality-control">1. Data Ingestion &amp; Quality Control<a class="anchor" aria-label="anchor" href="#data-ingestion-quality-control"></a>
-</h2>
-<div class="section level3">
-<h3 id="a--fetch-public-data-from-geo">1a. Fetch Public Data from GEO<a class="anchor" aria-label="anchor" href="#a--fetch-public-data-from-geo"></a>
-</h3>
-<p>You can ingest multiple public RNA-seq datasets directly using their
-NCBI GEO accessions:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Fetch three bulk RNA-seq cohorts from GEO</span></span>
-<span><span class="va">accessions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GSE130688"</span>, <span class="st">"GSE136569"</span>, <span class="st">"GSE171485"</span><span class="op">)</span></span>
-<span><span class="va">studies</span>    <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_fetch_geo.html">mx_fetch_geo</a></span><span class="op">(</span><span class="va">accessions</span>, count_type <span class="op">=</span> <span class="st">"raw"</span>, cache_dir <span class="op">=</span> <span class="st">"geo_cache/"</span><span class="op">)</span></span></code></pre></div>
-<p>Alternatively, load local count matrices and metadata with
-<code><a href="../reference/mx_load_local.html">mx_load_local()</a></code>.</p>
-</div>
-<div class="section level3">
-<h3 id="b--inspect-10-point-qc-scoring">1b. Inspect 10-Point QC Scoring<a class="anchor" aria-label="anchor" href="#b--inspect-10-point-qc-scoring"></a>
-</h3>
-<p><code><a href="../reference/mx_qc_study.html">mx_qc_study()</a></code> benchmarks each study against 10 criteria
-(sample size, depth, alignment rate, duplicate rate, case/control
-completeness, integer counts, etc.):</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">qc_scores</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">studies</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="va">s</span><span class="op">@</span><span class="va">qc_score</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">qc_scores</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Inspect detailed metrics for study 1</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">studies</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="st">"qc_details"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="c--filter-low-quality-cohorts">1c. Filter Low-Quality Cohorts<a class="anchor" aria-label="anchor" href="#c--filter-low-quality-cohorts"></a>
-</h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Filter out cohorts failing the QC threshold (minimum score: 7/10)</span></span>
-<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_filter_studies.html">mx_filter_studies</a></span><span class="op">(</span><span class="va">studies</span>, qc_threshold <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-</div>
-<div class="section level2">
-<h2 id="cross-study-harmonization">2. Cross-Study Harmonization<a class="anchor" aria-label="anchor" href="#cross-study-harmonization"></a>
-</h2>
-<div class="section level3">
-<h3 id="a--reannotate-gene-identifiers">2a. Reannotate Gene Identifiers<a class="anchor" aria-label="anchor" href="#a--reannotate-gene-identifiers"></a>
-</h3>
-<p>Convert diverse gene identifiers (Ensembl, Entrez, RefSeq) to a
-uniform namespace:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_reannotate.html">mx_reannotate</a></span><span class="op">(</span><span class="va">studies</span>, org <span class="op">=</span> <span class="st">"Homo sapiens"</span>, target_id <span class="op">=</span> <span class="st">"SYMBOL"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="b--correct-library-type-bias">2b. Correct Library Type Bias<a class="anchor" aria-label="anchor" href="#b--correct-library-type-bias"></a>
-</h3>
-<p>If cohorts mix poly(A)-selected and rRNA-depleted protocols, adjust
-for library type biases:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_correct_library_type.html">mx_correct_library_type</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="c--remove-batch-effects">2c. Remove Batch Effects<a class="anchor" aria-label="anchor" href="#c--remove-batch-effects"></a>
-</h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_remove_batch.html">mx_remove_batch</a></span><span class="op">(</span><span class="va">studies</span>, method <span class="op">=</span> <span class="st">"ComBat-seq"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="d--align-common-gene-space">2d. Align Common Gene Space<a class="anchor" aria-label="anchor" href="#d--align-common-gene-space"></a>
-</h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_align_genes.html">mx_align_genes</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-</div>
-<div class="section level2">
-<h2 id="per-study-differential-expression">3. Per-Study Differential Expression<a class="anchor" aria-label="anchor" href="#per-study-differential-expression"></a>
-</h2>
-<p>Run independent statistical tests on each cohort using DESeq2, edgeR,
-or limma-voom:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_de_all.html">mx_de_all</a></span><span class="op">(</span></span>
-<span>  <span class="va">studies</span>,</span>
-<span>  method  <span class="op">=</span> <span class="st">"DESeq2"</span>,</span>
-<span>  formula <span class="op">=</span> <span class="op">~</span> <span class="va">condition</span>,</span>
-<span>  BPPARAM <span class="op">=</span> <span class="fu">BiocParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/MulticoreParam-class.html" class="external-link">MulticoreParam</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Inspect significant gene counts:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_de_summary.html">mx_de_summary</a></span><span class="op">(</span><span class="va">studies</span>, padj_threshold <span class="op">=</span> <span class="fl">0.05</span>, lfc_threshold <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level2">
-<h2 id="handle-missing-genes">4. Handle Missing Genes<a class="anchor" aria-label="anchor" href="#handle-missing-genes"></a>
-</h2>
-<p>When cohorts have varying gene detection rates:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">de_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">studies</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="va">s</span><span class="op">@</span><span class="va">de_result</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Inspect gene coverage across cohorts</span></span>
-<span><span class="va">cov_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_missing_summary.html">mx_missing_summary</a></span><span class="op">(</span><span class="va">de_results</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Retain genes present in at least 2 cohorts or apply k-NN imputation</span></span>
-<span><span class="va">de_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_filter_coverage.html">mx_filter_coverage</a></span><span class="op">(</span><span class="va">de_results</span>, min_studies <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="co"># de_results &lt;- mx_impute(de_results, method = "knn")</span></span></code></pre></div>
-<hr>
-</div>
-<div class="section level2">
-<h2 id="statistical-meta-analysis">5. Statistical Meta-Analysis<a class="anchor" aria-label="anchor" href="#statistical-meta-analysis"></a>
-</h2>
-<div class="section level3">
-<h3 id="a--model-selection-guide">5a. Model Selection Guide<a class="anchor" aria-label="anchor" href="#a--model-selection-guide"></a>
-</h3>
+<p>This vignette shows the full metaXpress pipeline from GEO accessions
+to a report. Each step needs internet access or takes minutes on full
+data, so the chunks are not evaluated when the package is built. For
+executed analyses of real data, see:</p>
 <ul>
 <li>
-<strong>2 cohorts:</strong> <code>"fisher"</code> (Fisher’s combined
-probability) or <code>"stouffer"</code> (Z-score weighting).</li>
+<code><a href="../articles/quickstart.html">vignette("quickstart")</a></code>: a five-minute tour.</li>
 <li>
-<strong>3+ cohorts, low heterogeneity
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>I</mi><mn>2</mn></msup><mo>&lt;</mo><mn>25</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">I^2 &lt; 25\%</annotation></semantics></math>):</strong>
-<code>"fixed_effects"</code> (Inverse-variance).</li>
-<li>
-<strong>3+ cohorts, moderate-to-high heterogeneity
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>I</mi><mn>2</mn></msup><mo>≥</mo><mn>25</mn><mi>%</mi></mrow><annotation encoding="application/x-tex">I^2 \ge 25\%</annotation></semantics></math>):</strong>
-<code>"random_effects"</code> (DerSimonian-Laird, recommended
-default).</li>
-<li>
-<strong>Mixed heterogeneity:</strong> <code>"awmeta"</code>
-(Adaptive weighting).</li>
+<code><a href="../articles/case_study.html">vignette("case_study")</a></code>: a complete Alzheimer’s disease
+meta-analysis.</li>
 </ul>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">meta_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_meta.html">mx_meta</a></span><span class="op">(</span><span class="va">de_results</span>, method <span class="op">=</span> <span class="st">"random_effects"</span>, min_studies <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="va">meta_result</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="b--quantify-between-study-heterogeneity">5b. Quantify Between-Study Heterogeneity<a class="anchor" aria-label="anchor" href="#b--quantify-between-study-heterogeneity"></a>
-</h3>
-<p>Assess Cochran’s
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Q</mi><annotation encoding="application/x-tex">Q</annotation></semantics></math>,
-Higgins
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>I</mi><mn>2</mn></msup><annotation encoding="application/x-tex">I^2</annotation></semantics></math>,
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>τ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\tau^2</annotation></semantics></math>
-for every gene:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">het</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_heterogeneity.html">mx_heterogeneity</a></span><span class="op">(</span><span class="va">de_results</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">het</span><span class="op">$</span><span class="va">I_sq</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="c--leave-one-out-sensitivity-analysis">5c. Leave-One-Out Sensitivity Analysis<a class="anchor" aria-label="anchor" href="#c--leave-one-out-sensitivity-analysis"></a>
-</h3>
-<p>Ensure discoveries are not driven by an individual outlier
-cohort:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">loo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_sensitivity.html">mx_sensitivity</a></span><span class="op">(</span><span class="va">de_results</span>, method <span class="op">=</span> <span class="st">"random_effects"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">loo</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">r</span><span class="op">@</span><span class="va">meta_table</span><span class="op">$</span><span class="va">meta_padj</span> <span class="op">&lt;=</span> <span class="fl">0.05</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<hr>
-</div>
-</div>
-<div class="section level2">
-<h2 id="pathway-meta-analysis">6. Pathway Meta-Analysis<a class="anchor" aria-label="anchor" href="#pathway-meta-analysis"></a>
-</h2>
-<p>Perform cross-study Over-Representation Analysis (ORA) or Gene Set
-Enrichment Analysis (GSEA) on Hallmark, KEGG, or GO sets:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">meta_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_pathway_meta.html">mx_pathway_meta</a></span><span class="op">(</span><span class="va">meta_result</span>, db <span class="op">=</span> <span class="st">"Hallmarks"</span>, method <span class="op">=</span> <span class="st">"ORA"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">@</span><span class="va">pathway_result</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">@</span><span class="va">pathway_result</span><span class="op">$</span><span class="va">padj</span><span class="op">)</span>, <span class="op">]</span>, <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<p>The steps below reproduce that case study from scratch.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"remotes"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"hossainlab/metaXpress"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mdjubayerhossain.com/metaXpress/">metaXpress</a></span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="publication-visualizations">7. Publication Visualizations<a class="anchor" aria-label="anchor" href="#publication-visualizations"></a>
+<h2 id="data-ingestion-and-quality-control">1. Data ingestion and quality control<a class="anchor" aria-label="anchor" href="#data-ingestion-and-quality-control"></a>
 </h2>
 <div class="section level3">
-<h3 id="volcano-plot">Volcano Plot<a class="anchor" aria-label="anchor" href="#volcano-plot"></a>
+<h3 id="a--uniformly-processed-counts-from-geo">1a. Uniformly processed counts from GEO<a class="anchor" aria-label="anchor" href="#a--uniformly-processed-counts-from-geo"></a>
 </h3>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_volcano.html">mx_volcano</a></span><span class="op">(</span><span class="va">meta_result</span>, padj_threshold <span class="op">=</span> <span class="fl">0.05</span>, lfc_threshold <span class="op">=</span> <span class="fl">1.0</span>, label_top <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
+<p>By default, <code><a href="../reference/mx_fetch_geo.html">mx_fetch_geo()</a></code> downloads the <strong>NCBI
+GEO-generated raw counts</strong>. NCBI aligns the SRA reads of every
+eligible human and mouse series with HISAT2 and counts them with
+featureCounts against RefSeq. All studies therefore share one alignment,
+annotation and count definition, which removes a major source of
+technical heterogeneity. Genes are Entrez IDs, and symbols and gene
+types are added to <code>rowData</code>.</p>
+<p>Always name the phenotype column that holds the case/control labels.
+Automatic detection is only a fallback.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">accessions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GSE125583"</span>, <span class="st">"GSE104704"</span>, <span class="st">"GSE53697"</span>, <span class="st">"GSE173955"</span><span class="op">)</span></span>
+<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_fetch_geo.html">mx_fetch_geo</a></span><span class="op">(</span></span>
+<span>  <span class="va">accessions</span>,</span>
+<span>  condition_col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>GSE125583 <span class="op">=</span> <span class="st">"diagnosis:ch1"</span>,</span>
+<span>                    GSE104704 <span class="op">=</span> <span class="st">"study group:ch1"</span>,</span>
+<span>                    GSE53697  <span class="op">=</span> <span class="st">"disease status:ch1"</span>,</span>
+<span>                    GSE173955 <span class="op">=</span> <span class="st">"title"</span><span class="op">)</span>,</span>
+<span>  cache_dir <span class="op">=</span> <span class="st">"geo_cache"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">studies</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">condition</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">S4Vectors</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Annotated-class.html" class="external-link">metadata</a></span><span class="op">(</span><span class="va">studies</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">$</span><span class="va">count_source</span></span></code></pre></div>
+<p>Series without NCBI counts fall back to the author’s supplementary
+files (<code>source = "supplementary"</code>). Local matrices load with
+<code><a href="../reference/mx_load_local.html">mx_load_local()</a></code>, and any <code>SummarizedExperiment</code>
+(e.g. from recount3 or tximeta) converts with
+<code><a href="../reference/mx_from_se.html">mx_from_se()</a></code>.</p>
 </div>
 <div class="section level3">
-<h3 id="forest-plot">Forest Plot<a class="anchor" aria-label="anchor" href="#forest-plot"></a>
+<h3 id="b--study-selection-is-a-scientific-step">1b. Study selection is a scientific step<a class="anchor" aria-label="anchor" href="#b--study-selection-is-a-scientific-step"></a>
 </h3>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">top_gene</span> <span class="op">&lt;-</span> <span class="va">meta_result</span><span class="op">@</span><span class="va">meta_table</span><span class="op">$</span><span class="va">gene_id</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.min</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">@</span><span class="va">meta_table</span><span class="op">$</span><span class="va">meta_padj</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="fu"><a href="../reference/mx_forest.html">mx_forest</a></span><span class="op">(</span><span class="va">top_gene</span>, <span class="va">de_results</span>, <span class="va">meta_result</span><span class="op">)</span></span></code></pre></div>
+<p>Before the analysis, record for every study:</p>
+<ul>
+<li>tissue or region;</li>
+<li>disease definition and control type;</li>
+<li>library type;</li>
+<li>
+<strong>donor independence</strong>. Two GEO series from the same
+lab or brain bank often share donors (GSE95587 and GSE125583 share 89
+cases), and pooling them violates the independence assumption.</li>
+</ul>
 </div>
 <div class="section level3">
-<h3 id="heterogeneity-plot">Heterogeneity Plot<a class="anchor" aria-label="anchor" href="#heterogeneity-plot"></a>
+<h3 id="c--data-level-qc">1c. Data-level QC<a class="anchor" aria-label="anchor" href="#c--data-level-qc"></a>
 </h3>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_heterogeneity_plot.html">mx_heterogeneity_plot</a></span><span class="op">(</span><span class="va">meta_result</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">studies</span>, <span class="va">mx_qc_study</span>, min_genes <span class="op">=</span> <span class="fl">15000</span><span class="op">)</span></span>
+<span><span class="va">studies</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>                          <span class="co"># "x / 10 passed (y failed, z not evaluable)"</span></span>
+<span><span class="fu">S4Vectors</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/Annotated-class.html" class="external-link">metadata</a></span><span class="op">(</span><span class="va">studies</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">$</span><span class="va">qc</span>  <span class="co"># per-criterion status and details</span></span>
+<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_filter_studies.html">mx_filter_studies</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span> <span class="co"># drop studies failing required criteria</span></span></code></pre></div>
+<p>Each criterion is recorded as pass, fail or not evaluable. Alignment
+rate, for example, is usually missing from GEO. <code>qc_score</code>
+counts the criteria passed and is never rescaled. By default,
+<code><a href="../reference/mx_filter_studies.html">mx_filter_studies()</a></code> removes studies that fail a criterion
+required for valid DE: at least 3 replicates per group, complete
+condition labels and raw counts. Criterion 8 (exactly two groups) fails
+for series with extra groups until they are subset in step 2.</p>
 <hr>
 </div>
 </div>
 <div class="section level2">
-<h2 id="downstream-biology">8. Downstream Biology<a class="anchor" aria-label="anchor" href="#downstream-biology"></a>
+<h2 id="preparing-each-study">2. Preparing each study<a class="anchor" aria-label="anchor" href="#preparing-each-study"></a>
+</h2>
+<p>Restrict each study to the two groups being compared, choose a gene
+namespace and filter out low-count genes:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">prep</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">s</span>, <span class="va">keep_levels</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">[</span>, <span class="va">s</span><span class="op">$</span><span class="va">condition</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">keep_levels</span><span class="op">]</span></span>
+<span>  <span class="va">rd</span> <span class="op">&lt;-</span> <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="va">s</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">rd</span><span class="op">$</span><span class="va">symbol</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">rd</span><span class="op">$</span><span class="va">gene_type</span> <span class="op">==</span> <span class="st">"protein-coding"</span> <span class="op">&amp;</span></span>
+<span>           <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">rd</span><span class="op">$</span><span class="va">symbol</span><span class="op">)</span>, <span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span><span class="op">$</span><span class="va">symbol</span></span>
+<span>  <span class="va">s</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">&gt;=</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">condition</span><span class="op">)</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">contrasts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>GSE125583 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alzheimer's disease"</span>, <span class="st">"control"</span><span class="op">)</span>,</span>
+<span>                  GSE104704 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Aged, diseased"</span>, <span class="st">"Old"</span><span class="op">)</span>,</span>
+<span>                  GSE53697  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"advanced Alzheimer's Disease"</span>, <span class="st">"control"</span><span class="op">)</span>,</span>
+<span>                  GSE173955 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Alzheimer's Disease"</span>,</span>
+<span>                                <span class="st">"non-Alzheimer's Disease"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">studies</span><span class="op">$</span><span class="va">GSE173955</span><span class="op">$</span><span class="va">condition</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"_Biological.*$"</span>, <span class="st">""</span>,</span>
+<span>                                   <span class="va">studies</span><span class="op">$</span><span class="va">GSE173955</span><span class="op">$</span><span class="va">condition</span><span class="op">)</span></span>
+<span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Map</a></span><span class="op">(</span><span class="va">prep</span>, <span class="va">studies</span>, <span class="va">contrasts</span><span class="op">)</span></span></code></pre></div>
+<p>For author-supplied count tables with mixed identifiers,
+<code><a href="../reference/mx_reannotate.html">mx_reannotate()</a></code> converts Ensembl, Entrez and symbols to one
+namespace.</p>
+<p><strong>No batch correction before DE.</strong> Each study is
+analysed separately, so between-study batch effects never enter the
+per-study fold changes. <code><a href="../reference/mx_normalize.html">mx_normalize()</a></code> and
+<code><a href="../reference/mx_remove_batch.html">mx_remove_batch()</a></code> (which preserves <code>condition</code>)
+write new assays for pooled PCA, heatmaps or co-expression. They never
+overwrite the raw counts.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="per-study-differential-expression">3. Per-study differential expression<a class="anchor" aria-label="anchor" href="#per-study-differential-expression"></a>
+</h2>
+<p>Covariates enter the per-study design formula. The contrast is set
+explicitly per study, so every fold change means case / control:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">studies</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_de_all.html">mx_de_all</a></span><span class="op">(</span></span>
+<span>  <span class="va">studies</span>,</span>
+<span>  method   <span class="op">=</span> <span class="st">"DESeq2"</span>,               <span class="co"># or "edgeR" (QL) / "limma-voom"</span></span>
+<span>  formula  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">~</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">condition</span>, <span class="op">~</span> <span class="va">condition</span>, <span class="op">~</span> <span class="va">condition</span>, <span class="op">~</span> <span class="va">condition</span><span class="op">)</span>,</span>
+<span>  contrast <span class="op">=</span> <span class="va">contrasts</span>,</span>
+<span>  BPPARAM  <span class="op">=</span> <span class="fu">BiocParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/MulticoreParam-class.html" class="external-link">MulticoreParam</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/mx_de_summary.html">mx_de_summary</a></span><span class="op">(</span><span class="va">studies</span>, padj_threshold <span class="op">=</span> <span class="fl">0.05</span>, lfc_threshold <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">de_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">studies</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="va">s</span><span class="op">@</span><span class="va">de_result</span><span class="op">)</span></span></code></pre></div>
+<p>(<code>sex</code> must exist in <code>colData</code>, e.g.
+<code>studies$GSE125583$sex &lt;- studies$GSE125583$"Sex:ch1"</code>.)</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="pre-pooling-checks">4. Pre-pooling checks<a class="anchor" aria-label="anchor" href="#pre-pooling-checks"></a>
+</h2>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_study_concordance.html">mx_study_concordance</a></span><span class="op">(</span><span class="va">de_results</span><span class="op">)</span>   <span class="co"># negative r =&gt; flipped contrast</span></span>
+<span><span class="va">cov</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_missing_summary.html">mx_missing_summary</a></span><span class="op">(</span><span class="va">de_results</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span>studies_measured <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">cov</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/mx_meta.html">mx_meta()</a></code> analyses each gene over the studies that
+measured it (<code>min_studies</code>, default 2). Prefer this to
+imputation: <code><a href="../reference/mx_impute.html">mx_impute()</a></code> fills fold changes from the other
+studies, which is circular.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="meta-analysis">5. Meta-analysis<a class="anchor" aria-label="anchor" href="#meta-analysis"></a>
+</h2>
+<p>Choose the method a priori from the question being asked:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr class="header">
+<th>Question</th>
+<th>Method</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Average effect across heterogeneous cohorts (recommended)</td>
+<td>
+<code>"random_effects"</code>, <code>tau_method = "REML"</code>
+</td>
+</tr>
+<tr class="even">
+<td>Studies are technical replicates</td>
+<td><code>"fixed_effects"</code></td>
+</tr>
+<tr class="odd">
+<td>Only p-values or z-scores are available</td>
+<td>
+<code>"inverse_normal"</code> (√n weights) or
+<code>"stouffer"</code>
+</td>
+</tr>
+<tr class="even">
+<td>Same-direction effect in at least one study</td>
+<td>
+<code>"fisher"</code> (directional)</td>
+</tr>
+<tr class="odd">
+<td>DE in all, or in at least r, studies</td>
+<td>
+<code>"maxp"</code>, <code>"rop"</code>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_meta.html">mx_meta</a></span><span class="op">(</span><span class="va">de_results</span>, method <span class="op">=</span> <span class="st">"random_effects"</span>, tau_method <span class="op">=</span> <span class="st">"REML"</span><span class="op">)</span></span>
+<span><span class="va">mt</span>  <span class="op">&lt;-</span> <span class="va">res</span><span class="op">@</span><span class="va">meta_table</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mt</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">mt</span><span class="op">$</span><span class="va">meta_pvalue</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gene_id"</span>, <span class="st">"meta_log2FC"</span>, <span class="st">"ci_lower"</span>,</span>
+<span>                                 <span class="st">"ci_upper"</span>, <span class="st">"pi_lower"</span>, <span class="st">"pi_upper"</span>,</span>
+<span>                                 <span class="st">"meta_padj"</span>, <span class="st">"i_squared"</span>, <span class="st">"tau2"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>The HKSJ adjustment (<code>hksj = TRUE</code>) gives better per-gene
+confidence intervals with few studies. With fewer than about 5 studies,
+though, its t-distribution makes genome-wide FDR control unreachable
+(see the case study).</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">loo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_sensitivity.html">mx_sensitivity</a></span><span class="op">(</span><span class="va">de_results</span>, method <span class="op">=</span> <span class="st">"random_effects"</span>,</span>
+<span>                      tau_method <span class="op">=</span> <span class="st">"REML"</span><span class="op">)</span></span>
+<span><span class="va">rob</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">loo</span>, <span class="st">"robustness"</span><span class="op">)</span></span>
+<span><span class="va">core</span> <span class="op">&lt;-</span> <span class="va">rob</span><span class="op">$</span><span class="va">gene_id</span><span class="op">[</span><span class="va">rob</span><span class="op">$</span><span class="va">full_padj</span> <span class="op">&lt;=</span> <span class="fl">0.05</span> <span class="op">&amp;</span> <span class="va">rob</span><span class="op">$</span><span class="va">frac_loo_sig</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span></span></code></pre></div>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="pathways">6. Pathways<a class="anchor" aria-label="anchor" href="#pathways"></a>
+</h2>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># GSEA on the signed meta z-score (fgsea + MSigDB)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_pathway_meta.html">mx_pathway_meta</a></span><span class="op">(</span><span class="va">res</span>, db <span class="op">=</span> <span class="st">"Hallmarks"</span>, method <span class="op">=</span> <span class="st">"GSEA"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Per-study GSEA combined across studies (directional Stouffer)</span></span>
+<span><span class="va">ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_pathway_studies.html">mx_pathway_studies</a></span><span class="op">(</span><span class="va">de_results</span>, db <span class="op">=</span> <span class="st">"Reactome"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/mx_pathway_heatmap.html">mx_pathway_heatmap</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">ps</span>, <span class="st">"per_study"</span><span class="op">)</span>, top_n <span class="op">=</span> <span class="fl">25</span>, value <span class="op">=</span> <span class="st">"NES"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/mx_pathway_dedup.html">mx_pathway_dedup</a></span><span class="op">(</span><span class="va">ps</span>, gene_sets <span class="op">=</span> <span class="fu"><a href="../reference/mx_gene_sets.html">mx_gene_sets</a></span><span class="op">(</span><span class="st">"Reactome"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="figures">7. Figures<a class="anchor" aria-label="anchor" href="#figures"></a>
+</h2>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_volcano.html">mx_volcano</a></span><span class="op">(</span><span class="va">res</span>, padj_threshold <span class="op">=</span> <span class="fl">0.05</span>, lfc_threshold <span class="op">=</span> <span class="fl">0.5</span>, label_top <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/mx_forest.html">mx_forest</a></span><span class="op">(</span><span class="st">"GFAP"</span>, <span class="va">de_results</span>, <span class="va">res</span><span class="op">)</span>      <span class="co"># CI diamond + prediction interval</span></span>
+<span><span class="fu"><a href="../reference/mx_heterogeneity_plot.html">mx_heterogeneity_plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/mx_upset.html">mx_upset</a></span><span class="op">(</span><span class="va">de_results</span>, padj_threshold <span class="op">=</span> <span class="fl">0.05</span>, lfc_threshold <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="downstream-biology">8. Downstream biology<a class="anchor" aria-label="anchor" href="#downstream-biology"></a>
 </h2>
 <p>Module 9 turns the meta-signature into testable biology. Each
 function takes a public prior-knowledge resource as a plain R object, so
 any regulon, marker set or drug library can be used. The calls below
-match the pan-cancer case study.
-<code>scripts/fetch_case_study_data.R</code> shows how to download every
-resource, and the <a href="live_tutorial.html">live tutorial</a> runs
-them on bundled data.</p>
+show how to load each resource.
+<code><a href="../articles/downstream_biology.html">vignette("downstream_biology")</a></code> runs them on bundled real
+data.</p>
 <div class="section level3">
 <h3 id="a--load-prior-knowledge-resources">8a. Load Prior-Knowledge Resources<a class="anchor" aria-label="anchor" href="#a--load-prior-knowledge-resources"></a>
 </h3>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># CollecTRI TF-target regulons (OmniPath); OmniPath columns are read directly</span></span>
 <span><span class="va">collectri</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.delim</a></span><span class="op">(</span></span>
 <span>  <span class="st">"https://omnipathdb.org/interactions?datasets=collectri&amp;genesymbols=yes&amp;organisms=9606"</span></span>
@@ -325,16 +341,16 @@ them on bundled data.</p>
 <div class="section level3">
 <h3 id="b--transcription-factor-activity">8b. Transcription Factor Activity<a class="anchor" aria-label="anchor" href="#b--transcription-factor-activity"></a>
 </h3>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Use id_col = "symbol" when gene_id holds Entrez/Ensembl IDs</span></span>
-<span><span class="va">tf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_tf_activity.html">mx_tf_activity</a></span><span class="op">(</span><span class="va">meta_result</span>, <span class="va">collectri</span>, id_col <span class="op">=</span> <span class="st">"symbol"</span>, min_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">tf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_tf_activity.html">mx_tf_activity</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">collectri</span>, id_col <span class="op">=</span> <span class="st">"symbol"</span>, min_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tf</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">tf</span>, top <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="c--cell-type-composition-shifts">8c. Cell-Type Composition Shifts<a class="anchor" aria-label="anchor" href="#c--cell-type-composition-shifts"></a>
 </h3>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_cell_composition.html">mx_cell_composition</a></span><span class="op">(</span><span class="va">studies</span>, <span class="va">markers</span><span class="op">)</span></span>
 <span><span class="va">comp</span></span>
 <span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">comp</span><span class="op">)</span></span></code></pre></div>
@@ -342,9 +358,9 @@ them on bundled data.</p>
 <div class="section level3">
 <h3 id="d--consensus-co-expression-modules">8d. Consensus Co-Expression Modules<a class="anchor" aria-label="anchor" href="#d--consensus-co-expression-modules"></a>
 </h3>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">net</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_coexpression_modules.html">mx_coexpression_modules</a></span><span class="op">(</span><span class="va">studies</span>, n_genes <span class="op">=</span> <span class="fl">3000</span>, consensus <span class="op">=</span> <span class="st">"min"</span>,</span>
-<span>                               cut_height <span class="op">=</span> <span class="fl">0.3</span>, meta_result <span class="op">=</span> <span class="va">meta_result</span><span class="op">)</span></span>
+<span>                               cut_height <span class="op">=</span> <span class="fl">0.3</span>, meta_result <span class="op">=</span> <span class="va">res</span><span class="op">)</span></span>
 <span><span class="va">net</span><span class="op">$</span><span class="va">module_stats</span>      <span class="co"># pooled eigengene effect, hub genes, meta-DEG overlap</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">net</span><span class="op">$</span><span class="va">modules</span><span class="op">)</span>     <span class="co"># gene-to-module assignment with kME</span></span>
 <span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">net</span><span class="op">)</span></span></code></pre></div>
@@ -352,8 +368,8 @@ them on bundled data.</p>
 <div class="section level3">
 <h3 id="e--drug-signature-reversal">8e. Drug Signature Reversal<a class="anchor" aria-label="anchor" href="#e--drug-signature-reversal"></a>
 </h3>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">drugs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_drug_connectivity.html">mx_drug_connectivity</a></span><span class="op">(</span><span class="va">meta_result</span>, <span class="va">lincs</span>, id_col <span class="op">=</span> <span class="st">"symbol"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">drugs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mx_drug_connectivity.html">mx_drug_connectivity</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">lincs</span>, id_col <span class="op">=</span> <span class="st">"symbol"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">drugs</span>, <span class="fl">20</span><span class="op">)</span>       <span class="co"># negative reversal_score = reverses the disease signature</span></span>
 <span><span class="fu"><a href="../reference/mx_downstream_plot.html">mx_downstream_plot</a></span><span class="op">(</span><span class="va">drugs</span>, top <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span></code></pre></div>
 <hr>
@@ -365,16 +381,16 @@ them on bundled data.</p>
 <div class="section level3">
 <h3 id="generate-reproducible-reports-export">Generate Reproducible Reports &amp; Export<a class="anchor" aria-label="anchor" href="#generate-reproducible-reports-export"></a>
 </h3>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_report.html">mx_report</a></span><span class="op">(</span><span class="va">meta_result</span>, <span class="va">studies</span>, <span class="va">de_results</span>, format <span class="op">=</span> <span class="st">"html"</span>, output_dir <span class="op">=</span> <span class="st">"results/"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/mx_export.html">mx_export</a></span><span class="op">(</span><span class="va">meta_result</span>, format <span class="op">=</span> <span class="st">"csv"</span>, output_dir <span class="op">=</span> <span class="st">"results/"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_report.html">mx_report</a></span><span class="op">(</span><span class="va">res</span>, <span class="va">de_results</span>, output_dir <span class="op">=</span> <span class="st">"results"</span><span class="op">)</span>    <span class="co"># HTML with methods text</span></span>
+<span><span class="fu"><a href="../reference/mx_export.html">mx_export</a></span><span class="op">(</span><span class="va">res</span>, format <span class="op">=</span> <span class="st">"csv"</span>, output_dir <span class="op">=</span> <span class="st">"results"</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session Information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/mx_session_info.html">mx_session_info</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">session_info</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -39,9 +39,9 @@ datasets.
 - [`mx_qc_study()`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md)
   : Score a study against the 10-point QC checklist
 - [`mx_filter_studies()`](https://mdjubayerhossain.com/metaXpress/reference/mx_filter_studies.md)
-  : Filter studies below a QC threshold
+  : Remove studies that fail quality control
 - [`mx_cluster_samples()`](https://mdjubayerhossain.com/metaXpress/reference/mx_cluster_samples.md)
-  : Automatically cluster samples by metadata
+  : Suggest sample groups from metadata text
 - [`mx_study_overview()`](https://mdjubayerhossain.com/metaXpress/reference/mx_study_overview.md)
   : Study characteristics overview plot
 
@@ -57,7 +57,7 @@ align gene spaces.
 - [`mx_correct_library_type()`](https://mdjubayerhossain.com/metaXpress/reference/mx_correct_library_type.md)
   : Correct for library type bias (polyA vs rRNA-depleted)
 - [`mx_remove_batch()`](https://mdjubayerhossain.com/metaXpress/reference/mx_remove_batch.md)
-  : Remove batch effects across studies
+  : Remove between-study batch effects for pooled expression analyses
 - [`mx_align_genes()`](https://mdjubayerhossain.com/metaXpress/reference/mx_align_genes.md)
   : Restrict all studies to a common set of genes
 
@@ -75,15 +75,20 @@ limma-voom.
 
 ## Module 4: Meta-Analysis Statistics
 
-P-value combination (Fisher, Stouffer), effect-size meta-analysis (REM,
-FEM), and heterogeneity.
+Random-effects (REML/PM/DL, HKSJ) and fixed-effect models, directional
+p-value combination, heterogeneity, concordance and leave-one-out
+robustness.
 
 - [`mx_meta()`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md)
   : Run meta-analysis across per-study DE results
+- [`mx_study_concordance()`](https://mdjubayerhossain.com/metaXpress/reference/mx_study_concordance.md)
+  : Check fold-change concordance between studies
 - [`mx_heterogeneity()`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity.md)
   : Compute per-gene heterogeneity statistics
 - [`mx_sensitivity()`](https://mdjubayerhossain.com/metaXpress/reference/mx_sensitivity.md)
   : Leave-one-out sensitivity analysis
+- [`mx_small_study()`](https://mdjubayerhossain.com/metaXpress/reference/mx_small_study.md)
+  : Small-study effects and publication bias tests
 
 ## Module 5: Missing Gene Handling
 
@@ -99,13 +104,17 @@ coverage filtering.
 
 ## Module 6: Pathway Meta-Analysis
 
-Cross-study over-representation (ORA) and GSEA, consensus pathways, and
-deduplication.
+fgsea GSEA and ORA on the meta-signature, per-study GSEA combined across
+studies, consensus and redundancy filtering.
 
+- [`mx_gene_sets()`](https://mdjubayerhossain.com/metaXpress/reference/mx_gene_sets.md)
+  : Retrieve gene sets from MSigDB
 - [`mx_pathway_meta()`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_meta.md)
-  : Perform pathway meta-analysis on meta-analysis results
+  : Pathway enrichment of meta-analysis results
+- [`mx_pathway_studies()`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_studies.md)
+  : Cross-study pathway meta-analysis
 - [`mx_pathway_consensus()`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_consensus.md)
-  : Find consensus pathways across studies
+  : Find consensus pathways across studies (vote counting)
 - [`mx_pathway_dedup()`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_dedup.md)
   : Remove redundant pathways
 - [`mx_pathway_heatmap()`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_heatmap.md)
@@ -126,6 +135,8 @@ and UpSet diagrams.
   : UpSet plot of DEG overlap across studies
 - [`mx_heterogeneity_plot()`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity_plot.md)
   : I-squared distribution plot
+- [`mx_funnel()`](https://mdjubayerhossain.com/metaXpress/reference/mx_funnel.md)
+  : Funnel plot for one gene
 
 ## Module 8: Reporting & Export
 

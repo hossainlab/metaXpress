@@ -52,8 +52,7 @@ step:
 
 - [`mx_qc_study`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md):
 
-  Score a study against the 10-point QC checklist derived from Heberle
-  et al. (2025).
+  Score a study against a 10-point data-level QC checklist.
 
 - [`mx_cluster_samples`](https://mdjubayerhossain.com/metaXpress/reference/mx_cluster_samples.md):
 
@@ -112,9 +111,9 @@ step:
 
 - [`mx_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md):
 
-  Combine per-study DE results using Fisher, Stouffer, inverse-normal,
-  fixed-effects, random-effects (DerSimonian-Laird), or AWmeta adaptive
-  weighting. Returns a
+  Combine per-study DE results with random-effects (REML/PM/DL, optional
+  Hartung-Knapp), fixed-effect, directional Fisher, Stouffer, weighted
+  inverse-normal, minP, maxP or rOP methods. Returns a
   [`metaXpressResult`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressResult-class.md).
 
 - [`mx_heterogeneity`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity.md):
@@ -221,10 +220,9 @@ For the complete GEO-to-report workflow see
 
 ## References
 
-Heberle, H. et al. (2025) A comprehensive framework for quality control
-and meta-analysis of bulk RNA-seq data. *Alzheimer's & Dementia*,
-**21**(1), e70025.
-[doi:10.1002/alz.70025](https://doi.org/10.1002/alz.70025)
+Heberle, B.A. et al. (2024) Systematic review and meta-analysis of bulk
+RNAseq studies in human Alzheimer's disease brain tissue. *bioRxiv*.
+[doi:10.1101/2024.11.07.622520](https://doi.org/10.1101/2024.11.07.622520)
 
 Fisher, R.A. (1932) *Statistical Methods for Research Workers*. 4th edn.
 Edinburgh: Oliver & Boyd.

@@ -11,7 +11,7 @@ Check](https://github.com/hossainlab/metaXpress/actions/workflows/check.yaml/bad
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.99.0-276DC3?logo=github)](https://github.com/hossainlab/metaXpress)
+[![Version](https://img.shields.io/badge/version-0.99.1-276DC3?logo=github)](https://github.com/hossainlab/metaXpress)
 [![R
 version](https://img.shields.io/badge/R-%E2%89%A54.3.0-276DC3?logo=r)](https://www.r-project.org/)
 [![GitHub
@@ -21,21 +21,28 @@ Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://gith
 
 ------------------------------------------------------------------------
 
-### 🌐 Online Resources & Live Demos
+### 🌐 Documentation (all examples run on real public data)
 
-- 📖 **[Interactive Documentation
-  Website](https://mdjubayerhossain.com/metaXpress/)** — Complete
-  function references, guides, and tutorials.
-- ⚡ **[Live Demonstration
-  Tutorial](https://mdjubayerhossain.com/metaXpress/articles/live_tutorial.html)**
-  — Step-by-step hands-on tutorial from GitHub installation to
-  multi-study meta-analysis with live rendered outputs and plots.
-- 🔬 **[Public GEO Pan-Cancer Case Study
-  Report](https://mdjubayerhossain.com/metaXpress/case_study_results/README.md)**
-  (or view the [Online
-  Vignette](https://mdjubayerhossain.com/metaXpress/articles/case_study.html))
-  — Multi-cohort validation on 52 patient samples across colorectal,
-  pancreatic, and renal cancers with embedded publication-grade figures.
+- 📖 **[Documentation
+  website](https://mdjubayerhossain.com/metaXpress/)**: function
+  reference and articles.
+- 🚀 **[Getting
+  started](https://mdjubayerhossain.com/metaXpress/articles/quickstart.html)**:
+  per-study DE on airway (GSE52778) and a four-cohort Alzheimer’s
+  meta-analysis in five minutes.
+- 🧠 **[Case study: Alzheimer’s disease
+  brain](https://mdjubayerhossain.com/metaXpress/articles/case_study.html)**:
+  4 independent GEO cohorts (340 brains). Covers study selection and
+  donor-overlap checks, model choice, heterogeneity and prediction
+  intervals, leave-one-out robustness, and cross-study pathway
+  meta-analysis.
+- 🔁 **[Full
+  workflow](https://mdjubayerhossain.com/metaXpress/articles/full_workflow.html)**:
+  from GEO accessions to an HTML report.
+- 🧬 **[Downstream
+  biology](https://mdjubayerhossain.com/metaXpress/articles/downstream_biology.html)**:
+  TF activity, cell composition, consensus co-expression and drug
+  reversal.
 
 ------------------------------------------------------------------------
 
@@ -74,7 +81,7 @@ It provides a single, opinionated, end-to-end pipeline:
              │
              ▼
     ┌──────────────────────┐
-    │  Module 4: Meta-     │  mx_meta  (6 statistical methods)
+    │  Module 4: Meta-     │  mx_meta  (9 statistical methods)
     │  Analysis Statistics │
     └────────┬─────────────┘
              │
@@ -129,54 +136,51 @@ pak::pkg_install("hossainlab/metaXpress")
 
 library(metaXpress)
 packageVersion("metaXpress")
-# [1] '0.99.0'
+# [1] '0.99.1'
 ```
 
 ------------------------------------------------------------------------
 
-## 🔬 Scientific Validation: Public GEO Pan-Cancer Case Study
+## 🔬 Validation
 
-`metaXpress` has been benchmarked and scientifically validated across
-**three independent public NCBI GEO bulk RNA-seq cohorts** totaling **52
-patient samples** and **39,376 aligned genes**: - **Colorectal
-Adenocarcinoma (CRC):**
-[GSE130688](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE130688)
-($`n = 30`$, 10/10 QC score) - **Pancreatic Ductal Adenocarcinoma
-(PDAC):**
-[GSE136569](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE136569)
-($`n = 10`$, 10/10 QC score) - **Clear Cell Renal Cell Carcinoma
-(ccRCC):**
-[GSE171485](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE171485)
-($`n = 12`$, 10/10 QC score)
+**Statistics are tested against reference implementations**
+(`tests/testthat`):
 
-### Key Discoveries
+- **Random effects.** Pooled effect, SE, p-value, tau², Q and CI agree
+  with
+  [`metafor::rma()`](https://wviechtb.github.io/metafor/reference/rma.uni.html)
+  to within 1e-7. This covers DerSimonian-Laird, REML and Paule-Mandel
+  estimators, with and without Hartung-Knapp-Sidik-Jonkman.
+- **Per-study DE.**
+  [`mx_de()`](https://mdjubayerhossain.com/metaXpress/reference/mx_de.md)
+  reproduces native DESeq2 exactly on airway (GSE52778, paired design
+  `~ cell + condition`). DESeq2, edgeR-QL and limma-voom log2FCs
+  correlate at r ≥ 0.997, all with log2-scale SEs.
+- **P-value methods.** Fisher, Stouffer, weighted inverse-normal, minP,
+  maxP and rOP are tested against their closed forms. The tests also
+  confirm that opposite-direction effects do not accumulate.
 
-- **558 Shared Meta-DEGs** identified
-  ($`\text{FDR} < 0.05, |\log_2\text{FC}| \ge 1.0`$) with 100%
-  directional concordance and zero between-study heterogeneity
-  ($`I^2 = 0\%`$).
-- **Statistical Power Amplification:** Rescued small-sample cohorts
-  (e.g. GSE171485 with only 18 individual DEGs) into a well-powered
-  pooled consensus.
-- **Biomarker Recovery:** Successfully recovered canonical oncogenes
-  (**`MST1R`**, **`MUC4`**, **`IGF2BP3`**, **`CDCP1`**) and conserved
-  tumor suppressors (**`FAM107A`**).
-- **Downstream Biology:** E2F and NF-κB transcription factor activation;
-  `MST1R`/`CDCP1` as hubs of a co-expression module conserved in all
-  cohorts; TGF-β receptor, CDK, MEK and MDM2 inhibitors ranked as top
-  LINCS signature reversers.
+**Real-data case study: Alzheimer’s disease brain.** Four independent
+GEO cohorts were analysed, all with NCBI uniformly processed counts:
 
-| Study Characteristics Overview | Pan-Cancer Meta-Volcano |
-|:--:|:--:|
-| ![Study Overview](reference/figures/case_study_study_overview.png) | ![Volcano Plot](reference/figures/case_study_volcano_plot.png) |
+| Cohort    | Region                | AD / control |
+|-----------|-----------------------|--------------|
+| GSE125583 | Fusiform gyrus        | 218 / 70     |
+| GSE104704 | Lateral temporal lobe | 12 / 10      |
+| GSE53697  | Dorsolateral PFC      | 6 / 6        |
+| GSE173955 | Hippocampus           | 8 / 10       |
 
-![Downstream biology
-applications](reference/figures/app_downstream_panel.png)
+GSE95587 and GSE159699 were excluded because their donors overlap with
+included cohorts. The random-effects REML meta-analysis recovers
+established AD biology:
 
-👉 **Read the complete scientific report:**
-[case_study_results/README.md](https://mdjubayerhossain.com/metaXpress/case_study_results/README.md)
-or online at
-<https://mdjubayerhossain.com/metaXpress/articles/case_study.html>.
+- **Up:** GFAP, C4B, CD44.
+- **Down:** VGF, BDNF, CRH, NPTX2, VIP.
+- **Pathways:** loss of oxidative phosphorylation; gain of
+  TNF-alpha/NF-kB and IL6/JAK/STAT3 signalling.
+
+The leave-one-out analysis identifies a robust core of genes that
+survives the removal of any single cohort.
 
 ------------------------------------------------------------------------
 
@@ -193,20 +197,25 @@ built on two S4 objects that pass cleanly from step to step.
 - **One workflow, end to end.** GEO ingestion → QC → harmonization →
   per-study DE → meta-analysis → pathways → figures → report, all
   through `mx_*` functions that chain directly.
-- **Study quality is explicit.** A 10-point QC checklist (derived from
-  Heberle et al., 2025) scores every study, so weak cohorts are filtered
-  on documented criteria rather than intuition.
+- **Study quality is explicit.** A data-level QC checklist and a
+  fold-change concordance check (which catches flipped contrasts) run
+  before pooling.
+- **Uniform quantification.** By default, counts come from NCBI’s GEO
+  RNA-seq pipeline, so every study shares the same aligner, annotation
+  and counting.
 - **Statistically sound by design.** DE is always run independently per
   study (DESeq2, edgeR or limma-voom) before combining — never pooled —
   avoiding batch-confounded inference.
-- **Choose the right meta-method.** Six methods (Fisher, Stouffer,
-  inverse-normal, fixed effects, DerSimonian–Laird random effects,
-  AWmeta) behind a single `method` argument, with I² heterogeneity
-  reported for every gene.
-- **Missing genes are handled, not hidden.** Genes absent from some
-  studies are reported and either imputed or filtered by coverage,
-  instead of disappearing in an intersect.
-- **Biology, not just gene lists.** Cross-study ORA/GSEA, transcription
+- **Choose the right meta-method.** Nine methods (random effects with
+  REML/PM/DL and optional HKSJ, fixed effect, directional Fisher,
+  Stouffer, weighted inverse-normal, minP, maxP, rOP, AWmeta) behind one
+  `method` argument. Every gene gets tau², I², a 95% CI and a prediction
+  interval. Results are validated against `metafor`.
+- **Missing genes are handled, not hidden.** Each gene is pooled over
+  the studies that measured it, and `n_studies` is reported. Genes are
+  never silently dropped in an intersect.
+- **Biology, not just gene lists.** fgsea GSEA/ORA on the
+  meta-signature, per-study GSEA combined across studies, transcription
   factor activity, cell-composition meta-analysis, consensus
   co-expression modules and drug-reversal ranking turn meta-signatures
   into testable hypotheses.
@@ -216,19 +225,6 @@ built on two S4 objects that pass cleanly from step to step.
 - **Scales with BiocParallel.** Per-study steps parallelize out of the
   box on laptops or clusters.
 
-| Feature                                    | metaXpress | DExMA | GEDI | limma |
-|--------------------------------------------|:----------:|:-----:|:----:|:-----:|
-| GEO public data ingestion                  |     ✅     |  ❌   |  ❌  |  ❌   |
-| 10-point study QC checklist                |     ✅     |  ❌   |  ❌  |  ❌   |
-| Cross-platform harmonization               |     ✅     |  ❌   |  ✅  |  ❌   |
-| Library-type bias correction               |     ✅     |  ❌   |  ✅  |  ❌   |
-| Per-study DE (3 engines)                   |     ✅     |  ❌   |  ❌  |  ✅   |
-| 6 meta-analysis methods                    |     ✅     |  ✅   |  ❌  |  ❌   |
-| Missing gene imputation                    |     ✅     |  ✅   |  ❌  |  ❌   |
-| Pathway meta-analysis                      |     ✅     |  ❌   |  ❌  |  ❌   |
-| TF activity, co-expression & drug reversal |     ✅     |  ❌   |  ❌  |  ❌   |
-| Reproducible report export                 |     ✅     |  ❌   |  ❌  |  ❌   |
-
 ------------------------------------------------------------------------
 
 ## Quick Start
@@ -237,71 +233,89 @@ built on two S4 objects that pass cleanly from step to step.
 
 library(metaXpress)
 
-# ── 1. Fetch and QC studies from GEO ──────────────────────────────────────
-# Download count matrices and curated metadata directly from NCBI GEO
-studies <- mx_fetch_geo(c("GSE130688", "GSE136569", "GSE171485"))
+# 1. Uniformly processed raw counts from GEO (NCBI pipeline)
+studies <- mx_fetch_geo(
+  c("GSE125583", "GSE104704", "GSE53697", "GSE173955"),
+  condition_col = c(GSE125583 = "diagnosis:ch1", GSE104704 = "study group:ch1",
+                    GSE53697 = "disease status:ch1", GSE173955 = "title"))
 
-# Filter studies passing quality control criteria (score >= 7/10)
-studies <- mx_filter_studies(studies, qc_threshold = 7)
-
-# ── 2. Harmonize ──────────────────────────────────────────────────────────
-# Standardize gene identifiers to SYMBOL
-studies <- mx_reannotate(studies, org = "Homo sapiens", target_id = "SYMBOL")
-
-# Align common gene universe across cohorts
-studies <- mx_align_genes(studies)
-
-# ── 3. Per-study Differential Expression ──────────────────────────────────
-# Fit negative binomial GLMs independently across cohorts
-studies <- mx_de_all(studies, method = "DESeq2", formula = ~ condition)
-mx_de_summary(studies)
-
-# ── 4. Handle Missing Genes ───────────────────────────────────────────────
+# 2. Per-study DE from raw counts, covariates and explicit contrasts
+studies <- mx_de_all(studies, method = "DESeq2",
+                     formula  = list(~ sex + condition, ~ condition,
+                                     ~ condition, ~ condition),
+                     contrast = list(c("Alzheimer's disease", "control"),
+                                     c("Aged, diseased", "Old"),
+                                     c("advanced Alzheimer's Disease", "control"),
+                                     c("Alzheimer's Disease", "non-Alzheimer's Disease")))
 de_results <- lapply(studies, function(s) s@de_result)
-de_results <- mx_filter_coverage(de_results, min_studies = 2)
 
-# ── 5. Statistical Meta-Analysis ──────────────────────────────────────────
-# Combine effect sizes and standard errors via DerSimonian-Laird Random Effects
-meta_result <- mx_meta(de_results, method = "random_effects")
+# 3. Check orientation, then pool (random effects, REML)
+mx_study_concordance(de_results)
+res <- mx_meta(de_results, method = "random_effects", tau_method = "REML")
 
-# ── 6. Pathway Meta-Analysis ──────────────────────────────────────────────
-meta_result <- mx_pathway_meta(meta_result, db = "Hallmarks", method = "ORA")
+# 4. Robustness, pathways, figures, report
+loo <- mx_sensitivity(de_results, tau_method = "REML")
+res <- mx_pathway_meta(res, db = "Hallmarks")          # fgsea GSEA
+ps  <- mx_pathway_studies(de_results, db = "Hallmarks") # cross-study pathways
+mx_volcano(res); mx_forest("GFAP", de_results, res)
+mx_report(res, de_results, output_dir = "results")
+```
 
-# ── 7. Visualize Results ──────────────────────────────────────────────────
-mx_study_overview(studies)           # QC metrics and cohort depths
-mx_volcano(meta_result, label_top = 15)  # Publication-grade volcano plot
-mx_heterogeneity_plot(meta_result)   # Higgins I² distribution
+The per-study results for these four cohorts ship with the package, so
+the analysis runs offline:
 
-# Forest plot for top-ranked candidate gene
-top_gene <- meta_result@meta_table$gene_id[which.min(meta_result@meta_table$meta_padj)]
-mx_forest(top_gene, de_results, meta_result)
+``` r
 
-# ── 8. Export ─────────────────────────────────────────────────────────────
-# Export results table
-mx_export(meta_result, format = "csv", output_dir = "results/")
+ad  <- readRDS(system.file("extdata", "ad_brain_de.rds", package = "metaXpress"))
+res <- mx_meta(ad$de_results)
 ```
 
 ------------------------------------------------------------------------
 
 ## Meta-Analysis Statistical Methods
 
-metaXpress implements six statistical methods selectable via the
-`method` argument in
-[`mx_meta()`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md):
+[`mx_meta()`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md)
+implements two families of methods. Effect-size models pool per-study
+log2 fold changes weighted by their sampling variance; p-value
+combination methods pool evidence without pooling effects and answer
+different hypotheses. The random-effects estimates (DL, REML,
+Paule-Mandel, with optional Hartung-Knapp-Sidik-Jonkman adjustment) are
+tested to agree with
+[`metafor::rma()`](https://wviechtb.github.io/metafor/reference/rma.uni.html)
+to within 1e-7.
 
-| Method | `method =` | Effect Size | Handles Heterogeneity | Min Studies | Reference |
-|----|----|:--:|:--:|:--:|----|
-| Fisher’s combined p-value | `"fisher"` | ❌ | ❌ | 2 | Rau et al. 2013 |
-| Stouffer’s Z-score | `"stouffer"` | ❌ | ❌ | 2 | Rau et al. 2013 |
-| Fused inverse-normal | `"inverse_normal"` | ❌ | Partial | 2 | Prasad & Li 2021 |
-| Fixed effects (Inverse-variance) | `"fixed_effects"` | ✅ | ❌ | 2 | Keel & Lindholm-Perry 2022 |
-| **Random effects** *(default)* | `"random_effects"` | ✅ | ✅ | 3 | Keel & Lindholm-Perry 2022 |
-| Adaptive weighting (AWmeta) | `"awmeta"` | ✅ | ✅ | 3 | Hu et al. 2025 |
+| Method | `method =` | Hypothesis / estimand | Reference |
+|----|----|----|----|
+| **Random effects** *(default)* | `"random_effects"` | Average log2FC across populations; reports tau², I², 95% CI and prediction interval | DerSimonian & Laird 1986; Viechtbauer 2005; IntHout et al. 2014 |
+| Fixed (common) effect | `"fixed_effects"` | Single shared log2FC (studies are near-replicates) | Borenstein et al. 2010 |
+| Fisher (directional) | `"fisher"` | Effect in a common direction in ≥1 study | Fisher 1932; Owen 2009 |
+| Stouffer | `"stouffer"` | Signed Z-score combination, equal weights | Stouffer et al. 1949 |
+| Weighted inverse-normal | `"inverse_normal"` | Signed Z-score combination weighted by √n | Marot et al. 2009; Rau et al. 2014 |
+| Tippett minP | `"minp"` | DE in at least one study | Tippett 1931 |
+| Wilkinson maxP | `"maxp"` | DE in all studies | Wilkinson 1951 |
+| r-th ordered p (rOP) | `"rop"` | DE in at least *r* studies | Song & Tseng 2014 |
+| AWmeta | `"awmeta"` | AW-Fisher p-value with per-gene study selection + REML effect over selected studies | Li & Tseng 2011; Huo et al. 2020; Hu et al. 2026 |
 
-**Method Selection Guide:** - **2 studies:** use `"fisher"` or
-`"stouffer"` - **3+ studies, $`I^2 < 25\%`$:** use `"fixed_effects"` -
-**3+ studies, $`I^2 \ge 25\%`$:** use `"random_effects"` (default) -
-**Mixed or unknown heterogeneity:** use `"awmeta"`
+**Choosing a method.** Pick the method a priori from the scientific
+question, not from the number of significant genes it returns:
+
+- **Consensus disease signature (most common):** `"random_effects"` with
+  `tau_method = "REML"`. Report I², tau² and the prediction interval.
+  With fewer than ~5 studies consider `hksj = TRUE`, which gives
+  better-calibrated confidence intervals.
+- **Studies are technical replicates of one design:** `"fixed_effects"`.
+- **No usable standard errors (e.g. only p-values published):**
+  `"inverse_normal"` (with sample sizes) or `"stouffer"`.
+- **Genes changed in all, or in most, studies:** `"maxp"` or `"rop"`.
+- **Which studies drive each gene:** `"awmeta"` reports the AW-selected
+  studies per gene (`aw_studies`).
+
+Before pooling, run
+[`mx_study_concordance()`](https://mdjubayerhossain.com/metaXpress/reference/mx_study_concordance.md).
+A negative fold-change correlation between two studies almost always
+means their case/control contrast is flipped. After pooling, run
+[`mx_sensitivity()`](https://mdjubayerhossain.com/metaXpress/reference/mx_sensitivity.md)
+for a leave-one-out robustness table.
 
 ------------------------------------------------------------------------
 
@@ -312,29 +326,37 @@ metaXpress implements six statistical methods selectable via the
                        ├── metadata                                    ├── method
                        ├── accession                                   ├── n_studies
                        ├── organism                                    ├── heterogeneity
-                       ├── qc_score (0–10)                            └── pathway_result
+                       ├── qc_score (criteria passed)                 └── pathway_result
                        └── de_result
 
 ------------------------------------------------------------------------
 
-## 10-Point Study QC Scoring
+## Study QC
 
 [`mx_qc_study()`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md)
-benchmarks each study against 10 objective criteria (Heberle et
-al. 2025):
+records each of 10 data-level criteria as **pass**, **fail** or **not
+evaluable**. Alignment, rRNA and duplicate metrics, for example, are
+rarely deposited in GEO. `qc_score` is the number of criteria passed. It
+is never rescaled, so missing information cannot inflate it.
+[`mx_filter_studies()`](https://mdjubayerhossain.com/metaXpress/reference/mx_filter_studies.md)
+decides on failures. By default it excludes a study that fails a
+criterion required for valid count-based DE: replicates, condition
+labels or raw counts. The thresholds are metaXpress defaults informed by
+Schurch et al. (2016). Assess study-level reporting quality separately,
+e.g. with the tool of Heberle et al. (2024).
 
-| \#  | Criterion             | Threshold                                     |
-|-----|-----------------------|-----------------------------------------------|
-| 1   | Minimum sample size   | ≥ 3 replicates per group                      |
-| 2   | Sequencing depth      | Median ≥ 10M reads                            |
-| 3   | Alignment rate        | Mean ≥ 70%                                    |
-| 4   | rRNA contamination    | \< 10%                                        |
-| 5   | Duplicate rate        | \< 50%                                        |
-| 6   | Gene detection rate   | ≥ 15,000 genes in ≥ 50% of samples            |
-| 7   | Metadata completeness | `condition` + `sample_id` present             |
-| 8   | Clear case/control    | Exactly 2 condition levels                    |
-| 9   | No batch confounding  | Batch not perfectly correlated with condition |
-| 10  | Raw counts            | Integer counts (not FPKM/TPM)                 |
+| \# | Criterion | Pass if | Evaluable when |
+|----|----|----|----|
+| 1 | Sample size | ≥ 3 samples per group | always |
+| 2 | Sequencing depth | median assigned reads ≥ 10M | always |
+| 3 | Alignment rate | mean ≥ 70% | `alignment_rate` in colData |
+| 4 | rRNA contamination | mean \< 10% | `rrna_fraction` in colData |
+| 5 | Duplicate rate | mean \< 50% | `duplicate_rate` in colData |
+| 6 | Gene detection | ≥ `min_genes` (15,000) genes in ≥ 50% of samples | always |
+| 7 | Condition labels | every sample labelled | always |
+| 8 | Clear contrast | exactly 2 condition levels | always |
+| 9 | Batch confounding | batch not aliased with condition | multi-level `batch` column |
+| 10 | Raw counts | non-negative integers, max \> 1,000 | always |
 
 ------------------------------------------------------------------------
 
@@ -344,21 +366,21 @@ al. 2025):
 
 | Function | Description |
 |----|----|
-| `mx_fetch_geo(accessions)` | Download count matrices + metadata from GEO |
+| `mx_fetch_geo(accessions, condition_col)` | NCBI uniformly processed raw counts + metadata from GEO |
 | `mx_fetch_sra(srp_ids)` | Fetch from SRA via `recount3` |
 | `mx_load_local(count_paths, metadata_paths)` | Load user-supplied files |
-| `mx_qc_study(study)` | Apply 10-point QC checklist |
-| `mx_cluster_samples(study)` | Auto-cluster samples from metadata strings |
-| `mx_filter_studies(studies, qc_threshold)` | Remove studies below QC threshold |
+| `mx_qc_study(study)` | 10 data-level criteria: pass / fail / not evaluable |
+| `mx_cluster_samples(study)` | Suggest groups from metadata text (new `cluster` column) |
+| `mx_filter_studies(studies, required)` | Remove studies failing required QC criteria |
 
 **Module 2 — Normalization & Harmonization**
 
 | Function | Description |
 |----|----|
-| `mx_reannotate(studies, org, target_id)` | Standardize gene ID namespace |
-| `mx_normalize(study, method)` | TMM / VST / CPM / TPM / quantile |
+| `mx_reannotate(studies, org, target_id)` | Human / mouse / rat or custom mapping; strips Ensembl versions; collapses duplicates (max-mean / sum / drop) |
+| `mx_normalize(study, method)` | TMM / VST / CPM / TPM / quantile into a new assay (raw counts kept) |
 | `mx_correct_library_type(studies)` | polyA vs rRNA-depleted correction |
-| `mx_remove_batch(studies, method)` | ComBat-seq / ComBat / limma / harmony |
+| `mx_remove_batch(studies, method)` | ComBat-seq / ComBat / limma, preserving `condition`; new assay, for pooled visualisation only |
 | `mx_align_genes(studies)` | Restrict to common gene universe |
 
 **Module 3 — Per-Study DE**
@@ -371,11 +393,13 @@ al. 2025):
 
 **Module 4 — Meta-Analysis Statistics**
 
-| Function                       | Description                        |
-|--------------------------------|------------------------------------|
-| `mx_meta(de_results, method)`  | Run meta-analysis (6 methods)      |
-| `mx_heterogeneity(de_results)` | I², Q-stat, τ² per gene            |
-| `mx_sensitivity(de_results)`   | Leave-one-out sensitivity analysis |
+| Function | Description |
+|----|----|
+| `mx_meta(de_results, method, tau_method, hksj)` | Random/fixed effects, directional Fisher, Stouffer, inverse-normal, minP, maxP, rOP, AWmeta |
+| `mx_study_concordance(de_results)` | Pairwise fold-change concordance; flags flipped contrasts |
+| `mx_heterogeneity(de_results)` | I², Q-stat, τ² per gene |
+| `mx_sensitivity(de_results)` | Leave-one-out analysis with a robustness table |
+| `mx_small_study(de_results)` | Per-gene Egger / Begg small-study (publication bias) tests |
 
 **Module 5 — Missing Gene Handling**
 
@@ -389,7 +413,9 @@ al. 2025):
 
 | Function | Description |
 |----|----|
-| `mx_pathway_meta(meta_result, db)` | ORA / GSEA with Hallmarks, KEGG, Reactome, GO |
+| `mx_gene_sets(db, id_type)` | MSigDB collections (Hallmarks, Reactome, KEGG MEDICUS, WikiPathways, GO BP) |
+| `mx_pathway_meta(meta_result, db)` | fgsea GSEA (signed meta z) or direction-split ORA on the meta-signature |
+| `mx_pathway_studies(de_results, db)` | Per-study GSEA combined across studies (directional Stouffer) |
 | `mx_pathway_consensus(pathway_results)` | Pathways significant across majority of studies |
 | `mx_pathway_dedup(pathway_results)` | Remove redundant pathways |
 | `mx_pathway_heatmap(pathway_results)` | Cross-study pathway heatmap |
@@ -409,7 +435,7 @@ al. 2025):
 
 | Function | Description |
 |----|----|
-| `mx_report(meta_result, ..., format)` | Render HTML / PDF report |
+| `mx_report(meta_result, de_results, format)` | HTML / PDF report with methods text, CIs, PIs, robustness |
 | `mx_export(meta_result, format)` | Export CSV / Excel / RDS |
 | [`mx_session_info()`](https://mdjubayerhossain.com/metaXpress/reference/mx_session_info.md) | Capture session info for reproducibility |
 
@@ -453,11 +479,15 @@ Module 2: Normalization & batch correction
 
 Module 3: DESeq2 / edgeR / limma-voom wrappers
 
-Module 4: All 6 meta-analysis methods
+Module 4: 9 meta-analysis methods (incl. AWmeta), validated against
+metafor / AWFisher
+
+Small-study effect tests (Egger, Begg) and funnel plots
 
 Module 5: Missing gene handling
 
-Module 6: Pathway meta-analysis (ORA + GSEA)
+Module 6: Pathway meta-analysis (fgsea GSEA, ORA, cross-study
+combination)
 
 Module 7: Visualization suite
 
@@ -478,14 +508,17 @@ Bioconductor submission
 
 | Method | Reference |
 |----|----|
-| Fisher / Stouffer meta-analysis | Rau, Marot & Jaffrézic (2013) *BMC Bioinformatics* |
-| Fused inverse-normal | Prasad & Li (2021) *BMC Bioinformatics* |
-| Random effects (DerSimonian-Laird) | Keel & Lindholm-Perry (2022) *Front. Genetics* |
-| AWmeta adaptive weighting | Hu et al. (2025) *bioRxiv* |
-| Missing gene imputation | Villatoro-García et al. (2022) *Mathematics* (DExMA) |
-| Library-type correction | Bush et al. (2017) *BMC Bioinformatics* |
-| Study QC criteria | Heberle et al. (2025) *Alzheimer’s & Dementia* |
-| Sample clustering from GEO | Coke, Niranjan & Ewing (2025) *bioRxiv* |
+| RNA-seq differential meta-analysis | Rau, Marot & Jaffrézic (2014) *BMC Bioinformatics* 15:91 |
+| Random effects / tau² estimators | DerSimonian & Laird (1986); Viechtbauer (2005); Veroniki et al. (2016) |
+| Hartung-Knapp-Sidik-Jonkman | IntHout, Ioannidis & Borm (2014) *BMC Med Res Methodol* 14:25 |
+| Prediction intervals | Higgins, Thompson & Spiegelhalter (2009) *JRSS A* 172:137 |
+| Directional Fisher (Pearson) test | Owen (2009) *Ann Stat* 37:3867 |
+| r-th ordered p-value | Song & Tseng (2014) *Ann Appl Stat* 8:777 |
+| Missing gene handling | Villatoro-García et al. (2022) *Mathematics* 10:3376 (DExMA) |
+| Library-type correction | Bush et al. (2017) *BMC Bioinformatics* 18:301 |
+| Study-quality assessment | Heberle et al. (2024) *bioRxiv* <doi:10.1101/2024.11.07.622520> |
+| AW-Fisher / AWmeta | Li & Tseng (2011) *Ann Appl Stat* 5:994; Huo et al. (2020) *Bioinformatics* 36:524; Hu et al. (2026) *Curr Issues Mol Biol* 48:530 |
+| Small-study effects | Egger et al. (1997) *BMJ* 315:629; Begg & Mazumdar (1994) *Biometrics* 50:1088 |
 
 ------------------------------------------------------------------------
 
@@ -534,9 +567,9 @@ datasets.
 - [`mx_qc_study()`](https://mdjubayerhossain.com/metaXpress/reference/mx_qc_study.md)
   : Score a study against the 10-point QC checklist
 - [`mx_filter_studies()`](https://mdjubayerhossain.com/metaXpress/reference/mx_filter_studies.md)
-  : Filter studies below a QC threshold
+  : Remove studies that fail quality control
 - [`mx_cluster_samples()`](https://mdjubayerhossain.com/metaXpress/reference/mx_cluster_samples.md)
-  : Automatically cluster samples by metadata
+  : Suggest sample groups from metadata text
 - [`mx_study_overview()`](https://mdjubayerhossain.com/metaXpress/reference/mx_study_overview.md)
   : Study characteristics overview plot
 
@@ -552,7 +585,7 @@ align gene spaces.
 - [`mx_correct_library_type()`](https://mdjubayerhossain.com/metaXpress/reference/mx_correct_library_type.md)
   : Correct for library type bias (polyA vs rRNA-depleted)
 - [`mx_remove_batch()`](https://mdjubayerhossain.com/metaXpress/reference/mx_remove_batch.md)
-  : Remove batch effects across studies
+  : Remove between-study batch effects for pooled expression analyses
 - [`mx_align_genes()`](https://mdjubayerhossain.com/metaXpress/reference/mx_align_genes.md)
   : Restrict all studies to a common set of genes
 
@@ -570,15 +603,20 @@ limma-voom.
 
 ## Module 4: Meta-Analysis Statistics
 
-P-value combination (Fisher, Stouffer), effect-size meta-analysis (REM,
-FEM), and heterogeneity.
+Random-effects (REML/PM/DL, HKSJ) and fixed-effect models, directional
+p-value combination, heterogeneity, concordance and leave-one-out
+robustness.
 
 - [`mx_meta()`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md)
   : Run meta-analysis across per-study DE results
+- [`mx_study_concordance()`](https://mdjubayerhossain.com/metaXpress/reference/mx_study_concordance.md)
+  : Check fold-change concordance between studies
 - [`mx_heterogeneity()`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity.md)
   : Compute per-gene heterogeneity statistics
 - [`mx_sensitivity()`](https://mdjubayerhossain.com/metaXpress/reference/mx_sensitivity.md)
   : Leave-one-out sensitivity analysis
+- [`mx_small_study()`](https://mdjubayerhossain.com/metaXpress/reference/mx_small_study.md)
+  : Small-study effects and publication bias tests
 
 ## Module 5: Missing Gene Handling
 
@@ -594,13 +632,17 @@ coverage filtering.
 
 ## Module 6: Pathway Meta-Analysis
 
-Cross-study over-representation (ORA) and GSEA, consensus pathways, and
-deduplication.
+fgsea GSEA and ORA on the meta-signature, per-study GSEA combined across
+studies, consensus and redundancy filtering.
 
+- [`mx_gene_sets()`](https://mdjubayerhossain.com/metaXpress/reference/mx_gene_sets.md)
+  : Retrieve gene sets from MSigDB
 - [`mx_pathway_meta()`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_meta.md)
-  : Perform pathway meta-analysis on meta-analysis results
+  : Pathway enrichment of meta-analysis results
+- [`mx_pathway_studies()`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_studies.md)
+  : Cross-study pathway meta-analysis
 - [`mx_pathway_consensus()`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_consensus.md)
-  : Find consensus pathways across studies
+  : Find consensus pathways across studies (vote counting)
 - [`mx_pathway_dedup()`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_dedup.md)
   : Remove redundant pathways
 - [`mx_pathway_heatmap()`](https://mdjubayerhossain.com/metaXpress/reference/mx_pathway_heatmap.md)
@@ -621,6 +663,8 @@ and UpSet diagrams.
   : UpSet plot of DEG overlap across studies
 - [`mx_heterogeneity_plot()`](https://mdjubayerhossain.com/metaXpress/reference/mx_heterogeneity_plot.md)
   : I-squared distribution plot
+- [`mx_funnel()`](https://mdjubayerhossain.com/metaXpress/reference/mx_funnel.md)
+  : Funnel plot for one gene
 
 ## Module 8: Reporting & Export
 
@@ -655,11 +699,11 @@ co-expression modules and drug reversal.
 
 ### All vignettes
 
-- [Public GEO Case Study: Pan-Cancer
-  Meta-Analysis](https://mdjubayerhossain.com/metaXpress/articles/case_study.md):
-- [metaXpress Full Workflow: GEO to
-  Report](https://mdjubayerhossain.com/metaXpress/articles/full_workflow.md):
-- [Live Tutorial: End-to-End GEO Pan-Cancer
-  Meta-Analysis](https://mdjubayerhossain.com/metaXpress/articles/live_tutorial.md):
-- [metaXpress
-  Quickstart](https://mdjubayerhossain.com/metaXpress/articles/quickstart.md):
+- [Case study: Alzheimer's disease brain
+  meta-analysis](https://mdjubayerhossain.com/metaXpress/articles/case_study.md):
+- [Downstream biology: from meta-signature to
+  mechanism](https://mdjubayerhossain.com/metaXpress/articles/downstream_biology.md):
+- [Full workflow: from GEO accessions to
+  report](https://mdjubayerhossain.com/metaXpress/articles/full_workflow.md):
+- [Getting started with
+  metaXpress](https://mdjubayerhossain.com/metaXpress/articles/quickstart.md):

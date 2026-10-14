@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">metaXpress</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,10 +18,10 @@
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="articles/live_tutorial.html">Live Demonstration Tutorial</a></li>
-    <li><a class="dropdown-item" href="articles/quickstart.html">Getting Started (Quickstart)</a></li>
-    <li><a class="dropdown-item" href="articles/full_workflow.html">Full Workflow: GEO to Report</a></li>
-    <li><a class="dropdown-item" href="articles/case_study.html">Public GEO Case Study: Pan-Cancer</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="articles/quickstart.html">Getting started</a></li>
+    <li><a class="dropdown-item" href="articles/case_study.html">Case study: Alzheimer's disease brain meta-analysis</a></li>
+    <li><a class="dropdown-item" href="articles/full_workflow.html">Full workflow: GEO to report</a></li>
+    <li><a class="dropdown-item" href="articles/downstream_biology.html">Downstream biology</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -144,7 +144,7 @@
 </div>
 <div class="section level2">
 <h2 id="validation-reference">Validation Reference<a class="anchor" aria-label="anchor" href="#validation-reference"></a></h2>
-<p>Use the Alzheimer’s dataset from Heberle et al. (2025) as the primary benchmark for correctness. The QC checklist (10 criteria) in <code><a href="reference/mx_qc_study.html">mx_qc_study()</a></code> is directly derived from that paper.</p>
+<p>Statistical correctness is validated against reference implementations in tests: <code><a href="reference/mx_meta.html">mx_meta()</a></code> against <code><a href="https://wviechtb.github.io/metafor/reference/rma.uni.html" class="external-link">metafor::rma()</a></code> (DL/REML/PM, HKSJ) and <code><a href="reference/mx_de.html">mx_de()</a></code> against native DESeq2 on <code>airway</code> (GSE52778). Heberle et al. (2024, bioRxiv, <a href="doi:10.1101/2024.11.07.622520" class="uri">doi:10.1101/2024.11.07.622520</a>) is a systematic review of AD brain RNA-seq whose 10-category tool grades study <em>reporting</em> quality; the numeric thresholds in <code><a href="reference/mx_qc_study.html">mx_qc_study()</a></code> are metaXpress defaults, not taken from that paper. Never cite a reference without verifying it exists (PubMed/DOI).</p>
 </div>
 </div>
 

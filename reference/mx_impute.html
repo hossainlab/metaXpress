@@ -9,7 +9,7 @@ imputation strategies before meta-analysis."><meta property="og:image" content="
 
     <a class="navbar-brand me-2" href="../index.html">metaXpress</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,10 +20,10 @@ imputation strategies before meta-analysis."><meta property="og:image" content="
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/live_tutorial.html">Live Demonstration Tutorial</a></li>
-    <li><a class="dropdown-item" href="../articles/quickstart.html">Getting Started (Quickstart)</a></li>
-    <li><a class="dropdown-item" href="../articles/full_workflow.html">Full Workflow: GEO to Report</a></li>
-    <li><a class="dropdown-item" href="../articles/case_study.html">Public GEO Case Study: Pan-Cancer</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Getting started</a></li>
+    <li><a class="dropdown-item" href="../articles/case_study.html">Case study: Alzheimer's disease brain meta-analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/full_workflow.html">Full workflow: GEO to report</a></li>
+    <li><a class="dropdown-item" href="../articles/downstream_biology.html">Downstream biology</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -70,12 +70,11 @@ imputation strategies before meta-analysis.</p>
     available studies; impute p-values as 1.</p></dd>
 
   <dt><code>"knn"</code></dt>
-<dd><p>K-nearest neighbours imputation based on
-    gene expression profiles.</p></dd>
+<dd><p>K-nearest-neighbour imputation of log2FC across
+    genes with similar cross-study fold-change profiles.</p></dd>
 
   <dt><code>"weighted"</code></dt>
-<dd><p>Weighted imputation proportional to study
-    sample size.</p></dd>
+<dd><p>Mean log2FC weighted by gene coverage.</p></dd>
 
 
 </dl></dd>
@@ -87,9 +86,22 @@ imputation strategies before meta-analysis.</p>
   strategy.</p>
     </div>
     <div class="section level2">
+    <h2 id="caution">Caution<a class="anchor" aria-label="anchor" href="#caution"></a></h2>
+
+
+<p>The <code>"mean"</code>, <code>"knn"</code> and <code>"weighted"</code> strategies fill a
+study's missing fold change with values derived from the <em>other</em>
+studies. This is circular: it inflates the apparent number of studies per
+gene, shrinks heterogeneity (I-squared) and has no standard error, so
+imputed rows are ignored by effect-size methods. For inference, prefer
+<code><a href="mx_meta.html">mx_meta</a></code> with <code>min_studies</code>, which pools each gene
+over the studies that measured it, or <code><a href="mx_filter_coverage.html">mx_filter_coverage</a></code>.
+Imputation is mainly useful for visualising complete matrices.</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Villatoro-García, J.A. et al. (2022) Missing gene expression data
-imputation for gene-study meta-analysis. <em>Mathematics</em>,
+    <p>Villatoro-García, J.A. et al. (2022) DExMA: an R package for performing
+gene expression meta-analysis with missing genes. <em>Mathematics</em>,
 <strong>10</strong>(18), 3376. <a href="https://doi.org/10.3390/math10183376" class="external-link">doi:10.3390/math10183376</a></p>
     </div>
     <div class="section level2">

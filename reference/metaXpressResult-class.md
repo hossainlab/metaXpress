@@ -16,8 +16,8 @@ including gene-level statistics, heterogeneity estimates, and
 - `method`:
 
   A length-1 character naming the meta-analysis method used. One of
-  `"fisher"`, `"stouffer"`, `"inverse_normal"`, `"fixed_effects"`,
-  `"random_effects"`, `"awmeta"`.
+  `"random_effects"`, `"fixed_effects"`, `"fisher"`, `"stouffer"`,
+  `"inverse_normal"`, `"minp"`, `"maxp"`, `"rop"`.
 
 - `n_studies`:
 

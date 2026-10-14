@@ -1,19 +1,22 @@
 # Generate a reproducible analysis report
 
-Renders a full HTML or PDF report summarising the meta-analysis
-pipeline, including QC metrics, per-study DE summaries, meta-analysis
-results, and pathway enrichment results.
+Renders an HTML (or PDF) report with methods text, study table,
+fold-change concordance, volcano plot, top-gene table with confidence
+and prediction intervals, heterogeneity, forest plots, leave-one-out
+robustness, pathway results (if present) and session information.
 
 ## Usage
 
 ``` r
 mx_report(
   meta_result,
-  studies,
   de_results,
+  studies = NULL,
   format = c("html", "pdf"),
   output_dir = ".",
-  output_file = "metaXpress_report"
+  output_file = "metaXpress_report",
+  padj_threshold = 0.05,
+  lfc_threshold = 0
 )
 ```
 
@@ -26,34 +29,37 @@ mx_report(
   object from
   [`mx_meta`](https://mdjubayerhossain.com/metaXpress/reference/mx_meta.md).
 
-- studies:
-
-  A named list of
-  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
-  objects.
-
 - de_results:
 
-  A named list of per-study DE `data.frame`s from
-  [`mx_de_all`](https://mdjubayerhossain.com/metaXpress/reference/mx_de_all.md).
+  The named list of per-study DE `data.frame`s (or
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
+  objects) used for the meta-analysis.
+
+- studies:
+
+  Optional list of
+  [`metaXpressStudy`](https://mdjubayerhossain.com/metaXpress/reference/metaXpressStudy-class.md)
+  objects (currently unused; kept for API compatibility).
 
 - format:
 
-  Character scalar. Output format. One of `"html"` (default) or `"pdf"`.
+  `"html"` (default) or `"pdf"` (requires LaTeX).
 
 - output_dir:
 
-  Character scalar. Directory for the output report. Default: current
-  working directory (`"."`).
+  Output directory. Default: `"."`.
 
 - output_file:
 
-  Character scalar. Filename (without extension). Default:
-  `"metaXpress_report"`.
+  File name without extension. Default: `"metaXpress_report"`.
+
+- padj_threshold, lfc_threshold:
+
+  Significance thresholds used in the report. Defaults: `0.05` and `0`.
 
 ## Value
 
-The path to the generated report file (invisibly).
+The path to the generated report (invisibly).
 
 ## See also
 
@@ -63,8 +69,14 @@ The path to the generated report file (invisibly).
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-  mx_report(meta_result, studies, de_results,
-            format = "html", output_dir = "results/")
-} # }
+# \donttest{
+if (rmarkdown::pandoc_available()) {
+  ad <- readRDS(system.file("extdata", "ad_brain_de.rds",
+                            package = "metaXpress"))
+  res <- mx_meta(ad$de_results)
+  mx_report(res, ad$de_results, output_dir = tempdir())
+}
+#> Running meta-analysis (random_effects) on 4 studies...
+#> Report written to: /tmp/RtmpWUozeJ/metaXpress_report.html
+# }
 ```
