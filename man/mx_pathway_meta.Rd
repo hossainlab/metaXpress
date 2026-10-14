@@ -2,68 +2,100 @@
 % Please edit documentation in R/06_pathway.R
 \name{mx_pathway_meta}
 \alias{mx_pathway_meta}
-\title{Perform pathway meta-analysis on meta-analysis results}
+\title{Pathway enrichment of meta-analysis results}
 \usage{
 mx_pathway_meta(
   meta_result,
-  db = c("Hallmarks", "KEGG", "Reactome", "GO_BP"),
-  method = c("ORA", "GSEA"),
+  db = c("Hallmarks", "Reactome", "KEGG", "WikiPathways", "GO_BP"),
+  method = c("GSEA", "ORA"),
+  gene_sets = NULL,
   padj_threshold = 0.05,
-  lfc_threshold = 1,
+  lfc_threshold = 0,
+  min_size = 15,
+  max_size = 500,
+  seed = 1L,
   ...
 )
 }
 \arguments{
-\item{meta_result}{A \code{\linkS4class{metaXpressResult}} object from
+\item{meta_result}{A \code{\linkS4class{metaXpressResult}} from
 \code{\link{mx_meta}}.}
 
-\item{db}{Character scalar. Gene set database. One of \code{"Hallmarks"}
-(default), \code{"KEGG"}, \code{"Reactome"}, or \code{"GO_BP"}.}
+\item{db}{Gene set collection passed to \code{\link{mx_gene_sets}}.
+Ignored when \code{gene_sets} is supplied.}
 
-\item{method}{Character scalar. Enrichment method. One of \code{"ORA"}
-(default) or \code{"GSEA"}.}
+\item{method}{\code{"GSEA"} (default) or \code{"ORA"}.}
 
-\item{padj_threshold}{Numeric. Adjusted p-value threshold for defining the
-significant gene list (ORA only). Default: \code{0.05}.}
+\item{gene_sets}{Optional named list of gene sets (e.g. from
+\code{\link{mx_gene_sets}} or a GMT file) whose IDs match
+\code{meta_table$gene_id}.}
 
-\item{lfc_threshold}{Numeric. Log2 fold-change threshold (ORA only).
-Default: \code{1}.}
+\item{padj_threshold, lfc_threshold}{ORA only: thresholds on
+\code{meta_padj} and \code{|meta_log2FC|} defining the gene lists.
+Defaults: \code{0.05} and \code{0}.}
 
-\item{...}{Additional arguments passed to \pkg{clusterProfiler}.}
+\item{min_size, max_size}{Gene set size limits after restricting to genes
+in the analysis. Defaults: \code{15} and \code{500}.}
+
+\item{seed}{Integer seed for the fgsea permutation sampling, for
+reproducibility. The global RNG state is restored afterwards.}
+
+\item{...}{Further arguments passed to \code{fgsea::fgsea()}.}
 }
 \value{
-A \code{\linkS4class{metaXpressResult}} object with the
-  \code{pathway_result} slot populated. The \code{pathway_result}
-  \code{data.frame} contains: \code{pathway_id}, \code{pathway_name},
-  \code{n_genes}, \code{pvalue}, \code{padj}, \code{gene_ratio}.
+The \code{meta_result} with \code{pathway_result} filled:
+  \describe{
+    \item{GSEA}{\code{pathway_id}, \code{set_size}, \code{NES},
+      \code{pvalue}, \code{padj}, \code{leading_edge}.}
+    \item{ORA}{\code{pathway_id}, \code{direction} (up/down),
+      \code{set_size}, \code{n_overlap}, \code{n_list}, \code{fold_enrichment},
+      \code{pvalue}, \code{padj}, \code{overlap_genes}.}
+  }
 }
 \description{
-Runs over-representation analysis (ORA) or gene set enrichment analysis
-(GSEA) using the meta-analysis gene rankings, then combines pathway results
-across studies.
+Runs pre-ranked gene set enrichment analysis (GSEA, via \pkg{fgsea}) or
+over-representation analysis (ORA, hypergeometric test) on the
+gene-level meta-analysis.
+}
+\details{
+GSEA ranks genes by the signed meta-analysis z-score
+\eqn{\mathrm{sign}(\beta)\,\Phi^{-1}(1 - p/2)}, which uses both effect
+size and its precision; this avoids arbitrary significance cut-offs and is
+the recommended default. ORA tests up- and down-regulated genes
+separately against the universe of all genes in the meta-analysis
+(not the whole genome), as recommended to avoid inflated enrichment.
 }
 \examples{
-\dontrun{
-  result <- mx_pathway_meta(meta_result, db = "Hallmarks")
-  head(result@pathway_result[order(result@pathway_result$padj), ])
+if (requireNamespace("fgsea", quietly = TRUE)) {
+  set.seed(1)
+  genes <- paste0("G", 1:1000)
+  sets  <- list(UP_SET = genes[1:40], NULL_SET = genes[501:560])
+  de <- lapply(1:3, function(s) {
+    lfc <- rnorm(1000, c(rep(1, 40), rep(0, 960)), 0.3)
+    p <- 2 * pnorm(-abs(lfc / 0.3))
+    data.frame(gene_id = genes, log2FC = lfc, lfcSE = 0.3, pvalue = p,
+               padj = p.adjust(p, "BH"))
+  })
+  res <- mx_meta(de)
+  res <- mx_pathway_meta(res, gene_sets = sets, min_size = 10)
+  res@pathway_result
 }
 
 }
 \references{
-Wu, T. et al. (2021) clusterProfiler 4.0: a universal enrichment tool for
-interpreting omics data. \emph{The Innovation}, \strong{2}(3), 100141.
-\doi{10.1016/j.xinn.2021.100141}
-
-Liberzon, A. et al. (2015) The Molecular Signatures Database (MSigDB)
-hallmark gene set collection. \emph{Cell Systems}, \strong{1}(6),
-417--425. \doi{10.1016/j.cels.2015.12.004}
-
 Subramanian, A. et al. (2005) Gene set enrichment analysis: a
 knowledge-based approach for interpreting genome-wide expression profiles.
-\emph{Proceedings of the National Academy of Sciences}, \strong{102}(43),
-15545--15550. \doi{10.1073/pnas.0506580102}
+\emph{PNAS}, \strong{102}(43), 15545--15550.
+\doi{10.1073/pnas.0506580102}
+
+Korotkevich, G. et al. (2016) Fast gene set enrichment analysis.
+\emph{bioRxiv}. \doi{10.1101/060012}
+
+Timmons, J.A., Szkop, K.J. & Gallagher, I.J. (2015) Multiple sources of
+bias confound functional enrichment analysis of global -omics data.
+\emph{Genome Biology}, \strong{16}, 186. \doi{10.1186/s13059-015-0761-7}
 }
 \seealso{
-\code{\link{mx_pathway_consensus}}, \code{\link{mx_pathway_dedup}},
-  \code{\link{mx_pathway_heatmap}}
+\code{\link{mx_pathway_studies}}, \code{\link{mx_gene_sets}},
+  \code{\link{mx_pathway_dedup}}, \code{\link{mx_pathway_heatmap}}
 }

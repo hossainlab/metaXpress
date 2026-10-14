@@ -509,7 +509,6 @@ mx_qc_study <- function(study) {
 #' @return The input \code{study} with the \code{condition} column updated
 #'   in \code{metadata}.
 #'
-#' @references
 #' @examples
 #' \dontrun{
 #'   study <- mx_cluster_samples(study)

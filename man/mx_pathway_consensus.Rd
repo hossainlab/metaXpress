@@ -2,7 +2,7 @@
 % Please edit documentation in R/06_pathway.R
 \name{mx_pathway_consensus}
 \alias{mx_pathway_consensus}
-\title{Find consensus pathways across studies}
+\title{Find consensus pathways across studies (vote counting)}
 \usage{
 mx_pathway_consensus(
   pathway_results,
@@ -11,8 +11,9 @@ mx_pathway_consensus(
 )
 }
 \arguments{
-\item{pathway_results}{A list of \code{data.frame} objects from per-study
-enrichment analyses.}
+\item{pathway_results}{A list of per-study enrichment \code{data.frame}s
+with columns \code{pathway_id} and \code{padj}, e.g.
+\code{attr(mx_pathway_studies(...), "per_study")}.}
 
 \item{min_fraction}{Numeric. Minimum fraction of studies in which a pathway
 must be significant. Default: \code{0.5}.}
@@ -21,20 +22,20 @@ must be significant. Default: \code{0.5}.}
 Default: \code{0.05}.}
 }
 \value{
-A \code{data.frame} of consensus pathways with columns
-  \code{pathway_id}, \code{pathway_name}, \code{n_significant_studies},
-  \code{fraction_studies}.
+A \code{data.frame} with \code{pathway_id},
+  \code{n_significant_studies} and \code{fraction_studies}.
 }
 \description{
-Identifies pathways that are significantly enriched in the majority of
-individual studies, indicating robust cross-study signal.
+Counts in how many per-study enrichment analyses each pathway is
+significant. Vote counting ignores effect size and is less powerful than
+\code{\link{mx_pathway_studies}}; use it as a descriptive summary.
 }
 \examples{
-\dontrun{
-  consensus <- mx_pathway_consensus(pathway_results)
-}
+pr1 <- data.frame(pathway_id = c("A", "B"), padj = c(0.01, 0.2))
+pr2 <- data.frame(pathway_id = c("A", "B"), padj = c(0.03, 0.01))
+mx_pathway_consensus(list(pr1, pr2), min_fraction = 1)
 
 }
 \seealso{
-\code{\link{mx_pathway_meta}}, \code{\link{mx_pathway_dedup}}
+\code{\link{mx_pathway_studies}}
 }
